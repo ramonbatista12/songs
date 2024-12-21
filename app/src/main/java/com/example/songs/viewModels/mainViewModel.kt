@@ -1,0 +1,59 @@
+package com.example.songs.viewModels
+
+import android.util.Log
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceMedia> ):ViewModel() {
+   private val job= Job()
+    private val scope= viewModelScope
+    private val permicaoNotificacao= MutableStateFlow(false)
+    val _permicaoNotificacao=permicaoNotificacao.asStateFlow()
+    private val permicaoLeitura= MutableStateFlow(false)
+    val _permicaoLeitura=permicaoLeitura.asStateFlow()
+    val dialoNotificacao= MutableStateFlow(if(permicaoNotificacao.value)false else true)
+    val dialoLeitura= MutableStateFlow(if(permicaoLeitura.value)false else true)
+    val snackbarHostState= SnackbarHostState()
+    val ex=Executors.newCachedThreadPool()
+    init {
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+class FabricaMainViewmodel{
+    fun factory(mutableStateFlow: MutableStateFlow<ResultadosConecaoServiceMedia>) = object : ViewModelProvider.Factory{
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return MainViewModel(mutableStateFlow) as T
+        }
+    }
+}
+
+
