@@ -43,7 +43,7 @@ class ServicMedia: MediaSessionService() {
         scope.launch {
         val player = ExoPlayer.Builder(this@ServicMedia).build()
 
-        mediaSession = MediaSession.Builder(this@ServicMedia, player).build()
+       mediaSession = MediaSession.Builder(this@ServicMedia, player).build()
        helperPalyer = HelperPalyerEstados(mediaSession!!)
        helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
 
@@ -73,8 +73,15 @@ class ServicMedia: MediaSessionService() {
             this!!.player.release()
           }
         mediaSession=null
-        helperPalyer=null
-        helperPalyerComandes=null
+        if(helperPalyer!=null){
+            helperPalyer!!.finalizar()
+            helperPalyer=null
+        }
+        if(helperPalyerComandes!=null){
+            helperPalyerComandes!!.finalizar()
+            helperPalyerComandes=null
+        }
+
         job.cancel()
 
         super.onDestroy()

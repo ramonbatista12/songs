@@ -15,22 +15,28 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.example.songs.componentes.BarraSuperio
 import com.example.songs.navegacao.Navgrafic
 
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
@@ -109,17 +115,22 @@ class MainActivity : ComponentActivity() {
                 val viewmodel: MainViewModel =
                     viewModel(factory = FabricaMainViewmodel().factory(conecao))
                 val navController = rememberNavController()
-                Scaffold(modifier = Modifier
+                Surface{
+                Scaffold(topBar = { BarraSuperio(titulo = "Songs") },modifier = Modifier
                     .fillMaxSize()
-                    .safeContentPadding()
                     .safeDrawingPadding()
-                    .safeGesturesPadding(),
+                    .safeGesturesPadding()
+                    .safeContentPadding()
+
+                    ,containerColor = MaterialTheme.colorScheme.background,
                     snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
-                    Navgrafic(
+                  Box(modifier = Modifier.padding(it).fillMaxSize()){
+                      Navgrafic(
                         navController = navController,
-                        windowSizeClass = windowsizeclass,
+                        windowSizeClass = windowsizeclass,modifier = Modifier,
                         paddingValues = it
-                    )
+                    )}
+                }
                 }
 
 

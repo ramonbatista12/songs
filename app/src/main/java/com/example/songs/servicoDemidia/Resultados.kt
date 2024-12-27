@@ -20,3 +20,18 @@ sealed class ResultadosConecaoServiceMedia{
     }
 
 }
+
+sealed class StadosDoPlaye(){
+    object Emplyer: StadosDoPlaye()
+    object Caregando: StadosDoPlaye()
+    object Erro: StadosDoPlaye()
+
+    override fun toString(): String {
+        when(this){
+            is Emplyer->return "Exoplyer esta reproduzindo"
+            is Caregando->return "Exoplyer esta Caregando"
+            is Erro->return "Exoplyer esta com Erro na Reproducao"
+
+        }
+    }
+}

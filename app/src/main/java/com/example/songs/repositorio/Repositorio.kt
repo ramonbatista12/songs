@@ -17,26 +17,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+@RequiresApi(Build.VERSION_CODES.Q)
 class RepositorioService(val context: Context) {
-    val job= Job()
-    val scope= CoroutineScope(Dispatchers.IO)
-    var pager =0
-    private val strin= MutableStateFlow("pricipal")
-    var _string=strin.asStateFlow()
-    fun mudarString(s: String){
-        scope.launch {
-            strin.emit(s)
+    private val job= Job()
+    private val scope= CoroutineScope(Dispatchers.IO)
+    private val listaDeMediaItemsTodadasAsMusicas= MutableStateFlow<List<MediaItem>>(emptyList())
+    var _listaDeMediaItems=listaDeMediaItemsTodadasAsMusicas.asStateFlow()
+    private val listaDeAlbums= mutableListOf<MediaItem>()
+    private val listaDeArtistas= mutableListOf<MediaItem>()
+    val listaDeMusicas= mutableListOf<MediaItem>()
+    val listaDeMusicasAlbum= mutableListOf<MediaItem>()
 
+
+
+    init {
+        scope.launch {
+            getMusics().collect{
+                listaDeMediaItemsTodadasAsMusicas.emit(it)
+            }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(UnstableApi::class)
-    fun getMusics(){
+   private fun getMusics()= flow<List<MediaItem>>{
         val contentResolver=context.contentResolver
         val listaDeMediaItems= mutableListOf<MediaItem>()
         val projeca= arrayOf<String>(
@@ -49,7 +58,7 @@ class RepositorioService(val context: Context) {
         )
 
        val ordenacao ="${MediaStore.Audio.Media.DISPLAY_NAME} ASC "
-       scope.launch { val cursor=contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+       scope.launch(Dispatchers.IO) { val cursor=contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                                          projeca,
                                 null,
                              null,
@@ -74,12 +83,13 @@ class RepositorioService(val context: Context) {
                                                                        this.setDurationMs(cursor.getLong(duracao))
                                                                    }.build()
                                                                ).build()
-                              listaDeMediaItems.add(mediaItem)
+                            listaDeMediaItems.add(mediaItem)
 
 
                           }
                                         }
-
+               val listaEmicao=listaDeMediaItems.toList()
+               emit(listaEmicao)
         }
 
     }
