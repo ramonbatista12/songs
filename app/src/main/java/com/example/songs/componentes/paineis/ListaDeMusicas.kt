@@ -32,7 +32,9 @@ import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.ItemsListaColunas
 import com.example.songs.componentes.Miniplayer
-
+/*
+* responsavel pro esibir a lista de musicas em si
+* */
 @Composable
 fun ListaDemusicas(modifier: Modifier = Modifier,paddingValues: PaddingValues,windowSizeClass: WindowSizeClass){
 

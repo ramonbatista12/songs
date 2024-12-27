@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,17 +48,20 @@ import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.ItemDaLista
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
-
+/*
+* BigPlyer representa o player em si aonde se pode ver os dados da musica em reproducao no momento
+* e responsavel por medir e determinar como deve ser esibido em cado tamanho de tela
+* */
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass){
+fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues){
     val  navegacao = rememberListDetailPaneScaffoldNavigator<Long>( )
   if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-      PlayerCompat()
+      PlayerCompat(modifier=Modifier.padding(paddingValues= paddingValues))
 
  else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) PlayerCompat()
-    else  PlyerEspandido(Modifier,windowSizeClass)
+    else  PlyerEspandido(Modifier.padding(paddingValues=paddingValues),windowSizeClass)
 
 
 
@@ -103,8 +107,8 @@ fun Player(modifier: Modifier=Modifier){
 }
 
 @Composable
-fun PlayerCompat(){
-    Box(modifier = Modifier.fillMaxSize().imePadding()){
+fun PlayerCompat(modifier: Modifier=Modifier){
+    Box(modifier = modifier.fillMaxSize().imePadding()){
         Player(Modifier.align(Alignment.Center))
 
         IconButton({},modifier = Modifier.align(Alignment.BottomCenter).size(70.dp)) {
@@ -194,7 +198,7 @@ fun PlayerPreview(){
         Scaffold(topBar = { BarraSuperio(titulo = "Plyer") }, modifier = Modifier.safeDrawingPadding().safeGesturesPadding().safeContentPadding()) {
 
             val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
-            BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass)
+            BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it)
 
         }
         }

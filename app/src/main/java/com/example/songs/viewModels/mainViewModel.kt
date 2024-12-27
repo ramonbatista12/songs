@@ -28,7 +28,7 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
     val dialoNotificacao= MutableStateFlow(if(permicaoNotificacao.value)false else true)
     val dialoLeitura= MutableStateFlow(if(permicaoLeitura.value)false else true)
     val snackbarHostState= SnackbarHostState()
-    val ex=Executors.newCachedThreadPool()
+
     init {
 
 

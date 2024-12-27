@@ -39,7 +39,10 @@ import androidx.compose.ui.unit.sp
 import com.example.songs.R
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
-
+/*
+* aqui estao os items de lista cada funcao de descreve como cada item deve ser mostrado
+* esta presente nesse arquivo
+* */
 
 @Composable
 fun ItemDaLista(modifier: Modifier=Modifier){
@@ -60,6 +63,8 @@ fun ItemDaLista(modifier: Modifier=Modifier){
 
     }
 }
+
+
 
 @Composable
 fun ItemsListaColunas(modifier: Modifier=Modifier){
@@ -111,6 +116,23 @@ fun ItemsAlbusColuna(modifier: Modifier=Modifier){
     }
 }
 
+@Composable
+fun ItemsListaPlaylists(modifier: Modifier=Modifier){
+    Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
+        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+            contentDescription = null,
+            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+        Row {
+            Column{
+                Text("Nome da PlyList", maxLines = 2,fontSize = 18.sp)
+
+
+            }
+
+        }
+    }
+
+}
 
 @Preview(showBackground = true)
 @Composable

@@ -23,8 +23,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
+import com.example.songs.componentes.paineis.BigPlayer
 import com.example.songs.componentes.paineis.ListaDeAlbums
 import com.example.songs.componentes.paineis.ListaDemusicas
+import com.example.songs.componentes.paineis.PlyList
+/*
+* Navgrafic e o grafico de navegacao em sim suas rotas sao determinadas pela classe DestinosDENavegacao
+* rotas disponiveis  :Todas,Playlist,Album,Configuracoes,Player
+* cada funcoes e responsavel por adiministra suas funcoes como reproduzir ou listar as musicas
+* mas cada funcao  e responsavel por checar a o tamanho da classe de janela
+* e determinar camo deve seer esibido seus dados em alguns casos
+* e determinado um painel separado para diferentes tamanhos de tela
+*
+* */
+
 
 @Composable
 fun Navgrafic(navController: NavHostController,windowSizeClass: WindowSizeClass,modifier: Modifier,paddingValues: PaddingValues){
@@ -32,28 +44,26 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.Al
   composable(route = DestinosDENavegacao.Todas.rota){
    Box{
        ListaDemusicas(Modifier.padding(paddingValues),windowSizeClass = windowSizeClass, paddingValues = paddingValues)
-   }
+   }}
 
-
-
-  }
   composable(route = DestinosDENavegacao.Playlist.rota){
-      Box(modifier=Modifier){
+      Box{
+        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues)
+       }}
 
 
-      }
-
-  }
   composable(route = DestinosDENavegacao.Album.rota){
       Box(modifier=Modifier){
           ListaDeAlbums(windowSizeClass = windowSizeClass)
+         }}
 
-
-          }
-      }
 
   composable(route = DestinosDENavegacao.Configuracoes.rota){}
-  composable(route = DestinosDENavegacao.Player.rota){}
+
+
+  composable(route = DestinosDENavegacao.Player.rota){
+      BigPlayer(windowSizeClass = windowSizeClass,paddingValues = paddingValues)
+  }
 
 
 }

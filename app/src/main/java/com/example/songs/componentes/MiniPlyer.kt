@@ -34,7 +34,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.songs.R
-
+/*
+* aqui esta  a representacao do Plyer redusido
+* que permite o usuario ver qual musica esta em reproducao no momento enquanto ele navega em outras telas
+* dentro do app
+* */
 
 @Composable
 fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer"){

@@ -21,7 +21,9 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
 import com.example.songs.componentes.Miniplayer
-
+/*
+* responsavel por esibir a  lista de albums
+* */
 @Composable
 fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass){
     val miniPlyerTransicao = remember { MutableTransitionState(true) }
