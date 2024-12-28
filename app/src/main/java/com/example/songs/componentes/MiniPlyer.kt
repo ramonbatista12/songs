@@ -1,5 +1,8 @@
 package com.example.songs.componentes
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.EaseInCirc
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.InfiniteRepeatableSpec
@@ -34,6 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.songs.R
+import com.example.songs.componentes.paineis.ComponetesCompartilhados
+
 /*
 * aqui esta  a representacao do Plyer redusido
 * que permite o usuario ver qual musica esta em reproducao no momento enquanto ele navega em outras telas
@@ -77,6 +82,33 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer"){
             Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24), contentDescription = null)
         }
     }
+}
+
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplayer",sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope){
+    val texto = "Miniplayer Nome da Musica"
+    val texto2 = "Nome do Artista"
+
+  with(sharedTransitionScope){
+
+    Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
+        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier=Modifier.size(50.dp).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+        Column {
+
+            Text(text = text,maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace, modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope))
+            Text(text = "Nome do Artista", fontSize = 10.sp,maxLines = 1, overflow = TextOverflow.Ellipsis,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
+
+        }
+        IconButton(onClick = {},modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope)) {
+            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24), contentDescription = null)
+        }
+        IconButton(onClick = {}, modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope)){
+            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
+                  contentDescription = null)
+        }
+    }}
 }
 
 @Preview(showBackground = true)

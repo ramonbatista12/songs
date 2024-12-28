@@ -16,6 +16,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
@@ -30,13 +32,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.BarraSuperio
+import com.example.songs.componentes.Miniplayer
+import com.example.songs.componentes.PermanenteNavigationDrawer
+import com.example.songs.navegacao.DestinosDENavegacao
 import com.example.songs.navegacao.Navgrafic
 
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
@@ -124,12 +131,23 @@ class MainActivity : ComponentActivity() {
 
                     ,containerColor = MaterialTheme.colorScheme.background,
                     snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
-                  Box(modifier = Modifier.padding(it).fillMaxSize()){
-                      Navgrafic(
+
+                  PermanentNavigationDrawer(drawerContent = {
+                      if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
+                          PermanenteNavigationDrawer()
+                  }, modifier = Modifier.padding(paddingValues = it).fillMaxSize()) {
+                      Box(modifier = Modifier.fillMaxSize()){
+                          Navgrafic(
+
                         navController = navController,
-                        windowSizeClass = windowsizeclass,modifier = Modifier,
+                        windowSizeClass = windowsizeclass,modifier = Modifier.align(Alignment.TopCenter),
                         paddingValues = it
-                    )}
+                    )
+                         Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
+                             navController.navigate(DestinosDENavegacao.Player.rota)
+                         })
+                      }
+                  }
                 }
                 }
 

@@ -13,5 +13,6 @@ sealed class DestinosDENavegacao(val rota:String) {
        object Album: DestinosDENavegacao("album")
        object Buscador: DestinosDENavegacao("buscador")
        object Configuracoes: DestinosDENavegacao("configuracoes")
+       object Artista:DestinosDENavegacao(rota = "Artista")
 
 }
