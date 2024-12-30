@@ -1,5 +1,6 @@
 package com.example.songs.navegacao
 
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,22 +40,23 @@ import com.example.songs.componentes.paineis.PlyList
 
 
 @Composable
-fun Navgrafic(navController: NavHostController,windowSizeClass: WindowSizeClass,modifier: Modifier,paddingValues: PaddingValues){
+fun Navgrafic(navController: NavHostController,windowSizeClass: WindowSizeClass,modifier: Modifier,paddingValues: PaddingValues,transicaoMiniPlyer:MutableTransitionState<Boolean>){
 NavHost(navController = navController, startDestination = DestinosDENavegacao.Album.rota,modifier=modifier){
   composable(route = DestinosDENavegacao.Todas.rota){
    Box{
-       ListaDemusicas(Modifier.padding(paddingValues),windowSizeClass = windowSizeClass, paddingValues = paddingValues)
-   }}
+       ListaDemusicas(Modifier,windowSizeClass = windowSizeClass, paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer)
+   }
+  }
 
   composable(route = DestinosDENavegacao.Playlist.rota){
       Box{
-        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues)
+        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer)
        }}
 
 
   composable(route = DestinosDENavegacao.Album.rota){
       Box(modifier=Modifier){
-          ListaDeAlbums(windowSizeClass = windowSizeClass)
+          ListaDeAlbums(windowSizeClass = windowSizeClass,transicaoMiniPlyer = transicaoMiniPlyer)
          }}
 
 
@@ -63,6 +65,10 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.Al
 
   composable(route = DestinosDENavegacao.Player.rota){
       BigPlayer(windowSizeClass = windowSizeClass,paddingValues = paddingValues)
+  }
+
+  composable(route = DestinosDENavegacao.Artista.rota){
+
   }
 
 

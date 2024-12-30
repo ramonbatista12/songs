@@ -1,7 +1,5 @@
 package com.example.songs.componentes.paineis
 
-import android.provider.MediaStore.Audio.Albums
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,34 +18,32 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
-import com.example.songs.componentes.Miniplayer
+
 /*
 * responsavel por esibir a  lista de albums
 * */
 @Composable
-fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass){
-    val miniPlyerTransicao = remember { MutableTransitionState(true) }
+fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,transicaoMiniPlyer:MutableTransitionState<Boolean>){
+
   Box(modifier = modifier.fillMaxSize()){
 
-      LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(miniPlyerTransicao.targetState) 80.dp else 20.dp),
+      LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
                        columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1 else 3),
                        horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
           items(80){
               if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
                   ItemsAlbums(modifier=Modifier.clickable {
-                      miniPlyerTransicao.targetState=!miniPlyerTransicao.targetState
+                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
                   })
               else
                   ItemsAlbusColuna(modifier=Modifier.clickable {
-                      miniPlyerTransicao.targetState=!miniPlyerTransicao.targetState
+                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
                   })
 
           }
 
       }
-      AnimatedVisibility(visible = miniPlyerTransicao.targetState, modifier = Modifier.align(Alignment.BottomCenter)) {
-          Miniplayer(text = "Nome da musica no mini plyer")
-      }
+
 
   }
 }

@@ -26,9 +26,9 @@ import com.example.songs.componentes.ItemsListaPlaylists
 import com.example.songs.componentes.Miniplayer
 
 @Composable
-fun PlyList(modifier: Modifier =Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues){
-    val transicaoMiniPlyer = remember { MutableTransitionState(false) }
-    Box(modifier = modifier.padding(paddingValues)){
+fun PlyList(modifier: Modifier =Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues,transicaoMiniPlyer:MutableTransitionState<Boolean>){
+
+    Box(modifier = modifier){
         LazyVerticalGrid(columns = GridCells.Fixed(  if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 2 else 3),
                          modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter)
                                             .padding(bottom = if (transicaoMiniPlyer.targetState) 80.dp else 0.dp) ) {
@@ -39,9 +39,7 @@ fun PlyList(modifier: Modifier =Modifier,windowSizeClass: WindowSizeClass,paddin
             }
 
         }
-        AnimatedVisibility(visibleState = transicaoMiniPlyer,modifier = Modifier.align(Alignment.BottomCenter)) {
-            Miniplayer(modifier = Modifier.align(Alignment.BottomCenter))
-        }
+
 
     }
 
@@ -52,8 +50,9 @@ fun PlyList(modifier: Modifier =Modifier,windowSizeClass: WindowSizeClass,paddin
 fun PreviewPlyList() {
     Surface {
         Scaffold(modifier = Modifier.padding(10.dp).safeContentPadding().safeDrawingPadding().safeGesturesPadding()) {
+            val transicaoMiniPlyer = remember { MutableTransitionState(true) }
             Box(modifier = Modifier.padding(paddingValues = it)){
-                PlyList(windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,paddingValues = it)
+                PlyList(windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,paddingValues = it,transicaoMiniPlyer = transicaoMiniPlyer)
             }
         }
 

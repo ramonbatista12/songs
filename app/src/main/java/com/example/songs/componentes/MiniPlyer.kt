@@ -19,11 +19,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.R
 import com.example.songs.componentes.paineis.ComponetesCompartilhados
 
@@ -46,10 +50,12 @@ import com.example.songs.componentes.paineis.ComponetesCompartilhados
 * */
 
 @Composable
-fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer"){
+fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeClass: WindowSizeClass){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
-
+    val largura=if(windoSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.6f
+          else  if (windoSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) 0.6f
+                else 0.6f
 
 
 
@@ -71,7 +77,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer"){
         Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier=Modifier.size(50.dp))
         Column {
 
-            Text(text = text,maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace)
+            Text(text = text,maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace, modifier = Modifier.fillMaxWidth(largura))
             Text(text = "Nome do Artista", fontSize = 10.sp,maxLines = 1, overflow = TextOverflow.Ellipsis)
 
         }
@@ -115,7 +121,9 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
 @Composable
 fun PreviewMiniplayer(){
     Box(modifier = Modifier.fillMaxSize()) {
-        Miniplayer(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp))
+        Miniplayer(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp), windoSizeClass =
+            currentWindowAdaptiveInfo().windowSizeClass
+        )
     }
 
 }

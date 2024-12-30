@@ -12,7 +12,10 @@ sealed class Icones(val rota:DestinosDENavegacao,val icone:Int){
     object Artista:Icones(rota = DestinosDENavegacao.Artista, icone = R.drawable.baseline_artistas_24)
 
 
-   companion object {val list:List<Icones> = listOf(Todas,PlayList,Album,Configuracoes,Artista)}
+   companion object {
+       val list:List<Icones> = listOf(Todas,PlayList,Album,Artista,Configuracoes)
+
+   }
 
 
 

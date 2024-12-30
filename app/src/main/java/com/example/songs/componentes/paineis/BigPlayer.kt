@@ -46,8 +46,12 @@ import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,6 +77,8 @@ import com.example.songs.componentes.Miniplayer
 import com.example.songs.componentes.MiniplayerParaTransicao
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
+import kotlinx.coroutines.launch
+
 /*
 * BigPlyer representa o player em si aonde se pode ver os dados da musica em reproducao no momento
 * e responsavel por medir e determinar como deve ser esibido em cado tamanho de tela
@@ -83,7 +89,7 @@ import com.example.songs.ui.theme.SongsTheme
 fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues){
     val  navegacao = rememberListDetailPaneScaffoldNavigator<Long>( )
   if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-      PlayerCompat2(modifier=Modifier.padding(paddingValues= paddingValues))
+      PlayerCompat2(modifier=Modifier)
 
  else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) PlayerCompat2()
     else  PlyerEspandido(Modifier.padding(paddingValues=paddingValues),windowSizeClass)
@@ -134,6 +140,18 @@ fun Player(modifier: Modifier=Modifier){
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope){
+    var range= remember {  mutableStateOf<Float>(0f)}
+    val scop=rememberCoroutineScope()
+    LaunchedEffect(Unit){
+        scop.launch {
+            while (true){
+                range.value+=0.010f
+                if(range.value>1f)range.value=0f
+                kotlinx.coroutines.delay(1000)
+            }
+        }
+    }
+    val stateRange = remember { derivedStateOf { range.value } }
     with(sharedTransitionScope){
         Column(modifier =modifier.padding(10.dp).background(color = MaterialTheme.colorScheme.background)) {
 
@@ -151,8 +169,8 @@ fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: Shared
                 Text(text = "Nome do Artista",modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
-                    var range= remember {  mutableStateOf<Float>(0f)}
-                    Slider(value = range.value, onValueChange = {
+                    val rangeValue:()->Float ={ stateRange.value }
+                    Slider(value = rangeValue(), onValueChange = {
                         range.value=it
                     },colors = SliderDefaults.colors(activeTrackColor = DarkPink), valueRange = 0f..1f)
                     Spacer(Modifier.padding(10.dp))
@@ -187,7 +205,8 @@ fun PlyerComtrasicaoLayt(modifier: Modifier=Modifier,){}
 fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope:AnimatedVisibilityScope,onclick:()->Unit={} ){
     val listaAvberta=remember{ mutableStateOf(false)}
       with(sharedTransitionScope){
-          Box(modifier = modifier.fillMaxSize().imePadding()){
+          Box(modifier = modifier.fillMaxSize().imePadding().sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),animatedVisibilityScope,
+             resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)){
               PlyerParaTransicao(Modifier.align(if(!listaAvberta.value)Alignment.Center else Alignment.TopCenter),animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope)
 
 
@@ -226,7 +245,7 @@ fun PlayerCompat2(modifier: Modifier=Modifier) {
                                 PlayerCompat(sharedTransitionScope = this@SharedTransitionLayout, animatedVisibilityScope = this@AnimatedContent,onclick = {listaAvberta.value=!listaAvberta.value})
 
                             } else {
-                                Column {
+                                Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)) {
                                     MiniplayerParaTransicao(sharedTransitionScope = this@SharedTransitionLayout, animatedVisibilityScope = this@AnimatedContent)
                                     Spacer(Modifier.padding(10.dp))
                                     Row(Modifier.fillMaxWidth(),horizontalArrangement =Arrangement.Center){
@@ -264,6 +283,10 @@ sealed class ComponetesCompartilhados(val label:String){
     object NomeDaMusica:ComponetesCompartilhados(label = "NomeDaMusica")
     object NomeDoArtista:ComponetesCompartilhados(label = "NomeDoArtista")
 
+}
+
+sealed class LayoutsCompartilhados(val label:String){
+    object LayoutPluer:LayoutsCompartilhados(label = "LayoutPluer")
 }
 
 

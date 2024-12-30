@@ -36,31 +36,31 @@ import com.example.songs.componentes.Miniplayer
 * responsavel pro esibir a lista de musicas em si
 * */
 @Composable
-fun ListaDemusicas(modifier: Modifier = Modifier,paddingValues: PaddingValues,windowSizeClass: WindowSizeClass){
+fun ListaDemusicas(modifier: Modifier = Modifier,paddingValues: PaddingValues,windowSizeClass: WindowSizeClass,transicaoMiniPlyer:MutableTransitionState<Boolean>){
 
-    val transicao = remember { MutableTransitionState(true) }
+
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
     Box(modifier = modifier.fillMaxSize()){
 
       LazyVerticalGrid(columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1 else 3),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
-            Alignment.TopCenter).padding( bottom = if(transicao.targetState) 80.dp else 20.dp ).wrapContentSize()) {
+            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp ).wrapContentSize()) {
             items(80){
                 if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT||windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                     ItemDaLista(modifier = Modifier.clickable(onClick = {
-                        transicao.targetState=!transicao.targetState
+                        transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
                         texto.value="Nome da musica no mine plyer $it"
 
                     }))
                 }else{
-                    ItemsListaColunas(modifier=Modifier.clickable(onClick = {transicao.targetState=!transicao.targetState}))
+                    ItemsListaColunas(modifier=Modifier.clickable(onClick = {transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState}))
                 }
             }
 
 
         }
 
-        AnimatedVisibility(visible =transicao.targetState,modifier = Modifier.align(Alignment.BottomCenter)){
-            Miniplayer(modifier = Modifier.align(Alignment.BottomCenter), text = texto.value)
+        AnimatedVisibility(visible =transicaoMiniPlyer.targetState,modifier = Modifier.align(Alignment.BottomCenter)){
+            Miniplayer(modifier = Modifier.align(Alignment.BottomCenter), text = texto.value,windoSizeClass = windowSizeClass)
         }
 
 
@@ -85,8 +85,9 @@ fun ListaDemusicas(modifier: Modifier = Modifier,paddingValues: PaddingValues,wi
 fun previewListaDemusicas(){
 
 //Surface {
+    val transicaoMiniPlyer = remember { MutableTransitionState(true) }
         Scaffold(topBar = { BarraSuperio(titulo = "Todas As Musicas")},modifier = Modifier.safeDrawingPadding().safeGesturesPadding().safeContentPadding() ){
-            ListaDemusicas(paddingValues = it, windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass)
+            ListaDemusicas(paddingValues = it, windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,transicaoMiniPlyer = transicaoMiniPlyer)
         }
 
        // }

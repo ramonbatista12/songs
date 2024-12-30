@@ -28,12 +28,51 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
     val dialoNotificacao= MutableStateFlow(if(permicaoNotificacao.value)false else true)
     val dialoLeitura= MutableStateFlow(if(permicaoLeitura.value)false else true)
     val snackbarHostState= SnackbarHostState()
-
     init {
+        scope.launch(Dispatchers.IO) {
+            estateService.collect{
+                when(it){
+                    is ResultadosConecaoServiceMedia.Conectado->{
+                        snackbarHostState.showSnackbar(it.toString())}
+                    is ResultadosConecaoServiceMedia.Desconectado->{
+                        snackbarHostState.showSnackbar(it.toString())}
+                    is ResultadosConecaoServiceMedia.Erro->{
+                        snackbarHostState.showSnackbar(it.toString())}
 
-
+                    }                    }
+            }
         }
 
+
+
+    fun mudarPermicaoLeitura(value:Boolean){
+        permicaoLeitura.value=value
+        dialoLeitura.value= if(value)false else true
+    }
+    fun mudarPermicaoNotificacao(value:Boolean){
+        permicaoNotificacao.value=value
+        dialoNotificacao.value=if(value)false else true
+    }
+
+    fun mudancaSolicitarPermicaoLaeitua(value:Boolean){
+        if(!value){
+            permicaoLeitura.value=false
+            dialoLeitura.value=false}
+        else {
+            permicaoLeitura.value=true
+            dialoLeitura.value=false
+        }
+    }
+
+    fun mudancaSolicitarPermicaoNotificao(value:Boolean){
+        if(value){
+            permicaoNotificacao.value=false
+            dialoNotificacao.value=false}
+        else{
+            permicaoNotificacao.value=true
+            dialoNotificacao.value=false
+        }
+    }
 
 
 

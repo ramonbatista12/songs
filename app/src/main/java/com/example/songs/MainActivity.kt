@@ -15,6 +15,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,23 +25,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.example.songs.componentes.BararInferior
 import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.Miniplayer
 import com.example.songs.componentes.PermanenteNavigationDrawer
@@ -109,54 +119,141 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SongsTheme {
-
+                val viewmodel: MainViewModel =
+                    viewModel(factory = FabricaMainViewmodel().factory(conecao))
                 val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
                 val permissaoLeitura =
-                    rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+                    rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {it->
+
+                            viewmodel.mudancaSolicitarPermicaoLaeitua(it)
+
 
                     }
                 val permicaoNotificacao =
                     rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+                       viewmodel.mudancaSolicitarPermicaoNotificao(it)
+                    }
+
+                val navController = rememberNavController()
+                val scopMain = rememberCoroutineScope()
+                val transicaoMiniPlyer = remember { MutableTransitionState(true) }
+
+                Surface {
+                    LaunchedEffect(Unit) {
+                        scopMain.launch {
+                         checarPermicaoAudio(viewmodel)
+                        checarPermicaoNotificacao(viewmodel)}}
+
+                    Scaffold(topBar = { BarraSuperio(titulo = "Songs") },
+                             bottomBar = {
+                                 if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
+                                     BararInferior(acaoNavegacao = {navController.navigate(it)})
+                            else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
+                                    BararInferior(acaoNavegacao = {navController.navigate(it)})
+
+
+                    },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .safeDrawingPadding()
+                            .safeGesturesPadding()
+                            .safeContentPadding(),
+                        containerColor = MaterialTheme.colorScheme.background,
+                        snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
+
+                        PermanentNavigationDrawer(drawerContent = {
+                                                                 if (windowsizeclass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
+                                                                     PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})},
+                                                 modifier = Modifier.padding(paddingValues = it).fillMaxSize()) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Navgrafic( navController = navController,
+                                           windowSizeClass = windowsizeclass,
+                                           modifier = Modifier.align(Alignment.TopCenter),
+                                           paddingValues = it,transicaoMiniPlyer = transicaoMiniPlyer)
+                                AnimatedVisibility(visibleState = transicaoMiniPlyer,modifier = Modifier.align(Alignment.BottomCenter)) {
+                                    Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
+                                        scopMain.launch {
+                                            transicaoMiniPlyer.targetState=false
+                                        navController.navigate(DestinosDENavegacao.Player.rota)}
+                                    },
+                                               windoSizeClass = windowsizeclass)
+                                }
+                                val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
+                                if (dialigoLeitura.value) {
+                                    AlertDialog(onDismissRequest = { scop.launch {} },
+                                                title = { Text(text="Permicao para ler Dados do Dispositivo") },
+                                                text = { Text(text = "A permicao e nessesaria para poder ler as musicas presentes no dispositivo ") },
+                                                confirmButton = {
+                                                         TextButton(onClick = {
+                                                                 scop.launch {
+                                                                     if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU)
+                                                                         permissaoLeitura.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                                                                     else permissaoLeitura.launch(android.Manifest.permission.READ_MEDIA_AUDIO)
+                                                                 }
+                                                         }, content = { Text(text = "Ok") })
+                                                }, dismissButton = {
+                                                    TextButton(onClick = {scop.launch { viewmodel.mudancaSolicitarPermicaoLaeitua(false) }}, content = { Text(text = "Nao permitir") })
+                                                       }
+                                    )
+                                }
+                                val dialigoNotificacao =
+                                    viewmodel.dialoNotificacao.collectAsState(false)
+                                if (dialigoNotificacao.value) {
+                                    AlertDialog(onDismissRequest = { scop.launch {} },
+                                        title = { Text("permmicao de notificacao") },
+                                        text = { Text(text = "A permicao e nessesaria para poder emitir o player de notificacao que permite controlar a musica em segundo plano") },
+                                        confirmButton = {
+                                            TextButton(
+                                                onClick = {
+                                                    permicaoNotificacao.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                                                },
+                                                content = { Text("ok") })
+                                        }, dismissButton = {TextButton(onClick = {}, content = { Text(text = "Nao permitir") }) })
+                                }
+                            }
+                        }
+
 
                     }
-                val viewmodel: MainViewModel =
-                    viewModel(factory = FabricaMainViewmodel().factory(conecao))
-                val navController = rememberNavController()
-                Surface{
-                Scaffold(topBar = { BarraSuperio(titulo = "Songs") },modifier = Modifier
-                    .fillMaxSize()
-                    .safeDrawingPadding()
-                    .safeGesturesPadding()
-                    .safeContentPadding()
-
-                    ,containerColor = MaterialTheme.colorScheme.background,
-                    snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
-
-                  PermanentNavigationDrawer(drawerContent = {
-                      if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
-                          PermanenteNavigationDrawer()
-                  }, modifier = Modifier.padding(paddingValues = it).fillMaxSize()) {
-                      Box(modifier = Modifier.fillMaxSize()){
-                          Navgrafic(
-
-                        navController = navController,
-                        windowSizeClass = windowsizeclass,modifier = Modifier.align(Alignment.TopCenter),
-                        paddingValues = it
-                    )
-                         Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
-                             navController.navigate(DestinosDENavegacao.Player.rota)
-                         })
-                      }
-                  }
                 }
-                }
-
-
             }
         }
-
-
     }
+
+   suspend fun checarPermicaoAudio(viewModel: MainViewModel){
+       if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU)
+           this.cehcarReadPermicion(viewModel)
+       else this.checarReadMediaAudio(viewModel)
+   }
+
+   suspend fun cehcarReadPermicion(viewModel: MainViewModel){
+     if (ContextCompat.checkSelfPermission(
+           this@MainActivity,
+           android.Manifest.permission.READ_EXTERNAL_STORAGE
+       ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+               )
+       viewModel.mudarPermicaoLeitura(false)
+       else viewModel.mudarPermicaoLeitura(true)
+   }
+
+   suspend fun checarReadMediaAudio(viewModel: MainViewModel){
+       if (ContextCompat.checkSelfPermission(
+               this@MainActivity,
+               android.Manifest.permission.READ_MEDIA_AUDIO
+           ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+       )viewModel.mudarPermicaoLeitura(false)
+       else viewModel.mudarPermicaoLeitura(true)
+   }
+
+   suspend fun checarPermicaoNotificacao(viewModel: MainViewModel){
+       if (ContextCompat.checkSelfPermission(
+               this@MainActivity,
+               android.Manifest.permission.POST_NOTIFICATIONS
+           ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+       )
+           viewModel.mudarPermicaoNotificacao(false)
+       else viewModel.mudarPermicaoNotificacao(value = true)
+   }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStart() {
