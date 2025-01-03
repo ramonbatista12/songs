@@ -60,7 +60,9 @@ import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.servicoDemidia.ServicMedia
 import com.example.songs.ui.theme.SongsTheme
 import com.example.songs.viewModels.FabricaMainViewmodel
+import com.example.songs.viewModels.FabricaViewmodelPlyer
 import com.example.songs.viewModels.MainViewModel
+import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,7 +139,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val scopMain = rememberCoroutineScope()
                 val transicaoMiniPlyer = remember { MutableTransitionState(true) }
-
+                val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao))
                 Surface {
                     LaunchedEffect(Unit) {
                         scopMain.launch {

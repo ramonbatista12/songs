@@ -69,6 +69,7 @@ class ServicMedia: MediaSessionService() {
 
     override fun onDestroy() {
         Log.i("service","onDestroy")
+        if(mediaSession!=null)
         mediaSession.apply {
             this!!.player.release()
           }

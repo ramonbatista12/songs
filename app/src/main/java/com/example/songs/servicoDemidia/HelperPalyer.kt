@@ -30,14 +30,13 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
     private val estaReproduzindo = MutableStateFlow(false)
     private val loding = MutableStateFlow(false)
     private val caregando = MutableStateFlow(false)
-    private val lista = MutableStateFlow<List<MediaItem>>(emptyList())
+    private val metadataAtual= MutableStateFlow<MediaMetadata>(MediaMetadata.Builder().build())
     private val emplyer = MutableStateFlow(false)
     var _tempoTotal = tempoTotal.asStateFlow()
     var _tempoDereproducao = tempoDereproducao.asStateFlow()
     var _estaReproduzindo = estaReproduzindo.asStateFlow()
-    var _lista = lista.asStateFlow()
-
-
+    val caregando_ = caregando.asStateFlow()
+    var _metadataAtual = metadataAtual.asStateFlow()
     init {
         scopoCorotina.launch {
             fluxoTempoDereproducao().collect {
@@ -59,6 +58,9 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
             fluxoLoding().collect {
                 loding.value = it
             }
+        }
+        scopoCorotina.launch {
+
         }
     }
 
@@ -96,10 +98,11 @@ private fun fluxoLoding()= flow<Boolean> {
         emit(mediaSession.player.isLoading)
         delay(1000)
     }
-
-
 }
-
+private fun metaDataAtual()= flow<MediaMetadata> {
+   emit(mediaSession.player.currentMediaItem!!.mediaMetadata)
+    delay(1000)
+}
    override fun finalizar(){
         job.cancel()
 

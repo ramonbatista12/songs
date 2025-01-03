@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Size
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -15,6 +16,7 @@ import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
@@ -24,30 +26,18 @@ import kotlin.time.toDuration
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class RepositorioService(val context: Context) {
-    private val job= Job()
-    private val scope= CoroutineScope(Dispatchers.IO)
-    private val listaDeMediaItemsTodadasAsMusicas= MutableStateFlow<List<MediaItem>>(emptyList())
-    var _listaDeMediaItems=listaDeMediaItemsTodadasAsMusicas.asStateFlow()
-    private val listaDeAlbums= mutableListOf<MediaItem>()
-    private val listaDeArtistas= mutableListOf<MediaItem>()
-    val listaDeMusicas= mutableListOf<MediaItem>()
-    val listaDeMusicasAlbum= mutableListOf<MediaItem>()
 
 
 
-    init {
-        scope.launch {
-            getMusics().collect{
-                listaDeMediaItemsTodadasAsMusicas.emit(it)
-            }
-        }
-    }
+
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(UnstableApi::class)
-   private fun getMusics()= flow<List<MediaItem>>{
+   fun getMusics()= flow<List<MediaItem>>{
+
         val contentResolver=context.contentResolver
-        val listaDeMediaItems= mutableListOf<MediaItem>()
+
         val projeca= arrayOf<String>(
                     MediaStore.Audio.Media.DISPLAY_NAME,
                     MediaStore.Audio.Media.ARTIST,
@@ -58,11 +48,17 @@ class RepositorioService(val context: Context) {
         )
 
        val ordenacao ="${MediaStore.Audio.Media.DISPLAY_NAME} ASC "
-       scope.launch(Dispatchers.IO) { val cursor=contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                                         projeca,
+            val storege = if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+            } else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+
+          while (true){
+          val listaDeMediaItems= mutableListOf<MediaItem>()
+           val cursor=contentResolver.query(storege,
+                                            projeca,
+                                    null,
                                 null,
-                             null,
-                                        ordenacao).use { cursor->
+                                            ordenacao,null).use { cursor->
 
                              val nome=cursor!!.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
                              val artista=cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
@@ -78,27 +74,108 @@ class RepositorioService(val context: Context) {
                                                                        this.setTitle(cursor.getString(nome))
                                                                        this.setAlbumArtist(cursor.getString(album))
                                                                        this.setArtworkUri(uri)
-                                                                       val bitmap= getMetaData(uri,cursor.getLong(id))
+                                                                       //val bitmap= getMetaData(uri,cursor.getLong(id))
                                                                        this.setArtist(cursor.getString(artista))
                                                                        this.setDurationMs(cursor.getLong(duracao))
                                                                    }.build()
                                                                ).build()
                             listaDeMediaItems.add(mediaItem)
-
+                            Log.d("TAG", "getMusics: ${cursor.getString(nome)}")
 
                           }
+
                                         }
-               val listaEmicao=listaDeMediaItems.toList()
-               emit(listaEmicao)
-        }
+
+
+        emit(listaDeMediaItems)
+              Log.d("TAG","lista emitida")
+              delay(2000)
+          }
+
+
 
     }
 
+
+   fun getAlbums()= flow<List<Album>> {
+       val projecao= arrayOf<String>(
+           MediaStore.Audio.Albums.ALBUM,
+           MediaStore.Audio.Albums.ARTIST,
+           MediaStore.Audio.Albums.ALBUM_ID,
+           MediaStore.Audio.Albums._ID
+       )
+
+
+       val ordenacao= "${MediaStore.Audio.Media.ALBUM} ASC"
+       while (true){
+       val listaDeAlbums= mutableListOf<Album>()
+       val cursor=context.contentResolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                                               projecao,
+                                               null,
+                                               null,
+                                               ordenacao).use {
+                                    val album=it!!.getColumnIndexOrThrow(projecao[0])
+                                    val artista=it.getColumnIndexOrThrow(projecao[1])
+                                    val id=it.getColumnIndexOrThrow(projecao[2])
+                                    val id_=it.getColumnIndexOrThrow(projecao[3])
+                                             while (it!!.moveToNext())
+                                                    listaDeAlbums.add(Album(it.getLong(id),
+                                                                            it.getString(album),
+                                                                            it.getString(artista),
+                                                                            ContentUris.withAppendedId(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                                                                                                       it.getLong(id_)).toString()))
+       }
+           emit(listaDeAlbums)
+       delay(4000)
+       }
+
+
+   }
+
+  fun getArtistas()= flow<List<Artista>>{
+      val projecao= arrayOf<String>(
+          MediaStore.Audio.Artists.ARTIST,
+          MediaStore.Audio.Artists._ID,
+
+      )
+      val listaDeArtistas= mutableListOf<Artista>()
+
+      val ordenacao="${MediaStore.Audio.Artists.ARTIST} ASC"
+      while (true){
+      val  cursor=context.contentResolver.query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,projecao,null,null,ordenacao).use {
+          val id=it!!.getColumnIndexOrThrow(projecao[0])
+          val artista=it.getColumnIndexOrThrow(projecao[1])
+
+           while (it!!.moveToNext()){
+               listaDeArtistas.add(Artista(it.getLong(artista),it.getString(id)))
+           }
+
+
+      }
+      emit(listaDeArtistas)
+      delay(4000)
+
+      }
+
+
+
+
+
+
+
+  }
+
+
  @RequiresApi(Build.VERSION_CODES.Q)
- suspend fun getMetaData(uri: Uri, id: Long):Bitmap{
-    val resolver = this.context.contentResolver
-    val tumbmail=resolver.loadThumbnail(uri,Size(100,100),null)
-    return tumbmail
+ suspend  fun getMetaData(uri: Uri, id: Long):Bitmap?{
+   try {
+       val resolver = this.context.contentResolver
+       val tumbmail=resolver.loadThumbnail(uri,Size(100,100),null)
+       return tumbmail
+   }catch (e:Exception){
+       return null
+   }
+
  }
 
 

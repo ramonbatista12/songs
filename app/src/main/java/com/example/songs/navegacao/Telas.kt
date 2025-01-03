@@ -22,12 +22,17 @@ import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.ItemsListaColunas
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.songs.application.AplicationCuston
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
 import com.example.songs.componentes.paineis.BigPlayer
 import com.example.songs.componentes.paineis.ListaDeAlbums
+import com.example.songs.componentes.paineis.ListaDeArtistas
 import com.example.songs.componentes.paineis.ListaDemusicas
 import com.example.songs.componentes.paineis.PlyList
+import com.example.songs.viewModels.FabricaViewModelLista
+
 /*
 * Navgrafic e o grafico de navegacao em sim suas rotas sao determinadas pela classe DestinosDENavegacao
 * rotas disponiveis  :Todas,Playlist,Album,Configuracoes,Player
@@ -41,10 +46,14 @@ import com.example.songs.componentes.paineis.PlyList
 
 @Composable
 fun Navgrafic(navController: NavHostController,windowSizeClass: WindowSizeClass,modifier: Modifier,paddingValues: PaddingValues,transicaoMiniPlyer:MutableTransitionState<Boolean>){
-NavHost(navController = navController, startDestination = DestinosDENavegacao.Album.rota,modifier=modifier){
+NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas.rota,modifier=modifier){
   composable(route = DestinosDENavegacao.Todas.rota){
    Box{
-       ListaDemusicas(Modifier,windowSizeClass = windowSizeClass, paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer)
+       ListaDemusicas(modifier = Modifier,
+                      windowSizeClass = windowSizeClass,
+                      paddingValues = paddingValues,
+                      transicaoMiniPlyer = transicaoMiniPlyer,
+                      viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)))
    }
   }
 
@@ -68,7 +77,7 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.Al
   }
 
   composable(route = DestinosDENavegacao.Artista.rota){
-
+      ListaDeArtistas(windowSizeClass = windowSizeClass,transicaoMiniPlyer = transicaoMiniPlyer)
   }
 
 

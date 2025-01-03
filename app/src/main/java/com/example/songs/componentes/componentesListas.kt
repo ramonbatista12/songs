@@ -1,6 +1,20 @@
 package com.example.songs.componentes
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
 import android.util.Log
+import android.util.Size
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.InfiniteRepeatableSpec
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +24,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -28,34 +46,68 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
+import coil.compose.AsyncImage
 import com.example.songs.R
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
 /*
 * aqui estao os items de lista cada funcao de descreve como cada item deve ser mostrado
 * esta presente nesse arquivo
 * */
 
 @Composable
-fun ItemDaLista(modifier: Modifier=Modifier){
-    Row (horizontalArrangement = Arrangement.SpaceBetween ,modifier = modifier.padding(10.dp)){
+fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
+    val imagem =remember { mutableStateOf<Bitmap?>(null) }
+    val scop=rememberCoroutineScope()
+    val context= LocalContext.current
+    LaunchedEffect(Unit){
+        scop.launch(Dispatchers.IO) {
+            try {
+                val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
+                imagem.value=bitmap
+            }catch (e:Exception){
+                imagem.value=null
+            }
 
+        }
+    }
+    Row (horizontalArrangement = Arrangement.SpaceBetween ,modifier = modifier.padding(10.dp)){
+        if(imagem.value==null){
         Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
-        ).size(80.dp), tint = DarkPink)
+        ).size(80.dp), tint = DarkPink)}
+        else{
+            val bitmap=imagem!!.value!!.asImageBitmap()
+            Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
+            RoundedCornerShape(10.dp)).size(80.dp))
+        }
+
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.8f)) {
             Spacer(Modifier.padding(8.dp))
-            Text("Nome da Musica", maxLines = 2,fontSize = 18.sp)
+            Text(if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(), maxLines = 2,fontSize = 18.sp)
             Spacer(Modifier.padding(3.dp))
-            Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
+            Text(if(item==null)"nome do artista" else item.mediaMetadata.artist.toString(),maxLines = 1,fontSize = 14.sp)
 
         }
 
@@ -64,18 +116,55 @@ fun ItemDaLista(modifier: Modifier=Modifier){
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
+suspend  fun getMetaData(uri: Uri, id: Long,context: Context):Bitmap?{
+    Log.d("Metadata loaad tumb","id de media ${id}")
+    try {
+        val resolver = context.contentResolver
+        val tumbmail=resolver.loadThumbnail(uri, Size(100,100),null)
+        return tumbmail
+    }catch (e:Exception){
+        return null
+    }
 
+}
 
 @Composable
-fun ItemsListaColunas(modifier: Modifier=Modifier){
+fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
+
+    val imagem =remember { mutableStateOf<Bitmap?>(null) }
+    val scop=rememberCoroutineScope()
+    val context= LocalContext.current
+    LaunchedEffect(Unit){
+        scop.launch(Dispatchers.IO) {
+            try {
+                val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
+                imagem.value=bitmap
+            }catch (e:Exception){
+                imagem.value=null
+            }
+
+        }
+    }
     Column(modifier = modifier.wrapContentWidth()) {
+        if(imagem.value==null)
         Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
                                        contentDescription = null,
                                        modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp), tint = DarkPink)
+        else{
+            val bitmap=imagem!!.value!!.asImageBitmap()
+            Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
+                RoundedCornerShape(10.dp)).size(80.dp))
+        }
+
+        Spacer(Modifier.padding(8.dp))
         Row {
             Column{
-                Text("Nome da Musica", maxLines = 2,fontSize = 18.sp)
-                Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
+                Text(text=if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(),
+                     maxLines = 2,fontSize = 18.sp,
+                     modifier = Modifier.fillMaxWidth(0.6f))
+                Spacer(Modifier.padding(8.dp))
+                Text(if (item==null) "Nome do Artista" else item.mediaMetadata.artist.toString(),maxLines = 1,fontSize = 14.sp)
 
             }
 
@@ -86,7 +175,7 @@ fun ItemsListaColunas(modifier: Modifier=Modifier){
 @Composable
 fun ItemsAlbums(modifier: Modifier=Modifier){
     Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier = Modifier.clip(
+        Image(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
         ).size(80.dp))
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
@@ -102,7 +191,7 @@ fun ItemsAlbums(modifier: Modifier=Modifier){
 @Composable
 fun ItemsAlbusColuna(modifier: Modifier=Modifier){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
-        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+        Image(painter = painterResource(id = R.drawable.baseline_album_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
@@ -115,11 +204,46 @@ fun ItemsAlbusColuna(modifier: Modifier=Modifier){
         }
     }
 }
+@Composable
+fun ItemsArtistas(modifier: Modifier=Modifier){
+    Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Image(painter = painterResource(id = R.drawable.baseline_artistas_24), contentDescription = null,modifier = Modifier.clip(
+            RoundedCornerShape(15.dp)
+        ).size(80.dp))
+        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
+            Spacer(Modifier.padding(8.dp))
+            Text("Nome do Artista", maxLines = 2,fontSize = 18.sp, color = DarkPink)
+            Spacer(Modifier.padding(3.dp))
+           // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp, color = DarkPink)
+
+        }
+    }
+}
+
+@Composable
+fun ItemsArtistasColuna(modifier: Modifier=Modifier){
+    Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
+        Image(painter = painterResource(id = R.drawable.baseline_artistas_24),
+            contentDescription = null,
+            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+        Row {
+            Column{
+                Text("Nome da Artista", maxLines = 2,fontSize = 18.sp)
+               // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
+
+            }
+
+        }
+    }
+}
+
+
+
 
 @Composable
 fun ItemsListaPlaylists(modifier: Modifier=Modifier){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
-        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+        Image(painter = painterResource(id = R.drawable.baseline_playlist_play_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
@@ -134,24 +258,28 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier){
 
 }
 
+
+
+
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewItemDaLista() {
     SongsTheme {
      val grad= remember { mutableStateOf(true) }
-   Scaffold (modifier=Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)) {
+   Scaffold (modifier=Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).safeContentPadding().safeGesturesPadding().safeDrawingPadding()) {
        val teste = MaterialTheme.colorScheme.background.toString()
        LaunchedEffect(Unit) {
           Log.i("teste cor",teste)
        }
     Box(modifier = Modifier.padding(it)) {
-       LazyVerticalGrid(columns = GridCells.Fixed(if(grad.value) 2 else 1),horizontalArrangement = Arrangement.Center, modifier = Modifier.align(
+       LazyVerticalGrid(columns = GridCells.Fixed(if(grad.value) 3 else 1),horizontalArrangement = Arrangement.Center, modifier = Modifier.align(
            Alignment.Center)) {
-       if(grad.value)   items(10){
-                        ItemsListaColunas()
+       if(grad.value)   items(5){
+                      LoadingListaMusicasColunas()
                             }
        else items(10){
-           ItemDaLista()
+           LoadingListaMusicasColunas()
        }
 
 
@@ -164,13 +292,15 @@ fun PreviewItemDaLista() {
 
 
 
+
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewItemsAlbums() {
     Surface(modifier=Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.background(color = Color.Black)) {
             items(10){
-                ItemsAlbums()
+                LoadingListaMusicasColunas()
 
             }
 

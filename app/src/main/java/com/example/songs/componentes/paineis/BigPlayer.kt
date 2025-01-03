@@ -1,5 +1,6 @@
 package com.example.songs.componentes.paineis
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -67,6 +68,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -207,15 +209,15 @@ fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransi
       with(sharedTransitionScope){
           Box(modifier = modifier.fillMaxSize().imePadding().sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),animatedVisibilityScope,
              resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)){
-              PlyerParaTransicao(Modifier.align(if(!listaAvberta.value)Alignment.Center else Alignment.TopCenter),animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope)
+              PlyerParaTransicao(Modifier.align( Alignment.TopCenter),animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope)
 
 
               IconButton({
                   listaAvberta.value=!listaAvberta.value
                   onclick()
-              },modifier = Modifier.align(Alignment.BottomCenter).size(70.dp)) {
+              },modifier = Modifier.align(Alignment.BottomCenter).size(70.dp).padding(5.dp)) {
                   Icon(painter = painterResource(id = R.drawable.baseline_list_24), contentDescription = null, tint = DarkPink, modifier = Modifier.align(
-                      Alignment.BottomCenter).size(50.dp))
+                      Alignment.BottomCenter).size(50.dp).padding(5.dp))
 
               }
 
@@ -256,7 +258,7 @@ fun PlayerCompat2(modifier: Modifier=Modifier) {
                                     } }
                                     LazyColumn {
                                         items(100) {
-                                            ItemDaLista()
+                                            ItemDaLista(item = null)
                                         }
                                     }
                                 }
@@ -387,7 +389,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
                 Box {
                     LazyColumn(Modifier.align(Alignment.TopCenter).fillMaxWidth(1f)) {
                         items(80) {
-                            ItemDaLista()
+                            ItemDaLista(item = null)
                         }
 
                     }
