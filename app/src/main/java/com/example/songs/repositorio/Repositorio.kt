@@ -69,14 +69,15 @@ class RepositorioService(val context: Context) {
                           while (cursor.moveToNext()){
                               val uri =ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getLong(id))
                               val mediaItem=MediaItem.Builder().setMediaId("${cursor.getLong(id)}")
+                                                               .setUri(uri)
                                                                .setMediaMetadata(
                                                                    MediaMetadata.Builder().apply {
-                                                                       this.setTitle(cursor.getString(nome))
-                                                                       this.setAlbumArtist(cursor.getString(album))
+                                                                       this.setTitle(cursor.getString(nome)?:"Sem Nome")
+                                                                       this.setAlbumArtist(cursor.getString(album)?:"Desconhecido")
                                                                        this.setArtworkUri(uri)
                                                                        //val bitmap= getMetaData(uri,cursor.getLong(id))
-                                                                       this.setArtist(cursor.getString(artista))
-                                                                       this.setDurationMs(cursor.getLong(duracao))
+                                                                       this.setArtist(cursor.getString(artista)?:"Desconhecido")
+                                                                       this.setDurationMs(cursor.getLong(duracao)?:0L)
                                                                    }.build()
                                                                ).build()
                             listaDeMediaItems.add(mediaItem)

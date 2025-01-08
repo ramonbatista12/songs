@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -92,7 +93,9 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
 
         }
     }
-    Row (horizontalArrangement = Arrangement.SpaceBetween ,modifier = modifier.padding(10.dp)){
+    Row (horizontalArrangement = Arrangement.SpaceBetween ,
+         verticalAlignment = Alignment.CenterVertically,
+         modifier = modifier.padding(10.dp)){
         if(imagem.value==null){
         Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
@@ -103,11 +106,16 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
             RoundedCornerShape(10.dp)).size(80.dp))
         }
 
-        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.8f)) {
+        Column(horizontalAlignment = Alignment.Start,
+               modifier = Modifier.padding(10.dp)
+                                  .fillMaxWidth(0.8f)) {
             Spacer(Modifier.padding(8.dp))
-            Text(if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(), maxLines = 2,fontSize = 18.sp)
+            Text(text = if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(),
+                 maxLines = 2,fontSize = 18.sp)
             Spacer(Modifier.padding(3.dp))
-            Text(if(item==null)"nome do artista" else item.mediaMetadata.artist.toString(),maxLines = 1,fontSize = 14.sp)
+            Text(text=if(item==null)"nome do artista" else item.mediaMetadata.artist.toString(),
+                 maxLines = 1,
+                 fontSize = 14.sp)
 
         }
 
@@ -117,13 +125,14 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend  fun getMetaData(uri: Uri, id: Long,context: Context):Bitmap?{
-    Log.d("Metadata loaad tumb","id de media ${id}")
+suspend  fun getMetaData(uri: Uri, id: Long,context: Context,s:String="nome do album"):Bitmap?{
+    Log.d("Metadata loaad tumb ","$s id de media ${id}")
     try {
         val resolver = context.contentResolver
-        val tumbmail=resolver.loadThumbnail(uri, Size(100,100),null)
+        val tumbmail=resolver.loadThumbnail(uri, Size(400,400),null)
         return tumbmail
     }catch (e:Exception){
+        Log.e("load tumbmail ",e.message.toString())
         return null
     }
 
@@ -146,15 +155,17 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
 
         }
     }
-    Column(modifier = modifier.wrapContentWidth()) {
+    Column(modifier = modifier.wrapContentWidth(),) {
         if(imagem.value==null)
         Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
-                                       contentDescription = null,
-                                       modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp), tint = DarkPink)
+             contentDescription = null,
+             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp), tint = DarkPink)
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
-            Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
-                RoundedCornerShape(10.dp)).size(80.dp))
+            Image(bitmap = bitmap,
+                 contentDescription = null,
+                 modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                                    .size(80.dp))
         }
 
         Spacer(Modifier.padding(8.dp))
@@ -174,15 +185,25 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
 
 @Composable
 fun ItemsAlbums(modifier: Modifier=Modifier){
-    Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Image(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
+    Row(modifier = modifier.padding(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Image(painter = painterResource(id = R.drawable.baseline_album_24),
+              contentDescription = null,
+              modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
         ).size(80.dp))
-        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
+        Column(horizontalAlignment = Alignment.Start,
+               modifier = Modifier.padding(10.dp)){
             Spacer(Modifier.padding(8.dp))
-            Text("Nome do Album", maxLines = 2,fontSize = 18.sp, color = DarkPink)
+            Text(text = "Nome do Album",
+                 maxLines = 2,
+                 fontSize = 18.sp,
+                 color = DarkPink)
             Spacer(Modifier.padding(3.dp))
-            Text("Nome do Artista",maxLines = 1,fontSize = 14.sp, color = DarkPink)
+            Text(text = "Nome do Artista",
+                 maxLines = 1,
+                 fontSize = 14.sp,
+                 color = DarkPink)
 
         }
     }
@@ -192,12 +213,16 @@ fun ItemsAlbums(modifier: Modifier=Modifier){
 fun ItemsAlbusColuna(modifier: Modifier=Modifier){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
         Image(painter = painterResource(id = R.drawable.baseline_album_24),
-            contentDescription = null,
-            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+              contentDescription = null,
+              modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Text("Nome da Album", maxLines = 2,fontSize = 18.sp)
-                Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
+                Text(text = "Nome da Album",
+                     maxLines = 2,
+                     fontSize = 18.sp)
+                Text(text = "Nome do Artista",
+                     maxLines = 1,
+                     fontSize = 14.sp)
 
             }
 
@@ -207,12 +232,17 @@ fun ItemsAlbusColuna(modifier: Modifier=Modifier){
 @Composable
 fun ItemsArtistas(modifier: Modifier=Modifier){
     Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Image(painter = painterResource(id = R.drawable.baseline_artistas_24), contentDescription = null,modifier = Modifier.clip(
-            RoundedCornerShape(15.dp)
-        ).size(80.dp))
-        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
+        Image(painter = painterResource(id = R.drawable.baseline_artistas_24),
+              contentDescription = null,
+              modifier = Modifier.clip(RoundedCornerShape(15.dp))
+                                 .size(80.dp))
+        Column(horizontalAlignment = Alignment.Start,
+               modifier = Modifier.padding(10.dp)){
             Spacer(Modifier.padding(8.dp))
-            Text("Nome do Artista", maxLines = 2,fontSize = 18.sp, color = DarkPink)
+            Text(text = "Nome do Artista",
+                 maxLines = 2,
+                 fontSize = 18.sp,
+                 color = DarkPink)
             Spacer(Modifier.padding(3.dp))
            // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp, color = DarkPink)
 
@@ -224,11 +254,13 @@ fun ItemsArtistas(modifier: Modifier=Modifier){
 fun ItemsArtistasColuna(modifier: Modifier=Modifier){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
         Image(painter = painterResource(id = R.drawable.baseline_artistas_24),
-            contentDescription = null,
-            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+              contentDescription = null,
+              modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Text("Nome da Artista", maxLines = 2,fontSize = 18.sp)
+                Text(text = "Nome da Artista",
+                     maxLines = 2,
+                     fontSize = 18.sp)
                // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
 
             }
@@ -244,11 +276,13 @@ fun ItemsArtistasColuna(modifier: Modifier=Modifier){
 fun ItemsListaPlaylists(modifier: Modifier=Modifier){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
         Image(painter = painterResource(id = R.drawable.baseline_playlist_play_24),
-            contentDescription = null,
-            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+              contentDescription = null,
+              modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Text("Nome da PlyList", maxLines = 2,fontSize = 18.sp)
+                Text(text = "Nome da PlyList",
+                     maxLines = 2,
+                     fontSize = 18.sp)
 
 
             }

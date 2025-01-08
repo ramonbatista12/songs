@@ -49,10 +49,15 @@ fun PlyList(modifier: Modifier =Modifier,windowSizeClass: WindowSizeClass,paddin
 @Composable
 fun PreviewPlyList() {
     Surface {
-        Scaffold(modifier = Modifier.padding(10.dp).safeContentPadding().safeDrawingPadding().safeGesturesPadding()) {
+        Scaffold(modifier = Modifier.padding(10.dp)
+                                    .safeContentPadding()
+                                    .safeDrawingPadding()
+                                    .safeGesturesPadding()) {
             val transicaoMiniPlyer = remember { MutableTransitionState(true) }
             Box(modifier = Modifier.padding(paddingValues = it)){
-                PlyList(windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,paddingValues = it,transicaoMiniPlyer = transicaoMiniPlyer)
+                PlyList(windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
+                        paddingValues = it,
+                        transicaoMiniPlyer = transicaoMiniPlyer)
             }
         }
 

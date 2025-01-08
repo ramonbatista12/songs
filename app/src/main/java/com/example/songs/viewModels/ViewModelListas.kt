@@ -40,7 +40,10 @@ class ViewModelListas(val repositorio: RepositorioService):ViewModel(){
    val albums=_albums.stateIn(scope=scope, started = SharingStarted.WhileSubscribed(5000),initialValue = emptyList())
    @RequiresApi(Build.VERSION_CODES.Q)
    val artistas=_artistas.stateIn(scope=scope, started = SharingStarted.WhileSubscribed(5000),initialValue = emptyList())
-
+    override fun onCleared() {
+       Log.d("vmListas","onclarede")
+        super.onCleared()
+    }
 }
 
 class FabricaViewModelLista(){

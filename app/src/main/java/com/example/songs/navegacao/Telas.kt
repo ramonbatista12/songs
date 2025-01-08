@@ -1,5 +1,7 @@
 package com.example.songs.navegacao
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -23,6 +25,7 @@ import com.example.songs.componentes.ItemsListaColunas
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.MediaItem
 import com.example.songs.application.AplicationCuston
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
@@ -32,6 +35,7 @@ import com.example.songs.componentes.paineis.ListaDeArtistas
 import com.example.songs.componentes.paineis.ListaDemusicas
 import com.example.songs.componentes.paineis.PlyList
 import com.example.songs.viewModels.FabricaViewModelLista
+import com.example.songs.viewModels.VmodelPlayer
 
 /*
 * Navgrafic e o grafico de navegacao em sim suas rotas sao determinadas pela classe DestinosDENavegacao
@@ -44,8 +48,9 @@ import com.example.songs.viewModels.FabricaViewModelLista
 * */
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun Navgrafic(navController: NavHostController,windowSizeClass: WindowSizeClass,modifier: Modifier,paddingValues: PaddingValues,transicaoMiniPlyer:MutableTransitionState<Boolean>){
+fun Navgrafic(navController: NavHostController,windowSizeClass: WindowSizeClass,modifier: Modifier,paddingValues: PaddingValues,transicaoMiniPlyer:MutableTransitionState<Boolean>,acaoSetPlyer:(List<MediaItem>,Int)->Unit,vmPlyer: VmodelPlayer){
 NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas.rota,modifier=modifier){
   composable(route = DestinosDENavegacao.Todas.rota){
    Box{
@@ -53,19 +58,21 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
                       windowSizeClass = windowSizeClass,
                       paddingValues = paddingValues,
                       transicaoMiniPlyer = transicaoMiniPlyer,
-                      viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)))
+                      viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)), acaoSetPlyer = acaoSetPlyer)
    }
   }
 
   composable(route = DestinosDENavegacao.Playlist.rota){
       Box{
-        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer)
-       }}
+        PlyList(windowSizeClass = windowSizeClass,
+                paddingValues = paddingValues,
+                transicaoMiniPlyer = transicaoMiniPlyer) }}
 
 
   composable(route = DestinosDENavegacao.Album.rota){
       Box(modifier=Modifier){
-          ListaDeAlbums(windowSizeClass = windowSizeClass,transicaoMiniPlyer = transicaoMiniPlyer)
+          ListaDeAlbums(windowSizeClass = windowSizeClass,
+                        transicaoMiniPlyer = transicaoMiniPlyer)
          }}
 
 
@@ -73,11 +80,14 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
 
 
   composable(route = DestinosDENavegacao.Player.rota){
-      BigPlayer(windowSizeClass = windowSizeClass,paddingValues = paddingValues)
+      BigPlayer(windowSizeClass = windowSizeClass,
+                paddingValues = paddingValues,
+                vm=vmPlyer)
   }
 
   composable(route = DestinosDENavegacao.Artista.rota){
-      ListaDeArtistas(windowSizeClass = windowSizeClass,transicaoMiniPlyer = transicaoMiniPlyer)
+      ListaDeArtistas(windowSizeClass = windowSizeClass,
+                      transicaoMiniPlyer = transicaoMiniPlyer)
   }
 
 

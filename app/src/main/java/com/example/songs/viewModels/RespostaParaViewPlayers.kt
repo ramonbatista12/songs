@@ -11,7 +11,11 @@ sealed class PlayerResultado(){
 
 }
 
-
+sealed class PlyerRepeticao(val repeticao:Int){
+    object NaoRepetir:PlyerRepeticao(repeticao = 0)
+    object RepetirUm:PlyerRepeticao(repeticao = 1)
+    object RepetirTodos:PlyerRepeticao(repeticao = 2)
+}
 
 sealed class ListaMusicas(){
     object caregando:ListaMusicas()

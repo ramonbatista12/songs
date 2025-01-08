@@ -264,14 +264,18 @@ fun LoadingItemsArtistas(modifier: Modifier=Modifier){
         start = Offset.Zero,
         end =Offset(cor.value,cor.value)
     )
-    Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Image(painter = painterResource(id = R.drawable.baseline_artistas_24), contentDescription = null,modifier = Modifier.clip(
-            RoundedCornerShape(15.dp)
-        ).size(80.dp))
-        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
+    Row(modifier = modifier.padding(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Image(painter = painterResource(id = R.drawable.baseline_artistas_24),
+              contentDescription = null
+              ,modifier = Modifier.clip(RoundedCornerShape(15.dp))
+                                  .size(80.dp))
+        Column(horizontalAlignment = Alignment.Start,
+               modifier = Modifier.padding(10.dp)){
             Spacer(Modifier.padding(8.dp))
             Box(Modifier.width(190.dp).height(20.dp).drawBehind {
-                drawRoundRect(brush = brushAnimado,cornerRadius = CornerRadius(10f,10f))
+                          drawRoundRect(brush = brushAnimado,
+                                        cornerRadius = CornerRadius(10f,10f))
             })
             Spacer(Modifier.padding(3.dp))
             // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp, color = DarkPink)
@@ -302,8 +306,11 @@ fun LoadingItemsArtistasColuna(modifier: Modifier=Modifier){
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Box(Modifier.width(190.dp).height(20.dp).drawBehind {
-                    drawRoundRect(brush = brushAnimado,cornerRadius = CornerRadius(10f,10f))
+                Box(Modifier.width(190.dp)
+                            .height(20.dp)
+                            .drawBehind {
+                    drawRoundRect(brush = brushAnimado,
+                                  cornerRadius = CornerRadius(10f,10f))
                 })
                 // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
 

@@ -60,7 +60,7 @@ fun BararInferior(modifier: Modifier=Modifier,acaoNavegacao:(s:String)->Unit){
 fun PermanenteNavigationDrawer(modifier: Modifier=Modifier,acaoNavegacao: (s: String) -> Unit){
 
 
-    PermanentDrawerSheet(modifier=modifier.width(90.dp)) {
+    PermanentDrawerSheet(modifier=modifier.width(80.dp)) {
         Column {
          Icones.list.forEach {
              NavigationDrawerItem(label ={ Text("") },
