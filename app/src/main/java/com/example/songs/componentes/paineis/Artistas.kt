@@ -24,17 +24,18 @@ fun ListaDeArtistas(modifier: Modifier = Modifier, windowSizeClass: WindowSizeCl
 
     Box(modifier = modifier.fillMaxSize()){
 
-        LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter)
-                                            .padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
-                         columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1 else 3),
-                         horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
+        LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
+            columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1 else 3),
+            horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
             items(80){
                 if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
                     ItemsArtistas(modifier= Modifier.clickable {
-                        transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState})
+                        transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
+                    })
                 else
                     ItemsArtistasColuna(modifier= Modifier.clickable {
-                        transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState})
+                        transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
+                    })
 
             }
 

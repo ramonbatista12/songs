@@ -33,10 +33,12 @@ fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass
           items(80){
               if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
                   ItemsAlbums(modifier=Modifier.clickable {
-                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState})
+                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
+                  })
               else
                   ItemsAlbusColuna(modifier=Modifier.clickable {
-                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState})
+                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
+                  })
 
           }
 
