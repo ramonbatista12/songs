@@ -1,14 +1,29 @@
 package com.example.songs.servicoDemidia
 
+import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.os.IInterface
 import android.os.Parcel
+import android.os.PowerManager
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.util.BitmapLoader
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import com.example.songs.R
+import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,28 +42,40 @@ class ServicMedia: MediaSessionService() {
     var helperPalyerComandes: HelperPalyerComandes? = null
     val serviceIniciado= MutableStateFlow(false)
     var _serviceIniciado=serviceIniciado.asStateFlow()
+    lateinit var notification: Notification
     val binder=ServicBinder()
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
+        Log.i("service","onGetSession")
         return this.mediaSession
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+         super.onStartCommand(intent, flags, startId)
 
-
-        return super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY
     }
+    @SuppressLint("InvalidWakeLockTag")
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
         super.onCreate()
         Log.i("service","onCreate")
         scope.launch {
-        val player = ExoPlayer.Builder(this@ServicMedia).build()
+        criarNotificacao()
+
+        startForeground(1,notification,ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        val player = ExoPlayer.Builder(this@ServicMedia).setAudioAttributes(AudioAttributes.DEFAULT,true)
+                                                                .build()
 
        mediaSession = MediaSession.Builder(this@ServicMedia, player).build()
+       //onUpdateNotification(mediaSession!!,true)
        helperPalyer = HelperPalyerEstados(mediaSession!!)
        helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
-
+       val powerManager=getSystemService(POWER_SERVICE) as PowerManager
+       val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
+       wakeLock.acquire()
             serviceIniciado.emit(true)
         }
+
 
     }
 
@@ -66,6 +93,16 @@ class ServicMedia: MediaSessionService() {
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
+fun criarNotificacao(){
+    val canal =NotificationChannel("1","serviceMedia",NotificationManager.IMPORTANCE_HIGH).apply {
+        description="notificacao do servico de media"
+    }
+    val notificationManager=(getSystemService(NotificationManager::class.java) as NotificationManager).createNotificationChannel(canal)
+    notification=Notification.Builder(this,"1").setContentTitle("servico de media")
+                                                                    .setContentText("rodando")
+                                                                     .setSmallIcon(R.drawable.baseline_music_note_24_darkpink).build()
+}
 
     override fun onDestroy() {
         Log.i("service","onDestroy")

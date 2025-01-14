@@ -10,6 +10,7 @@ import android.util.Log
 import android.util.Size
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -68,7 +69,7 @@ class RepositorioService(val context: Context) {
 
                           while (cursor.moveToNext()){
                               val uri =ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getLong(id))
-                              val mediaItem=MediaItem.Builder().setMediaId("${cursor.getLong(id)}")
+                              val mediaItem=MediaItem.Builder().setUri(uri).setMediaId("${cursor.getLong(id)}")
                                                                .setMediaMetadata(
                                                                    MediaMetadata.Builder().apply {
                                                                        this.setTitle(cursor.getString(nome))
@@ -80,7 +81,7 @@ class RepositorioService(val context: Context) {
                                                                    }.build()
                                                                ).build()
                             listaDeMediaItems.add(mediaItem)
-                            Log.d("TAG", "getMusics: ${cursor.getString(nome)}")
+                        //    Log.d("TAG", "getMusics: ${cursor.getString(nome)}")
 
                           }
 
@@ -88,7 +89,7 @@ class RepositorioService(val context: Context) {
 
 
         emit(listaDeMediaItems)
-              Log.d("TAG","lista emitida")
+         //     Log.d("TAG","lista emitida")
               delay(2000)
           }
 
@@ -123,7 +124,7 @@ class RepositorioService(val context: Context) {
                                                                             it.getString(album),
                                                                             it.getString(artista),
                                                                             ContentUris.withAppendedId(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                                                                                                       it.getLong(id_)).toString()))
+                                                                                                       it.getLong(id_))))
        }
            emit(listaDeAlbums)
        delay(4000)
@@ -167,7 +168,8 @@ class RepositorioService(val context: Context) {
 
 
  @RequiresApi(Build.VERSION_CODES.Q)
- suspend  fun getMetaData(uri: Uri, id: Long):Bitmap?{
+
+  fun getMetaData(uri: Uri, id: Long):Bitmap?{
    try {
        val resolver = this.context.contentResolver
        val tumbmail=resolver.loadThumbnail(uri,Size(100,100),null)

@@ -1,5 +1,7 @@
 package com.example.songs.repositorio
 
-data class Album(val idDoalbum:Long,val nome:String,val artista:String,val uri:String)
+import android.net.Uri
+
+data class Album(val idDoalbum:Long,val nome:String,val artista:String,val uri:Uri)
 
 data class Artista(val idDoArtista:Long,val nome:String)

@@ -1,6 +1,11 @@
 package com.example.songs.componentes.paineis
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.collection.emptyLongSet
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -8,18 +13,21 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
@@ -47,8 +55,10 @@ import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,15 +69,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
@@ -77,24 +91,42 @@ import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.Miniplayer
 import com.example.songs.componentes.MiniplayerParaTransicao
+import com.example.songs.componentes.getMetaData
+import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
+import com.example.songs.viewModels.ModoDerepeticao
+import com.example.songs.viewModels.VmodelPlayer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.checkerframework.common.subtyping.qual.Bottom
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /*
 * BigPlyer representa o player em si aonde se pode ver os dados da musica em reproducao no momento
 * e responsavel por medir e determinar como deve ser esibido em cado tamanho de tela
 * */
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues){
-    val  navegacao = rememberListDetailPaneScaffoldNavigator<Long>( )
-  if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-      PlayerCompat2(modifier=Modifier)
+fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues,vm: VmodelPlayer ,acaoAvisoBigplyer:()->Unit){
+   LaunchedEffect(Unit) {
+       acaoAvisoBigplyer()
+   }
+    DisposableEffect(Unit) {
 
- else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) PlayerCompat2()
-    else  PlyerEspandido(Modifier.padding(paddingValues=paddingValues),windowSizeClass)
+        onDispose {
+            acaoAvisoBigplyer()
+        }
+    }
+  if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
+      PlayerCompat2(modifier=modifier, vm = vm)
+
+ else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) PlayerCompat2( vm = vm)
+    else  PlyerEspandido(modifier.padding(paddingValues=paddingValues),windowSizeClass)
 
 
 
@@ -105,11 +137,16 @@ fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,pad
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Player(modifier: Modifier=Modifier){
-    Column(modifier =modifier.padding(10.dp).background(color = MaterialTheme.colorScheme.background)) {
+    Column(modifier = modifier
+        .padding(10.dp)
+        .background(color = MaterialTheme.colorScheme.background)) {
 
-        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),modifier = Modifier.size(400.dp).clip(
-            RoundedCornerShape(15.dp)
-        ).border(width = 0.5.dp, color = Color.Black, shape = RoundedCornerShape(15.dp)), contentDescription = null, tint = DarkPink)
+        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),modifier = Modifier
+            .size(400.dp)
+            .clip(
+                RoundedCornerShape(15.dp)
+            )
+            .border(width = 0.5.dp, color = Color.Black, shape = RoundedCornerShape(15.dp)), contentDescription = null, tint = DarkPink)
         Spacer(Modifier.padding(10.dp))
         Column(modifier = Modifier) {
 
@@ -139,55 +176,152 @@ fun Player(modifier: Modifier=Modifier){
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope){
+fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope,vm:VmodelPlayer){
     var range= remember {  mutableStateOf<Float>(0f)}
+    val bitMap =remember{ mutableStateOf<Bitmap?>(null)}
+    val mediaItem=vm._mediaItemAtual.collectAsState()
+    val tempoTotal=vm._tempoTotal.collectAsState()
+    val tempoAtual=vm._duracao.collectAsState()
+    val reproduzindo=vm._emreproducao .collectAsState()
+    val modoAleatorio=vm._modoAleatorio.collectAsState()
+    val modoRepeticao=vm._modoRepeticao.collectAsState()
+    val duracao=vm._duracao.collectAsState()
+    val duracaoString=vm._tempoTotalString.collectAsState()
+    val tempoTotalString=vm._duracaoString.collectAsState()
+    val context= LocalContext.current
     val scop=rememberCoroutineScope()
-    LaunchedEffect(Unit){
-        scop.launch {
-            while (true){
-                range.value+=0.010f
-                if(range.value>1f)range.value=0f
-                kotlinx.coroutines.delay(1000)
+    LaunchedEffect(mediaItem.value){
+        scop.launch(Dispatchers.IO) {
+            try {
+               bitMap.value= getMetaData(context = context,uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())
+            }catch (e:Exception){
+                bitMap.value=null
             }
+
         }
     }
     val stateRange = remember { derivedStateOf { range.value } }
     with(sharedTransitionScope){
-        Column(modifier =modifier.padding(10.dp).background(color = MaterialTheme.colorScheme.background)) {
-
-            Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),contentDescription = null,
-                                           modifier = Modifier.size(400.dp)
-                                                              .clip( RoundedCornerShape(15.dp))
-                                                              .border(width = 0.5.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
-                                                              .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope),)
+        Column(modifier = modifier
+            .padding(10.dp)
+            .background(color = MaterialTheme.colorScheme.background),
+               horizontalAlignment = Alignment.CenterHorizontally) {
+            if(bitMap.value==null)
+            Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
+                 contentDescription = null,
+                 tint = DarkPink,
+                 modifier = Modifier
+                     .size(250.dp)
+                     .clip(RoundedCornerShape(15.dp))
+                     .sharedElement(
+                         rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
+                         animatedVisibilityScope
+                     ),)
+            else{
+                val _bitmap=bitMap.value!!.asImageBitmap()
+                Image(bitmap=_bitmap,contentDescription = null,
+                    modifier = Modifier
+                        .size(250.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .sharedElement(
+                            rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
+                            animatedVisibilityScope
+                        ),)
+            }
 
             Spacer(Modifier.padding(10.dp))
             Column(modifier = Modifier) {
 
-                Text(text = "Nome da Musica",modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope))
-                Spacer(Modifier.padding( 8.dp))
-                Text(text = "Nome do Artista",modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
+                Text(text =if(mediaItem.value==null) "Nome da Musica" else mediaItem.value!!.mediaMetadata.title.toString(),
+                     modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope),
+                      maxLines = 2,
+                     fontFamily = FontFamily.Monospace)
+                Spacer(Modifier.padding( 3.dp))
+                Text(text = if (mediaItem.value==null) "Nome do Artista" else mediaItem.value!!.mediaMetadata.artist.toString(),
+                     modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
                     val rangeValue:()->Float ={ stateRange.value }
-                    Slider(value = rangeValue(), onValueChange = {
-                        range.value=it
-                    },colors = SliderDefaults.colors(activeTrackColor = DarkPink), valueRange = 0f..1f)
+                   Row(modifier=Modifier.fillMaxWidth()) {
+
+                         Text(text = tempoTotalString.value, fontSize = 8.sp )
+                         Text("/", fontSize = 8.sp )
+                        Text(text =duracaoString.value, fontSize = 8.sp )
+
+                   }
+
+                    Slider(value = duracao.value, onValueChange = {
+                        scop.launch {
+                            val valor=(it*tempoTotal.value)/100f
+                            vm.seekTo(valor.toLong())
+                        }
+                    },
+                         colors = SliderDefaults.colors(activeTrackColor = DarkPink),
+                         valueRange = 0f..100f,
+                         modifier = Modifier.height(10.dp))
                     Spacer(Modifier.padding(10.dp))
 
                     Row (modifier = Modifier.fillMaxWidth(),horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween){
+                    IconButton({scop.launch { vm.preview() }}) {
                         Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = DarkPink)
+                    }
+                    IconButton({
+                        scop.launch {
+                           vm.setModoAleatorio(!modoAleatorio.value)}
+                    }) {
+                        if(!modoAleatorio.value)
                         Icon(painter = painterResource(id = R.drawable.baseline_shuffle_24), contentDescription = null,tint = DarkPink)
-                        Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                                       contentDescription = null,
-                                                       tint = DarkPink,
-                                                       modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
-                        Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint = DarkPink)
-                        Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
-                                                       contentDescription = null,
-                                                       tint = DarkPink,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope))
+                        else
+                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_on_24), contentDescription = null,tint = DarkPink)
+                        }
+
+                    IconButton({
+                        scop.launch {
+                            if(reproduzindo.value)
+                                vm.pause()
+                            else vm.play()
+                        }
+
+                    }) {
+                        if (reproduzindo.value)
+                        Icon(painter = painterResource(id = R.drawable.baseline_pause_24),
+                            contentDescription = null,
+                            tint = DarkPink,
+                            modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
+                        else
+                            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                contentDescription = null,
+                                tint = DarkPink,
+                                modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
+                        }
+
+                        IconButton({
+                            scop.launch {
+                                when(modoRepeticao.value){
+                                    is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
+                                    is ModoDerepeticao.RepetirEssa->vm.setModoDeRepeticao(ModoDerepeticao.RepetirTodos)
+                                    is ModoDerepeticao.RepetirTodos->vm.setModoDeRepeticao(ModoDerepeticao.Desativado)
+                                }
+                            }
+
+
+                        }) {
+                            when(modoRepeticao.value){
+                                is ModoDerepeticao.Desativado->Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint = DarkPink)
+                                is ModoDerepeticao.RepetirEssa->Icon(painter = painterResource(id = R.drawable.baseline_repeat_one_on_24), contentDescription = null,tint = DarkPink)
+                                is ModoDerepeticao.RepetirTodos->Icon(painter = painterResource(id = R.drawable.baseline_repeat_on_24), contentDescription = null,tint = DarkPink)
+                            }
+
+                        }
+                        IconButton({vm.next()}) {
+                            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
+                                contentDescription = null,
+                                tint = DarkPink,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope))
+
+                        }
 
                     }
                 }
@@ -199,25 +333,51 @@ fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: Shared
 }
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
+fun getMetaData(c: Context, uri: Uri, id: Long):Bitmap?{
+    try {
+        val resolver = c.contentResolver
+        val tumbmail=resolver.loadThumbnail(uri, android.util.Size(100, 100),null)
+        return tumbmail
+    }catch (e:Exception){
+        return null
+    }
+
+}
+
 @Composable
 fun PlyerComtrasicaoLayt(modifier: Modifier=Modifier,){}
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope:AnimatedVisibilityScope,onclick:()->Unit={} ){
+fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope:AnimatedVisibilityScope,onclick:()->Unit={},vm:VmodelPlayer ){
     val listaAvberta=remember{ mutableStateOf(false)}
       with(sharedTransitionScope){
-          Box(modifier = modifier.fillMaxSize().imePadding().sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),animatedVisibilityScope,
-             resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)){
-              PlyerParaTransicao(Modifier.align( Alignment.TopCenter),animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope)
+          Box(modifier = modifier
+              .fillMaxSize()
+              .imePadding()
+              .sharedBounds(
+                  rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),
+                  animatedVisibilityScope,
+                  resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
+              )){
+              PlyerParaTransicao(Modifier.align( Alignment.TopCenter),animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope,vm=vm)
 
 
               IconButton({
                   listaAvberta.value=!listaAvberta.value
                   onclick()
-              },modifier = Modifier.align(Alignment.BottomCenter).size(70.dp).padding(5.dp)) {
-                  Icon(painter = painterResource(id = R.drawable.baseline_list_24), contentDescription = null, tint = DarkPink, modifier = Modifier.align(
-                      Alignment.BottomCenter).size(50.dp).padding(5.dp))
+              },modifier = Modifier
+                  .align(Alignment.BottomCenter)
+                  .size(70.dp)
+                  .padding(5.dp)) {
+                  Icon(painter = painterResource(id = R.drawable.baseline_list_24), contentDescription = null, tint = DarkPink, modifier = Modifier
+                      .align(
+                          Alignment.BottomCenter
+                      )
+                      .size(50.dp)
+                      .padding(5.dp))
 
               }
 
@@ -229,9 +389,10 @@ fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransi
 }
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlayerCompat2(modifier: Modifier=Modifier) {
+fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer) {
     val listaAvberta = remember { mutableStateOf(false) }
     val slidervalue = remember { mutableStateOf(0f) }
 
@@ -240,11 +401,15 @@ fun PlayerCompat2(modifier: Modifier=Modifier) {
         SharedTransitionLayout {
             AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
 
-                Box(modifier = modifier.fillMaxSize().imePadding()) {
+                Box(modifier = modifier
+                    .fillMaxSize()
+                    .imePadding()) {
                     SharedTransitionLayout {
                         AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
                             if (!targetState) {
-                                PlayerCompat(sharedTransitionScope = this@SharedTransitionLayout, animatedVisibilityScope = this@AnimatedContent,onclick = {listaAvberta.value=!listaAvberta.value})
+                                PlayerCompat(modifier = Modifier.align(Alignment.TopCenter),sharedTransitionScope = this@SharedTransitionLayout,
+                                            animatedVisibilityScope = this@AnimatedContent
+                                           ,onclick = {listaAvberta.value=!listaAvberta.value},vm=vm)
 
                             } else {
                                 Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)) {
@@ -301,8 +466,15 @@ sealed class LayoutsCompartilhados(val label:String){
     @Composable
 fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass) {
         val progresso = remember { mutableStateOf(0f) }
-        Row(modifier.fillMaxSize().padding(bottom = 10.dp), verticalAlignment = Alignment.Top) {
-            Box(Modifier.fillMaxWidth(0.5f).clip(RoundedCornerShape(15.dp)).padding(10.dp)) {
+        Row(
+            modifier
+                .fillMaxSize()
+                .padding(bottom = 10.dp), verticalAlignment = Alignment.Top) {
+            Box(
+                Modifier
+                    .fillMaxWidth(0.5f)
+                    .clip(RoundedCornerShape(15.dp))
+                    .padding(10.dp)) {
 
                 Column(Modifier.align(Alignment.TopCenter)) {
                     val iconeSize =
@@ -310,14 +482,17 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
                     Icon(
                         painter = painterResource(R.drawable.baseline_music_note_24),
                         contentDescription = null,
-                        modifier = Modifier.size(iconeSize).clip(
-                            RoundedCornerShape(15.dp)
-                        )
+                        modifier = Modifier
+                            .size(iconeSize)
+                            .clip(
+                                RoundedCornerShape(15.dp)
+                            )
                             .border(
                                 width = 0.5.dp,
                                 color = Color.Black,
                                 shape = RoundedCornerShape(15.dp)
-                            ).align(Alignment.CenterHorizontally), tint = Color.Black
+                            )
+                            .align(Alignment.CenterHorizontally), tint = Color.Black
                     )
 
                     Column {
@@ -381,13 +556,18 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
             }
             Spacer(Modifier.padding(10.dp))
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp))
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(15.dp))
                     .border(width = 0.5.dp, color = Color.Black, shape = RoundedCornerShape(15.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Playlist", fontFamily = FontFamily.Monospace)
                 Box {
-                    LazyColumn(Modifier.align(Alignment.TopCenter).fillMaxWidth(1f)) {
+                    LazyColumn(
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth(1f)) {
                         items(80) {
                             ItemDaLista(item = null)
                         }
@@ -409,15 +589,20 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
 
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true)
 @Composable
 fun PlayerPreview(){
     SongsTheme {
         Surface {
-        Scaffold(topBar = { BarraSuperio(titulo = "Plyer") }, modifier = Modifier.safeDrawingPadding().safeGesturesPadding().safeContentPadding()) {
+        Scaffold(topBar = { BarraSuperio(titulo = "Plyer") }, modifier = Modifier
+            .safeDrawingPadding()
+            .safeGesturesPadding()
+            .safeContentPadding()) {
 
             val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
-            BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it)
+            BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
+                MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),{})
 
         }
         }
@@ -426,14 +611,19 @@ fun PlayerPreview(){
     }
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true)
 @Composable
 fun PreviaPlyer2(){
     SongsTheme {
         Surface {
-            Scaffold(Modifier.safeDrawingPadding().safeGesturesPadding().safeContentPadding()) {
+            Scaffold(
+                Modifier
+                    .safeDrawingPadding()
+                    .safeGesturesPadding()
+                    .safeContentPadding()) {
              Box(modifier = Modifier.padding(it))  {
-              PlayerCompat2()
+              PlayerCompat2(vm = VmodelPlayer(MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)))
              }
             }
             }

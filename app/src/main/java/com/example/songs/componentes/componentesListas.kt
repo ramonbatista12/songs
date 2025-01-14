@@ -60,12 +60,14 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
 import com.example.songs.R
+import com.example.songs.repositorio.Album
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
 import kotlinx.coroutines.Dispatchers
@@ -92,7 +94,9 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
 
         }
     }
-    Row (horizontalArrangement = Arrangement.SpaceBetween ,modifier = modifier.padding(10.dp)){
+    Row (horizontalArrangement = Arrangement.SpaceBetween ,
+         verticalAlignment = Alignment.CenterVertically,
+         modifier = modifier.padding(10.dp)){
         if(imagem.value==null){
         Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
@@ -121,7 +125,7 @@ suspend  fun getMetaData(uri: Uri, id: Long,context: Context):Bitmap?{
     Log.d("Metadata loaad tumb","id de media ${id}")
     try {
         val resolver = context.contentResolver
-        val tumbmail=resolver.loadThumbnail(uri, Size(100,100),null)
+        val tumbmail=resolver.loadThumbnail(uri, Size(400,400),null)
         return tumbmail
     }catch (e:Exception){
         return null
@@ -173,16 +177,37 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
 }
 
 @Composable
-fun ItemsAlbums(modifier: Modifier=Modifier){
-    Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
+    val imagem =remember { mutableStateOf<Bitmap?>(null) }
+    val scop=rememberCoroutineScope()
+    val context= LocalContext.current
+    LaunchedEffect(Unit){
+        scop.launch(Dispatchers.IO) {
+            try {
+                imagem.value= getMetaData(uri = item.uri,id = item.idDoalbum.toLong(),context = context)
+            }catch (e:Exception){
+                imagem.value=null
+            }
+        }
+
+    }
+    Row(modifier = modifier.padding(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        if (imagem.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
         ).size(80.dp))
+        else{
+            val bitmap=imagem!!.value!!.asImageBitmap()
+            Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
+                RoundedCornerShape(15.dp)
+            ).size(80.dp))}
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
             Spacer(Modifier.padding(8.dp))
-            Text("Nome do Album", maxLines = 2,fontSize = 18.sp, color = DarkPink)
+            Text(item.nome, maxLines = 2,fontSize = 18.sp, fontFamily = FontFamily.Monospace)
             Spacer(Modifier.padding(3.dp))
-            Text("Nome do Artista",maxLines = 1,fontSize = 14.sp, color = DarkPink)
+            Text(item.artista,maxLines = 1,fontSize = 14.sp)
 
         }
     }

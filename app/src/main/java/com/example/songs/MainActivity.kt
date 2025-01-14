@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -71,7 +72,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
+@RequiresApi(Build.VERSION_CODES.Q)
 class MainActivity : ComponentActivity() {
     var conecao =
         MutableStateFlow<ResultadosConecaoServiceMedia>(ResultadosConecaoServiceMedia.Desconectado)
@@ -82,7 +83,7 @@ class MainActivity : ComponentActivity() {
 
 
             val binder = service as ServicMedia.ServicBinder
-            conecao.value = ResultadosConecaoServiceMedia.Conectado(binder.getService())
+            conecao.value = ResultadosConecaoServiceMedia.Conectado(binder.getService(),this@MainActivity)
             Log.i("sevice", "onServiceConnected ${conecao.value}")
 
 
@@ -138,7 +139,7 @@ class MainActivity : ComponentActivity() {
 
                 val navController = rememberNavController()
                 val scopMain = rememberCoroutineScope()
-                val transicaoMiniPlyer = remember { MutableTransitionState(true) }
+                val transicaoMiniPlyer = remember { MutableTransitionState(false) }
                 val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao))
                 Surface {
                     LaunchedEffect(Unit) {
@@ -171,14 +172,46 @@ class MainActivity : ComponentActivity() {
                                 Navgrafic( navController = navController,
                                            windowSizeClass = windowsizeclass,
                                            modifier = Modifier.align(Alignment.TopCenter),
-                                           paddingValues = it,transicaoMiniPlyer = transicaoMiniPlyer)
-                                AnimatedVisibility(visibleState = transicaoMiniPlyer,modifier = Modifier.align(Alignment.BottomCenter)) {
+                                           paddingValues = it,
+                                           transicaoMiniPlyer = transicaoMiniPlyer,
+                                           vm = vieModelPlyers,
+                                           acaoCaregarPlyer = {l,id->
+                                               scop.launch {
+                                                   vieModelPlyers.carregarLista(l,id)
+
+                                                   vieModelPlyers.play()
+
+                                               }
+                                           },{viewmodel.mudarBigPlyer()})
+                                val emreproducao =vieModelPlyers._emreproducao.collectAsState()
+                                val bigPlyer =viewmodel._bigPlyer.collectAsState()
+                                var funcao:()->Boolean ={
+                                    if(bigPlyer.value && emreproducao.value){
+                                        if(bigPlyer.value)Log.i("bigplyer","true")
+                                        if(emreproducao.value)Log.i("emreproducao","true")
+                                        true}
+                                    else{
+                                        if(!bigPlyer.value)Log.i("bigplyer","false")
+                                        if(!emreproducao.value)Log.i("emreproducao","false")
+                                        false}
+                                }
+                                AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter)) {
+                                  if(!bigPlyer.value){  DisposableEffect(Unit) {
+                                        scop.launch {
+                                             transicaoMiniPlyer.targetState=true
+                                        }
+                                        onDispose {
+                                            transicaoMiniPlyer.targetState=false
+                                        }
+                                    }
                                     Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
                                         scopMain.launch {
                                             transicaoMiniPlyer.targetState=false
                                         navController.navigate(DestinosDENavegacao.Player.rota)}
                                     },
-                                               windoSizeClass = windowsizeclass)
+                                    vm = vieModelPlyers,
+                                    windoSizeClass = windowsizeclass)
+                                  }
                                 }
                                 val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
                                 if (dialigoLeitura.value) {
@@ -214,7 +247,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-
+                   
 
                     }
                 }
@@ -262,9 +295,9 @@ class MainActivity : ComponentActivity() {
         super.onStart()
 
 
-        val executor = Executors.newSingleThreadExecutor()
+
         val i = Intent(this@MainActivity, ServicMedia::class.java)
-        startService(i)
+        startForegroundService(i)
         when(conecao.value){
             is ResultadosConecaoServiceMedia.Conectado->{}
             is ResultadosConecaoServiceMedia.Desconectado->{
@@ -292,9 +325,19 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onPause() {
+        when(val r =conecao.value){
+            is ResultadosConecaoServiceMedia.Conectado->{
+               try {
+                   unbindService(serviceConection)
+               }catch (e:Exception){
+                   Log.e("main",e.toString())
+                   conecao.value=ResultadosConecaoServiceMedia.Desconectado
+               }
 
-        scop.launch(Dispatchers.Main) {
-        unbindService(serviceConection)}
+            }
+            else->{}
+        }
+
         super.onPause()
     }
 

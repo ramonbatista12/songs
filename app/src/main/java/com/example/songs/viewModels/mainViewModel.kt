@@ -22,11 +22,13 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
    private val job= Job()
     private val scope= viewModelScope
     private val permicaoNotificacao= MutableStateFlow(false)
+    private val bigPlyer= MutableStateFlow(false)
     val _permicaoNotificacao=permicaoNotificacao.asStateFlow()
     private val permicaoLeitura= MutableStateFlow(false)
     val _permicaoLeitura=permicaoLeitura.asStateFlow()
     val dialoNotificacao= MutableStateFlow(if(permicaoNotificacao.value)false else true)
     val dialoLeitura= MutableStateFlow(if(permicaoLeitura.value)false else true)
+    val _bigPlyer= bigPlyer.asStateFlow()
     val snackbarHostState= SnackbarHostState()
     init {
         scope.launch(Dispatchers.IO) {
@@ -43,7 +45,10 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
             }
         }
 
-
+    fun mudarBigPlyer(){
+        if(bigPlyer.value)bigPlyer.value=false
+        else bigPlyer.value=true
+    }
 
     fun mudarPermicaoLeitura(value:Boolean){
         permicaoLeitura.value=value

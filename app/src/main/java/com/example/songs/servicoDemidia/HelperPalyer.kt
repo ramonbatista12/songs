@@ -2,6 +2,7 @@ package com.example.songs.servicoDemidia
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.Log
 import androidx.media3.session.MediaSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,16 +28,20 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
     private val scopoCorotina = CoroutineScope(Dispatchers.Main + job)
     private val tempoDereproducao = MutableStateFlow(0L)
     private val tempoTotal = MutableStateFlow(0L)
-    private val estaReproduzindo = MutableStateFlow(false)
+    private val estaReproduzindo = MutableStateFlow(false)//
     private val loding = MutableStateFlow(false)
     private val caregando = MutableStateFlow(false)
-    private val metadataAtual= MutableStateFlow<MediaMetadata>(MediaMetadata.Builder().build())
+    private val metadataAtual= MutableStateFlow<MediaItem?>(null)
+    private val modoAleatorio = MutableStateFlow(false)
+    private val modoRepeticao = MutableStateFlow(0)
     private val emplyer = MutableStateFlow(false)
     var _tempoTotal = tempoTotal.asStateFlow()
     var _tempoDereproducao = tempoDereproducao.asStateFlow()
     var _estaReproduzindo = estaReproduzindo.asStateFlow()
     val caregando_ = caregando.asStateFlow()
     var _metadataAtual = metadataAtual.asStateFlow()
+    var _modoAleatorio = modoAleatorio.asStateFlow()
+    val _modoRepeticao = modoRepeticao.asStateFlow()
     init {
         scopoCorotina.launch {
             fluxoTempoDereproducao().collect {
@@ -60,7 +65,20 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
             }
         }
         scopoCorotina.launch {
+            metaDataAtual().collect{
+                metadataAtual.value=it
+            }
 
+        }
+        scopoCorotina.launch {
+            fluxoModoAleatorio().collect{
+                modoAleatorio.value=it
+            }
+        }
+        scopoCorotina.launch {
+            fluxoModoRepeticao().collect{
+                modoRepeticao.value=it
+            }
         }
     }
 
@@ -80,7 +98,7 @@ private fun fluxoTempoDereproducao()= flow<Long> {
  private fun fluxoTempoTotal()= flow<Long> {
      while (true){
 
-         emit(mediaSession.player.duration)
+         emit(mediaSession.player.contentDuration)
          delay(1000)
      }
  }
@@ -99,10 +117,26 @@ private fun fluxoLoding()= flow<Boolean> {
         delay(1000)
     }
 }
-private fun metaDataAtual()= flow<MediaMetadata> {
-   emit(mediaSession.player.currentMediaItem!!.mediaMetadata)
+
+private fun metaDataAtual()= flow<MediaItem?> {
+  while (true){
+   emit(mediaSession.player.currentMediaItem)
     delay(1000)
+  }
 }
+
+private fun fluxoModoAleatorio()= flow<Boolean> {
+   while (true) {
+    emit(mediaSession.player.shuffleModeEnabled)
+    delay(1000)}
+}
+private fun fluxoModoRepeticao()= flow<Int> {
+    while (true){
+     emit(mediaSession.player.repeatMode)
+    delay(1000)}
+
+}
+
    override fun finalizar(){
         job.cancel()
 
@@ -114,6 +148,11 @@ private fun metaDataAtual()= flow<MediaMetadata> {
 class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,AuxilarMediaSecion{
     private val job= Job()
     private val scopoCorotina= CoroutineScope(Dispatchers.Main+job)
+    override fun prepare() {
+        scopoCorotina.launch {
+            mediaSession.player.prepare()
+        }
+    }
 
     override fun play() {
 
@@ -136,6 +175,12 @@ class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,Auxi
        }
     }
 
+    override fun seekToItem(position: Int) {
+       scopoCorotina.launch {
+           mediaSession.player.seekTo(position,0)
+       }
+    }
+
     override fun setLista(lista: List<MediaItem>) {
        scopoCorotina.launch {
            mediaSession.player.setMediaItems(lista)
@@ -148,7 +193,20 @@ class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,Auxi
        }
     }
 
-    override fun next() {4
+    override fun setModoRepeticao(modo: Int) {
+        scopoCorotina.launch {
+            Log.i("setmod","set mod helpercomandes modo $modo")
+            mediaSession.player.repeatMode = modo
+        }
+    }
+
+    override fun setModoAleatorio(shuffleModeEnabled: Boolean) {
+        scopoCorotina.launch {
+            mediaSession.player.shuffleModeEnabled=shuffleModeEnabled
+        }
+    }
+
+    override fun next() {
         scopoCorotina.launch {
             mediaSession.player.seekToNext()
         }
@@ -173,15 +231,3 @@ interface AuxilarMediaSecion{
 }
 
 
-interface ComandosDemedia{
-    fun play()
-    fun pause()
-    fun stop()
-    fun seekTo(position: Long)
-    fun setLista(lista: List<MediaItem>)
-    fun setMediaItem(mediaItem: MediaItem)
-    fun next()
-    fun preview()
-
-
-}

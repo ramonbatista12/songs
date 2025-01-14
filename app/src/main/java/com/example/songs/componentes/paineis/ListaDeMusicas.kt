@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -32,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.MediaItem
 
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -51,26 +53,30 @@ import com.example.songs.viewModels.ViewModelListas
 * */
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ListaDemusicas(modifier: Modifier = Modifier,paddingValues: PaddingValues,windowSizeClass: WindowSizeClass,transicaoMiniPlyer:MutableTransitionState<Boolean>,viewModelListas: ViewModelListas){
+fun ListaDemusicas(modifier: Modifier = Modifier,
+                   paddingValues: PaddingValues,
+                   windowSizeClass: WindowSizeClass,
+                   transicaoMiniPlyer:MutableTransitionState<Boolean>,
+                   viewModelListas: ViewModelListas,
+                   acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit){
     val lista=viewModelListas.listas.collectAsState(ListaMusicas.caregando)
 
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
     Box(modifier = modifier.fillMaxSize()){
 
       LazyVerticalGrid(columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1 else 3),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
-            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp ).wrapContentSize()) {
+            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
            when(val r =lista.value){
 
                is ListaMusicas.Lista->{
-                   items(items=r.lista){
+                   itemsIndexed(items=r.lista){ indice,item->
                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT||windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                        ItemDaLista(modifier = Modifier.clickable(onClick = {
-                           transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
-                           texto.value="Nome da musica no mine plyer $it"
+                          acaoCarregarPlyer(r.lista,indice)
 
-                       }), item = it)
+                       }), item = item)
                    }else{
-                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState}), item = it)
+                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState}), item = item)
                    }
                }
                }
@@ -128,7 +134,7 @@ fun previewListaDemusicas(){
             ListaDemusicas(paddingValues = it,
                           windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
                           transicaoMiniPlyer = transicaoMiniPlyer,
-                          viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)))
+                          viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)), acaoCarregarPlyer={it,id->})
         }
 
        // }

@@ -19,3 +19,24 @@ sealed class ListaMusicas(){
     class Lista(val lista:List<MediaItem>):ListaMusicas()
 
 }
+
+sealed class ModoDerepeticao(val valor:Int){
+    object Desativado:ModoDerepeticao(0)
+    object RepetirEssa:ModoDerepeticao(1)
+    object RepetirTodos:ModoDerepeticao(2)
+
+    override fun toString(): String {
+        when(this){
+            is Desativado->{
+                return "Desativado"
+            }
+            is RepetirEssa->{
+                return "RepetirEssa"}
+            is RepetirTodos->{
+                return "RepetirTodos"
+
+            }
+        }
+
+    }
+}
