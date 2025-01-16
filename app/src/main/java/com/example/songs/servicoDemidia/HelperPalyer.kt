@@ -226,8 +226,6 @@ class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,Auxi
 
 }
 
-interface AuxilarMediaSecion{
-    fun finalizar()
-}
+
 
 

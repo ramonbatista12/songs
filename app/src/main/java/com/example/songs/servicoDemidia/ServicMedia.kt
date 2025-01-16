@@ -2,6 +2,7 @@ package com.example.songs.servicoDemidia
 
 import android.annotation.SuppressLint
 import android.app.Notification
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
@@ -40,6 +41,7 @@ class ServicMedia: MediaSessionService() {
     var mediaSession: MediaSession? = null
     var helperPalyer: HelperPalyerEstados? = null
     var helperPalyerComandes: HelperPalyerComandes? = null
+    var helperNotificacao: HelperNotification? = null
     val serviceIniciado= MutableStateFlow(false)
     var _serviceIniciado=serviceIniciado.asStateFlow()
     lateinit var notification: Notification
@@ -70,6 +72,11 @@ class ServicMedia: MediaSessionService() {
        //onUpdateNotification(mediaSession!!,true)
        helperPalyer = HelperPalyerEstados(mediaSession!!)
        helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
+       helperNotificacao=HelperNotification(notification=notification,
+                                            helperPalyerEstados = helperPalyer!!,
+                                            helperPalyerComandes = helperPalyerComandes!!,
+                                            seviceContext = this@ServicMedia,
+                                            secaoDeMedia = mediaSession!!)
        val powerManager=getSystemService(POWER_SERVICE) as PowerManager
        val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
        wakeLock.acquire()
@@ -118,6 +125,10 @@ fun criarNotificacao(){
         if(helperPalyerComandes!=null){
             helperPalyerComandes!!.finalizar()
             helperPalyerComandes=null
+        }
+        if (helperNotificacao!=null){
+            helperNotificacao!!.finalizar()
+            helperNotificacao=null
         }
 
         job.cancel()
