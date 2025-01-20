@@ -34,8 +34,11 @@ import com.example.songs.componentes.paineis.ListaDeAlbums
 import com.example.songs.componentes.paineis.ListaDeArtistas
 import com.example.songs.componentes.paineis.ListaDemusicas
 import com.example.songs.componentes.paineis.PlyList
+import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.viewModels.FabricaViewModelLista
+import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /*
 * Navgrafic e o grafico de navegacao em sim suas rotas sao determinadas pela classe DestinosDENavegacao
@@ -57,7 +60,9 @@ fun Navgrafic(navController: NavHostController,
               transicaoMiniPlyer:MutableTransitionState<Boolean>,
               vm: VmodelPlayer,
               acaoCaregarPlyer:(List<MediaItem>,indice:Int)->Unit,
-              acaoAvisoBigplyer:()->Unit){
+              acaoAvisoBigplyer:()->Unit,
+              estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
+    val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
 NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas.rota,modifier=modifier){
   composable(route = DestinosDENavegacao.Todas.rota){
    Box{
@@ -65,7 +70,7 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
                       windowSizeClass = windowSizeClass,
                       paddingValues = paddingValues,
                       transicaoMiniPlyer = transicaoMiniPlyer,
-                      viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)),
+                      viewModelListas = vmLista,
                       acaoCarregarPlyer = acaoCaregarPlyer)
    }
   }
@@ -80,15 +85,19 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
       Box(modifier=Modifier){
           ListaDeAlbums(windowSizeClass = windowSizeClass,
                        transicaoMiniPlyer = transicaoMiniPlyer,
-                       vm =viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)))
+                       vm =vmLista)
          }}
 
 
   composable(route = DestinosDENavegacao.Configuracoes.rota){}
 
-
+  //  viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)
   composable(route = DestinosDENavegacao.Player.rota){
-      BigPlayer(windowSizeClass = windowSizeClass,paddingValues = paddingValues,vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer)
+      BigPlayer(windowSizeClass = windowSizeClass,
+                paddingValues = paddingValues,
+                vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
+          vmlista = vmLista )
+
   }
 
   composable(route = DestinosDENavegacao.Artista.rota){

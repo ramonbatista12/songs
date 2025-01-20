@@ -1,9 +1,11 @@
 package com.example.songs.componentes.paineis
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.collection.emptyLongSet
 import androidx.compose.animation.AnimatedContent
@@ -36,6 +38,8 @@ import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -81,6 +85,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.window.core.layout.WindowHeightSizeClass
@@ -96,8 +101,10 @@ import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
 import com.example.songs.viewModels.ModoDerepeticao
+import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.checkerframework.common.subtyping.qual.Bottom
@@ -112,7 +119,7 @@ import kotlin.time.toDuration
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues,vm: VmodelPlayer ,acaoAvisoBigplyer:()->Unit){
+fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues,vm: VmodelPlayer,vmlista: ViewModelListas ,acaoAvisoBigplyer:()->Unit){
    LaunchedEffect(Unit) {
        acaoAvisoBigplyer()
    }
@@ -123,10 +130,12 @@ fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,pad
         }
     }
   if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-      PlayerCompat2(modifier=modifier, vm = vm)
+      PlayerCompat2(modifier=modifier, vm = vm, vmlista = vmlista)
 
- else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) PlayerCompat2( vm = vm)
-    else  PlyerEspandido(modifier.padding(paddingValues=paddingValues),windowSizeClass)
+ else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
+             if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM)PlayerCompat2( vm = vm,vmlista = vmlista)
+                          else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
+    else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
 
 
 
@@ -392,7 +401,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransi
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer) {
+fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer,vmlista:ViewModelListas) {
     val listaAvberta = remember { mutableStateOf(false) }
     val slidervalue = remember { mutableStateOf(0f) }
 
@@ -412,18 +421,38 @@ fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer) {
                                            ,onclick = {listaAvberta.value=!listaAvberta.value},vm=vm)
 
                             } else {
+                                val lista =vmlista._playListAtual.collectAsState()
                                 Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)) {
-                                    MiniplayerParaTransicao(sharedTransitionScope = this@SharedTransitionLayout, animatedVisibilityScope = this@AnimatedContent)
-                                    Spacer(Modifier.padding(10.dp))
+                                  Row (modifier=Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
+                                      MiniplayerParaTransicao(
+                                        sharedTransitionScope = this@SharedTransitionLayout,
+                                        animatedVisibilityScope = this@AnimatedContent,
+                                        vm = vm
+                                    )
+                                }
+                                    Spacer(Modifier.padding(0.4.dp))
                                     Row(Modifier.fillMaxWidth(),horizontalArrangement =Arrangement.Center){
                                         IconButton(onClick = {
                                         listaAvberta.value=!listaAvberta.value
                                     },modifier = Modifier.size(60.dp)) {
                                         Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = DarkPink,modifier=Modifier.size(50.dp))
                                     } }
+                                    val  metadata=vm._mediaItemAtual.collectAsState()
                                     LazyColumn {
-                                        items(100) {
-                                            ItemDaLista(item = null)
+                                        itemsIndexed(items = lista.value) {indice,item->
+                                           if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
+                                               Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
+                                                   Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = DarkPink)
+                                                   ItemDaLista(Modifier.clickable {
+                                                       vm.seekToItem(indice)
+
+                                                   },item = item)
+                                               }
+                                           else
+                                            ItemDaLista(Modifier.clickable {
+                                                vm.seekToItem(indice)
+
+                                            },item = item)
                                         }
                                     }
                                 }
@@ -463,25 +492,52 @@ sealed class LayoutsCompartilhados(val label:String){
 
 
 
+    @SuppressLint("SuspiciousIndentation")
     @Composable
-fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass) {
-        val progresso = remember { mutableStateOf(0f) }
+fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass,vm:VmodelPlayer,vmlista:ViewModelListas) {
+       val bitmap= remember { mutableStateOf<Bitmap?>(null) }
+       val scope= rememberCoroutineScope()
+       val context= LocalContext.current
+       val duracao=vm._duracao.collectAsState()
+       val tempoTotal=vm._tempoTotal.collectAsState()
+       val metadata=vm._mediaItemAtual.collectAsState()
+       val duracaoString=vm._duracaoString.collectAsState()
+       val tempoTotalString=vm._tempoTotalString.collectAsState()
+       val modoAleatorio=vm._modoAleatorio.collectAsState()
+       val  modoRepeticao=vm._modoRepeticao.collectAsState()
+       val  reproduzindo=vm._emreproducao.collectAsState()
+       val plyListAtual=vmlista.plylist().collectAsState(emptyList())
+         LaunchedEffect(Unit) {
+             Log.d("TAG", "PlyerEspandido: plyListAtual ${plyListAtual.value.size} ")
+         }
+        LaunchedEffect(metadata.value) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+                }catch (e:Exception){
+                    bitmap.value=null}
+            }
+
+        }
+
         Row(
             modifier
                 .fillMaxSize()
                 .padding(bottom = 10.dp), verticalAlignment = Alignment.Top) {
             Box(
                 Modifier
-                    .fillMaxWidth(0.5f)
-                    .clip(RoundedCornerShape(15.dp))
+                    .fillMaxWidth(0.4f)
+
                     .padding(10.dp)) {
 
                 Column(Modifier.align(Alignment.TopCenter)) {
                     val iconeSize =
                         if (windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 90.dp else 400.dp
+                    if(bitmap.value==null)
                     Icon(
                         painter = painterResource(R.drawable.baseline_music_note_24),
                         contentDescription = null,
+
                         modifier = Modifier
                             .size(iconeSize)
                             .clip(
@@ -492,72 +548,130 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
                                 color = Color.Black,
                                 shape = RoundedCornerShape(15.dp)
                             )
-                            .align(Alignment.CenterHorizontally), tint = Color.Black
+                            .align(Alignment.CenterHorizontally), tint = DarkPink
                     )
+                    else{
+                        val _bitmap=bitmap.value!!.asImageBitmap()
+                        Image(bitmap = _bitmap,
+                              contentDescription = null ,
+                              modifier = Modifier.size(iconeSize)
+                            .clip(
+                                RoundedCornerShape(15.dp)
+                            )
+
+                            .align(Alignment.CenterHorizontally))
+                    }
 
                     Column {
 
-                        Text(text = "Nome da Musica")
-                        Spacer(Modifier.padding(3.dp))
-                        Text(text = "Nome do Artista")
-                        Spacer(Modifier.padding(3.dp))
+                        Text(text = if(metadata.value==null)"Nome da Musica" else metadata.value!!.mediaMetadata.title.toString(),
+                             fontFamily = FontFamily.Monospace,
+                             fontSize = if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 10.sp else 18.sp,
+                              maxLines = if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 1 else 2, )
+                        Spacer(Modifier.padding(0.4.dp))
+                        Text(text =if (metadata.value==null) "Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
+                            maxLines =if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 1 else 2,
+                             fontSize = if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT)8.sp else 14.sp,)
+                        Spacer(Modifier.padding(0.4.dp))
                         Column {
+
+                            Row {
+                                Text(text = tempoTotalString.value, fontSize = 8.sp )
+                                Text("/", fontSize = 8.sp )
+                                Text(text =duracaoString.value, fontSize = 8.sp )
+
+                            }
                             Slider(
-                                value = progresso.value,
-                                onValueChange = { progresso.value = it },
+                                value = duracao.value,
+                                onValueChange = {
+                                    scope.launch {
+                                        val posicao =(it*tempoTotal.value)/100f
+                                        vm.seekTo(posicao.toLong())
+                                    }
+                                },
+                                valueRange = 0f..100f,
                                 colors = SliderDefaults.colors(activeTrackColor = DarkPink),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.height(if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 5.dp else 10.dp)
                             )
                             Spacer(Modifier.padding(3.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_skip_previous_24),
-                                    contentDescription = null,
-                                    tint = DarkPink,
-                                    modifier = Modifier.size(60.dp)
-                                )
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_shuffle_24),
-                                    contentDescription = null,
-                                    tint = DarkPink,
-                                    modifier = Modifier.size(60.dp)
-                                )
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                    contentDescription = null,
-                                    tint = DarkPink,
-                                    modifier = Modifier.size(60.dp)
-                                )
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_repeat_24),
-                                    contentDescription = null,
-                                    tint = DarkPink,
-                                    modifier = Modifier.size(60.dp)
-                                )
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_skip_next_24),
-                                    contentDescription = null,
-                                    tint = DarkPink,
-                                    modifier = Modifier.size(60.dp)
-                                )
+                                IconButton({scope.launch { vm.preview() }}) {
+                                Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = DarkPink)
+                            }
+                            IconButton({
+                                scope.launch {
+                                    vm.setModoAleatorio(!modoAleatorio.value)}
+                            }) {
+                                if(!modoAleatorio.value)
+                                    Icon(painter = painterResource(id = R.drawable.baseline_shuffle_24), contentDescription = null,tint = DarkPink)
+                                else
+                                    Icon(painter = painterResource(id = R.drawable.baseline_shuffle_on_24), contentDescription = null,tint = DarkPink)
+                            }
 
+                            IconButton({
+                                scope.launch {
+                                    if(reproduzindo.value)
+                                        vm.pause()
+                                    else vm.play()
+                                }
+
+                            }) {
+                                if (reproduzindo.value)
+                                    Icon(painter = painterResource(id = R.drawable.baseline_pause_24),
+                                        contentDescription = null,
+                                        tint = DarkPink,
+                                        modifier = Modifier)
+                                else
+                                    Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                        contentDescription = null,
+                                        tint = DarkPink,
+                                        modifier = Modifier)
+                            }
+
+                            IconButton({
+                                scope.launch {
+                                    when(modoRepeticao.value){
+                                        is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
+                                        is ModoDerepeticao.RepetirEssa->vm.setModoDeRepeticao(ModoDerepeticao.RepetirTodos)
+                                        is ModoDerepeticao.RepetirTodos->vm.setModoDeRepeticao(ModoDerepeticao.Desativado)
+                                    }
+                                }
+
+
+                            }) {
+                                when(modoRepeticao.value){
+                                    is ModoDerepeticao.Desativado->Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint = DarkPink)
+                                    is ModoDerepeticao.RepetirEssa->Icon(painter = painterResource(id = R.drawable.baseline_repeat_one_on_24), contentDescription = null,tint = DarkPink)
+                                    is ModoDerepeticao.RepetirTodos->Icon(painter = painterResource(id = R.drawable.baseline_repeat_on_24), contentDescription = null,tint = DarkPink)
+                                }
+
+                            }
+                            IconButton({vm.next()}) {
+                                Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
+                                    contentDescription = null,
+                                    tint = DarkPink,modifier = Modifier)
+
+                            }
+
+                        }
+                    }
                             }
                         }
 
 
                     }
 
-                }
 
 
-            }
+
+
             Spacer(Modifier.padding(10.dp))
             Column(
                 Modifier
-                    .fillMaxWidth()
+
                     .clip(RoundedCornerShape(15.dp))
                     .border(width = 0.5.dp, color = Color.Black, shape = RoundedCornerShape(15.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -567,9 +681,19 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
                     LazyColumn(
                         Modifier
                             .align(Alignment.TopCenter)
-                            .fillMaxWidth(1f)) {
-                        items(80) {
-                            ItemDaLista(item = null)
+                            ) {
+                        itemsIndexed(items = plyListAtual.value) {indice,item->
+                            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
+                                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
+                                    Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = DarkPink)
+                                    ItemDaLista(modifier = Modifier.clickable{
+                                        vm.seekToItem(indice)
+                                    },item = item)
+                                }
+                            else
+                            ItemDaLista(modifier = Modifier.clickable{
+                                vm.seekToItem(indice)
+                            },item = item)
                         }
 
                     }
@@ -577,18 +701,19 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass)
 
                 }
             }
-
+        }
 
         }
 
 
-    }
 
 
 
 
 
 
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true)
 @Composable
@@ -601,8 +726,8 @@ fun PlayerPreview(){
             .safeContentPadding()) {
 
             val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
-            BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
-                MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),{})
+           /*BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
+                MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),{})*/
 
         }
         }
@@ -611,6 +736,7 @@ fun PlayerPreview(){
     }
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true)
 @Composable
@@ -622,9 +748,9 @@ fun PreviaPlyer2(){
                     .safeDrawingPadding()
                     .safeGesturesPadding()
                     .safeContentPadding()) {
-             Box(modifier = Modifier.padding(it))  {
+            /*Box(modifier = Modifier.padding(it))  {
               PlayerCompat2(vm = VmodelPlayer(MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)))
-             }
+             }*/
             }
             }
 

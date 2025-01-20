@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
+import androidx.window.core.layout.WindowHeightSizeClass
 
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -44,9 +45,12 @@ import com.example.songs.componentes.ItemsListaColunas
 import com.example.songs.componentes.LoadingListaMusicas
 import com.example.songs.componentes.LoadingListaMusicasColunas
 import com.example.songs.componentes.Miniplayer
+import com.example.songs.servicoDemidia.PlyListStados
+import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.viewModels.FabricaViewModelLista
 import com.example.songs.viewModels.ListaMusicas
 import com.example.songs.viewModels.ViewModelListas
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /*
 * responsavel pro esibir a lista de musicas em si
@@ -63,8 +67,18 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
 
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
     Box(modifier = modifier.fillMaxSize()){
+      val gradcels:(w:WindowSizeClass)->Int ={w->
+        if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1
+        else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
+                   if(w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
+                   else 1
+        else if (windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.EXPANDED)
+                 if (w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
+                 else 3
+        else   3
 
-      LazyVerticalGrid(columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1 else 3),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
+    }
+      LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
            when(val r =lista.value){
 
@@ -73,18 +87,20 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT||windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                        ItemDaLista(modifier = Modifier.clickable(onClick = {
                           acaoCarregarPlyer(r.lista,indice)
+                          viewModelListas.mudarPlylist(PlyListStados.Todas)
 
                        }), item = item)
                    }else{
-                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState}), item = item)
+                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item)
                    }
                }
                }
                is ListaMusicas.Vasia->{}
                is ListaMusicas.caregando->{
-                   items(1){
+                   items(5){
                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT||windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
-                      LoadingListaMusicas()
+
+                       LoadingListaMusicas()
 
 
                    }else{
@@ -134,7 +150,9 @@ fun previewListaDemusicas(){
             ListaDemusicas(paddingValues = it,
                           windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
                           transicaoMiniPlyer = transicaoMiniPlyer,
-                          viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio)), acaoCarregarPlyer={it,id->})
+                          viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,
+                              MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)
+                          )), acaoCarregarPlyer={ it, id->})
         }
 
        // }

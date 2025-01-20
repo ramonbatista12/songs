@@ -49,6 +49,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.BararInferior
 import com.example.songs.componentes.BarraSuperio
@@ -152,7 +153,8 @@ class MainActivity : ComponentActivity() {
                                  if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
                                      BararInferior(acaoNavegacao = {navController.navigate(it)})
                             else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
-                                    BararInferior(acaoNavegacao = {navController.navigate(it)})
+                                     if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
+                                           BararInferior(acaoNavegacao = {navController.navigate(it)})
 
 
                     },
@@ -160,13 +162,19 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .safeDrawingPadding()
                             .safeGesturesPadding()
-                            .safeContentPadding(),
+                            .safeContentPadding(),//PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
                         containerColor = MaterialTheme.colorScheme.background,
                         snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
 
                         PermanentNavigationDrawer(drawerContent = {
-                                                                 if (windowsizeclass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
-                                                                     PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})},
+                                                             if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
+                                                                 PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
+                                                     else   if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
+                                                                 if(windowsizeclass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
+                                                                     PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
+                                                                 }
+                                                     else{}
+                                                                  },
                                                  modifier = Modifier.padding(paddingValues = it).fillMaxSize()) {
                             Box(modifier = Modifier.fillMaxSize()) {
                                 Navgrafic( navController = navController,
@@ -182,7 +190,7 @@ class MainActivity : ComponentActivity() {
                                                    vieModelPlyers.play()
 
                                                }
-                                           },{viewmodel.mudarBigPlyer()})
+                                           },{viewmodel.mudarBigPlyer()}, estadoService = conecao)
                                 val emreproducao =vieModelPlyers._emreproducao.collectAsState()
                                 val bigPlyer =viewmodel._bigPlyer.collectAsState()
                                 var funcao:()->Boolean ={

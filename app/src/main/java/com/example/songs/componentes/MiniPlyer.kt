@@ -81,7 +81,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
-    LaunchedEffect(metadata) {
+    LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
                 bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
@@ -156,24 +156,79 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplayer",sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope){
+fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplayer",sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope,vm: VmodelPlayer){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
+    val bitmap= remember { mutableStateOf<android.graphics.Bitmap?>(null)  }
+    val  metadata= vm._mediaItemAtual.collectAsState()
+    val reproduzindo=vm._emreproducao.collectAsState()
+    val context= LocalContext.current
+    val scope= rememberCoroutineScope()
+    LaunchedEffect(metadata.value) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+            }catch (e:Exception){
+                bitmap.value=null
+            }
+
+        }
+    }
 
   with(sharedTransitionScope){
 
     Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
-        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier=Modifier.size(50.dp).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+        if (bitmap.value==null)
+        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+              contentDescription = null,
+              modifier=Modifier.size(50.dp).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+        else{
+            val _bitMap=bitmap.value!!.asImageBitmap()
+            Image(bitmap= _bitMap,
+                 contentDescription = null,
+                 modifier=Modifier.size(50.dp)
+                                  .clip(RoundedCornerShape(10.dp))
+                                  .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+
+        }
+        Spacer(Modifier.padding(2.dp))
         Column {
 
-            Text(text = text,maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace, modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope))
-            Text(text = "Nome do Artista", fontSize = 10.sp,maxLines = 1, overflow = TextOverflow.Ellipsis,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
+            Text(text = if (metadata.value==null)text else metadata.value!!.mediaMetadata.title.toString(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope)
+                                   .fillMaxWidth(0.5f))
+            Text(text = if (metadata.value==null) "Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope)
+                                   .fillMaxWidth(0.3f))
 
         }
-        IconButton(onClick = {},modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope)) {
+        IconButton(onClick = {
+            if (reproduzindo.value)
+                scope.launch {
+                    vm.pause()
+                }
+            else
+                scope.launch {
+                    vm.play()
+                }
+        },
+                  modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope)) {
+            if(!reproduzindo.value)
             Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24), contentDescription = null)
+            else
+            Icon(painter = painterResource(id = R.drawable.baseline_pause_24), contentDescription = null)
         }
-        IconButton(onClick = {}, modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope)){
+        IconButton(onClick = {
+            scope.launch {
+                vm.next()
+            }
+        }, modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope)){
             Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
                   contentDescription = null)
         }

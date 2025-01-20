@@ -63,3 +63,24 @@ sealed class StadosDoPlaye(){
         }
     }
 }
+
+sealed class PlyListStados(){
+    object Todas: PlyListStados()
+    class Artista(val artistaId:Long): PlyListStados()
+    class Album(val albumId:Long): PlyListStados()
+    class Playlist(val playlistId:Long): PlyListStados()
+
+    override fun toString(): String {
+        when(this){
+            is Todas->return "Todas"
+            is Artista->return "Artista $artistaId"
+            is Album->return "Album $albumId"
+            is Playlist->return "Playlist $playlistId"
+            else -> return ""
+
+        }
+    }
+
+
+
+}

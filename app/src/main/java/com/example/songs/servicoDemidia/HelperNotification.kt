@@ -31,38 +31,40 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import okhttp3.internal.notify
-
+/*
+* classes usadas para gerenciar notificacoes do servico de media
+* por nao saber o porque de mediassesison service nao criar de forma altomatica as notificacoes de media
+* opitei por eu mesmo criar minhas proprias notificacoes foi utilizado corrotinas e colet de fluxo para observar
+* mudancas no plyer como mudanca de metaData e mudanca de estado de reproducao para lansar as Notificacoes
+* */
 @RequiresApi(Build.VERSION_CODES.O)
 class HelperNotification(val notification: Notification,
                          val helperPalyerEstados: HelperPalyerEstados,
                          val helperPalyerComandes: HelperPalyerComandes,
                          val seviceContext: Context,
-                         val secaoDeMedia:MediaSession):AuxilarMediaSecion{
+                         val secaoDeMedia:MediaSession):AuxilarMediaSecion
+{
     val job= Job()
     val scope= CoroutineScope(Dispatchers.Main+job)
     val metaData= MutableStateFlow<MediaItem?>(null)
     val fabricaDeNotificacoes= FabricaDeNotificacoes(notification,seviceContext)
-
-    private val receiver=Receiver(this)
+    private val receiver=Receiver(this,scope)
     init {
         Log.i("service","helper notificacao")
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.TIRAMISU){
-        val registerReceiver=seviceContext.registerReceiver(receiver, IntentFilter().apply {
+
+        seviceContext.applicationContext.registerReceiver(receiver, IntentFilter().apply {
             addAction(MensagemsBroadcast.play.mensagem)
             addAction(MensagemsBroadcast.pause.mensagem)
             addAction(MensagemsBroadcast.next.mensagem)
             addAction(MensagemsBroadcast.preview.mensagem)
 
-        },Context.RECEIVER_NOT_EXPORTED)}
-        else{
-        val registerReceiver=seviceContext.registerReceiver(receiver, IntentFilter().apply {
-            addAction(MensagemsBroadcast.play.mensagem)
-            addAction(MensagemsBroadcast.pause.mensagem)
-            addAction(MensagemsBroadcast.next.mensagem)
-            addAction(MensagemsBroadcast.preview.mensagem)
 
-        })
-        }
+        },Context.RECEIVER_EXPORTED)
+
+
+
+
+
     scope.launch {
         scope.launch {
         Log.i("service","helper notificacao scope")
@@ -84,8 +86,8 @@ class HelperNotification(val notification: Notification,
             val f:Float=    (it*100f)/helperPalyerEstados._tempoTotal.value
                 f
             }.collect{
-                if(helperPalyerEstados._estaReproduzindo.value&&metaData.value!=null)
-                    fabricaDeNotificacoes.atualizarNotificacaoComprogresso(true,metaData.value,it,secaoDeMedia)
+             //   if(helperPalyerEstados._estaReproduzindo.value&&metaData.value!=null)
+                   // fabricaDeNotificacoes.atualizarNotificacaoComprogresso(true,metaData.value,it,secaoDeMedia)
             }
         }
 
@@ -98,6 +100,7 @@ class HelperNotification(val notification: Notification,
     override fun finalizar() {
         job.cancel()
         metaData.value=null
+        val unregisterReceiver=seviceContext.unregisterReceiver(receiver)
         
 
     }
@@ -119,28 +122,48 @@ class HelperNotification(val notification: Notification,
     }
 }
 
+/*
+* o receiver e  e um broadcast receiver que eu o registro programaticamente
+* ele recebe um ponteiro que e passado por referencia pela jvm
+* o ponteiro aponta para a classe principal do gerenciamento de notificaoes o
+* HelperNotification e funciona como um listener para responder as peddings intentes de cada
+* acao nas notificacoes
+* */
+class Receiver(val HelperNotification: HelperNotification,val scope: CoroutineScope): BroadcastReceiver() {
 
-class Receiver(val HelperNotification: HelperNotification): BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
       if(intent!=null){
           when(intent.action){
               MensagemsBroadcast.play.mensagem->{
-                  HelperNotification.play()
+                     Log.i("receiver","plyer chamado")
+                      HelperNotification.play()
+
               }
               MensagemsBroadcast.pause.mensagem->{
-                  HelperNotification.pause()
+
+                      HelperNotification.pause()
+
+
               }
               MensagemsBroadcast.next.mensagem->{
-                  HelperNotification.stop()
-                  HelperNotification.next()
-                  HelperNotification.play()
+
+                      HelperNotification.next()
+
+
+
 
               }
               MensagemsBroadcast.preview.mensagem->{
-                  HelperNotification.preview()
+
+                      HelperNotification.preview()
+
+
               }
               MensagemsBroadcast.stop.mensagem->{
-                  HelperNotification.stop()
+
+                      HelperNotification.stop()
+
+
               }
               else->{}
           }
@@ -148,14 +171,18 @@ class Receiver(val HelperNotification: HelperNotification): BroadcastReceiver() 
     }
 
 }
-
+/*
+* a fabrica de notificacoes tem os metodos nesssesarios para atualizar as notificacoes
+* as notificacoes sao pasadas como referencias e assesadas como um ponteiro
+*
+* */
 @RequiresApi(Build.VERSION_CODES.O)
 class FabricaDeNotificacoes(var notification: Notification, val contextoDoServico: Context){
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun atualizarNotificacao(reprodusindo:Boolean, metaData:MediaItem?){
         if(reprodusindo){
-            val dadosTitulo=metaData!!.mediaMetadata.title
+            val dadosTitulo=metaData!!.mediaMetadata.title ?: "sem titulo"
 
             notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                 .setContentText("Reproduzindo $dadosTitulo ")
@@ -237,7 +264,11 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         }
     }
 }
-
+/*
+* MensagemsBroadcasts definen o tipo de acao  que cada intent pode posuir
+* pois e nessesario que o sistema de notificacoes identifique qual acao foi pedida
+* e as acoes deven ser padronizadas
+* */
 sealed class MensagemsBroadcast(val mensagem:String){
     object play: MensagemsBroadcast("play")
     object pause: MensagemsBroadcast("pause")

@@ -43,6 +43,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +72,7 @@ import com.example.songs.repositorio.Album
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /*
@@ -94,6 +96,10 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
 
         }
     }
+    DisposableEffect(Unit) {
+        onDispose {
+            imagem.value=null
+             scop.cancel()} }
     Row (horizontalArrangement = Arrangement.SpaceBetween ,
          verticalAlignment = Alignment.CenterVertically,
          modifier = modifier.padding(10.dp)){
@@ -148,6 +154,12 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
                 imagem.value=null
             }
 
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            imagem.value=null
+            scop.cancel()
         }
     }
     Column(modifier = modifier.wrapContentWidth()) {
@@ -211,18 +223,50 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
 
         }
     }
+    DisposableEffect(Unit) {
+        onDispose {
+            imagem.value=null
+            scop.cancel()
+        }
+    }
 }
 
 @Composable
-fun ItemsAlbusColuna(modifier: Modifier=Modifier){
-    Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
+fun ItemsAlbusColuna(modifier: Modifier=Modifier,item: Album){
+    val context= LocalContext.current
+    val scop=rememberCoroutineScope()
+    val bitmap= remember { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(Unit) {
+        scop.launch(Dispatchers.IO) {
+                try {
+                    bitmap.value= getMetaData(item.uri,item.idDoalbum.toLong(),context)
+                }catch (e:Exception){
+                    bitmap.value=null
+                }
+        }
+
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            bitmap.value=null
+            scop.cancel()
+        }
+    }
+    Column(modifier =modifier.padding(10.dp)) {
+        if(bitmap.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_album_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+        else{
+            val _bitmap=bitmap!!.value!!.asImageBitmap()
+            Image(bitmap=_bitmap,
+                contentDescription = null,
+                modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+        }
         Row {
             Column{
-                Text("Nome da Album", maxLines = 2,fontSize = 18.sp)
-                Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
+                Text(item.nome, maxLines = 2,fontSize = 18.sp)
+                Text(item.artista,maxLines = 1,fontSize = 14.sp)
 
             }
 

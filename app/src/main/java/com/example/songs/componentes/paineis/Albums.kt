@@ -20,6 +20,9 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
+import com.example.songs.componentes.LoadingAlbumsColuna
+import com.example.songs.componentes.LoadingListaAlbums
+import com.example.songs.viewModels.ListaAlbums
 import com.example.songs.viewModels.ViewModelListas
 
 /*
@@ -33,7 +36,11 @@ fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass
       LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
                        columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1 else 3),
                        horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
-          items(items = listaAlbun.value){
+          when(val a=listaAlbun.value){
+
+
+          is ListaAlbums.Lista->{
+          items(items = a.lista){
               if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
                   ItemsAlbums(modifier=Modifier.clickable {
                       transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
@@ -41,9 +48,21 @@ fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass
               else
                   ItemsAlbusColuna(modifier=Modifier.clickable {
                       transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
-                  })
+                  },it)
 
           }
+      }
+          is ListaAlbums.Vasia->{}
+          is ListaAlbums.caregando->{
+              items(5){
+                  if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
+                      LoadingAlbumsColuna()
+                  else
+                      LoadingListaAlbums()
+
+              }
+          }
+      }
 
       }
 

@@ -44,6 +44,7 @@ class ServicMedia: MediaSessionService() {
     var helperNotificacao: HelperNotification? = null
     val serviceIniciado= MutableStateFlow(false)
     var _serviceIniciado=serviceIniciado.asStateFlow()
+    val plyListStados= MutableStateFlow<PlyListStados>(PlyListStados.Todas)
     lateinit var notification: Notification
     val binder=ServicBinder()
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -101,7 +102,7 @@ class ServicMedia: MediaSessionService() {
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun criarNotificacao(){
+private fun criarNotificacao(){
     val canal =NotificationChannel("1","serviceMedia",NotificationManager.IMPORTANCE_HIGH).apply {
         description="notificacao do servico de media"
     }
@@ -110,7 +111,13 @@ fun criarNotificacao(){
                                                                     .setContentText("rodando")
                                                                      .setSmallIcon(R.drawable.baseline_music_note_24_darkpink).build()
 }
+    fun muudarPlyList(plyListStado: PlyListStados){
+        scope.launch {
 
+           plyListStados.emit(plyListStado)
+            Log.d("service","muudarPlyList: $plyListStado")
+        }
+    }
     override fun onDestroy() {
         Log.i("service","onDestroy")
         if(mediaSession!=null)
