@@ -9,8 +9,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /*
@@ -35,13 +37,13 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
     private val modoAleatorio = MutableStateFlow(false)
     private val modoRepeticao = MutableStateFlow(0)
     private val emplyer = MutableStateFlow(false)
-    var _tempoTotal = tempoTotal.asStateFlow()
-    var _tempoDereproducao = tempoDereproducao.asStateFlow()
-    var _estaReproduzindo = estaReproduzindo.asStateFlow()
-    val caregando_ = caregando.asStateFlow()
-    var _metadataAtual = metadataAtual.asStateFlow()
-    var _modoAleatorio = modoAleatorio.asStateFlow()
-    val _modoRepeticao = modoRepeticao.asStateFlow()
+    var _tempoTotal = tempoTotal.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), 0L)
+    var _tempoDereproducao = tempoDereproducao.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), 0L)
+    var _estaReproduzindo = estaReproduzindo.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), false)
+    val caregando_ = caregando.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), false)
+    var _metadataAtual = metadataAtual.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), null)
+    var _modoAleatorio = modoAleatorio.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), false)
+    val _modoRepeticao = modoRepeticao.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), 0)
     init {
         scopoCorotina.launch {
             fluxoTempoDereproducao().collect {
@@ -183,6 +185,7 @@ class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,Auxi
 
     override fun setLista(lista: List<MediaItem>) {
        scopoCorotina.launch {
+           mediaSession.player.clearMediaItems()
            mediaSession.player.setMediaItems(lista)
        }
     }

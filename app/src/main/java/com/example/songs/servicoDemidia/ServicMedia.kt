@@ -69,6 +69,7 @@ class ServicMedia: MediaSessionService() {
         val player = ExoPlayer.Builder(this@ServicMedia).setAudioAttributes(AudioAttributes.DEFAULT,true)
                                                                 .build()
 
+
        mediaSession = MediaSession.Builder(this@ServicMedia, player).build()
        //onUpdateNotification(mediaSession!!,true)
        helperPalyer = HelperPalyerEstados(mediaSession!!)

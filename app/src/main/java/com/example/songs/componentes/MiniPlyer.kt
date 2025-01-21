@@ -37,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +61,7 @@ import com.example.songs.R
 import com.example.songs.componentes.paineis.ComponetesCompartilhados
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /*
@@ -91,6 +93,13 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
             }
         }
     }
+    DisposableEffect(Unit){
+        onDispose {
+            bitmap.value=null
+            scope.cancel()
+        }
+    }
+
 
     val infiniteTransition= rememberInfiniteTransition("animacao mini plyer")
     val animacaoScroll=infiniteTransition.animateFloat(initialValue = -200f,
@@ -129,7 +138,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
         Text(text = if (metadata.value==null)"Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
                  fontSize = 10.sp,
                  maxLines = 1,
-                 overflow = TextOverflow.Ellipsis)
+                 overflow = TextOverflow.Ellipsis,modifier=Modifier.fillMaxWidth(largura))
 
         }
         IconButton(onClick = {
@@ -172,6 +181,12 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
                 bitmap.value=null
             }
 
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            bitmap.value=null
+            scope.cancel()
         }
     }
 

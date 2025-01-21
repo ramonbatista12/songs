@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.media3.session.MediaController
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import androidx.media3.session.legacy.MediaSessionCompat.Token
 import com.google.common.util.concurrent.MoreExecutors
@@ -16,24 +17,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 sealed class ResultadosConecaoServiceMedia{
-    class Conectado (val setvice:ServicMedia,private val c: Context): ResultadosConecaoServiceMedia(){
-        var controle: MediaController?=null
-        val scop= CoroutineScope(Dispatchers.Main)
-        init {
-            scop.launch {
-             /* val future=MediaController.Builder(c,SessionToken(c, ComponentName(c,ServicMedia::class.java))).buildAsync()
-                future.addListener({
-                    if(future.isDone)
-                    controle=future.get()
-                    else controle=null
-                    if(future.isCancelled)
-                        Log.i("future","foicancelada")
-                }, MoreExecutors.directExecutor())*/
-
-
-            }
-        }
-    }
+    class Conectado (val setvice:ServicMedia,private val c: Context): ResultadosConecaoServiceMedia()
     object Desconectado: ResultadosConecaoServiceMedia()
     class Erro(val mensage:String): ResultadosConecaoServiceMedia()
 

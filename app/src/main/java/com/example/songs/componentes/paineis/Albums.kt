@@ -1,5 +1,6 @@
 package com.example.songs.componentes.paineis
 
+import android.util.Log
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +30,10 @@ import com.example.songs.viewModels.ViewModelListas
 * responsavel por esibir a  lista de albums
 * */
 @Composable
-fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,transicaoMiniPlyer:MutableTransitionState<Boolean>,vm:ViewModelListas){
+fun ListaDeAlbums(modifier: Modifier = Modifier
+                  ,windowSizeClass: WindowSizeClass,
+                  transicaoMiniPlyer:MutableTransitionState<Boolean>,
+                  vm:ViewModelListas,acaoNavegarPorId:(s:String)->Unit){
   val listaAlbun =vm.albums.collectAsState()
   Box(modifier = modifier.fillMaxSize()){
 
@@ -43,10 +47,12 @@ fun ListaDeAlbums(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass
           items(items = a.lista){
               if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
                   ItemsAlbums(modifier=Modifier.clickable {
-                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
+                      Log.d("id album", "ListaDeAlbums: ${it.idDoalbum}")
+                      acaoNavegarPorId(it.idDoalbum.toString())
                   },it)
               else
                   ItemsAlbusColuna(modifier=Modifier.clickable {
+                      Log.d("id album", "ListaDeAlbums: ${it.idDoalbum}")
                       transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
                   },it)
 

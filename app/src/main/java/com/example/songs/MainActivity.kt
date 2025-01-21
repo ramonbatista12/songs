@@ -48,6 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -65,6 +67,7 @@ import com.example.songs.viewModels.FabricaMainViewmodel
 import com.example.songs.viewModels.FabricaViewmodelPlyer
 import com.example.songs.viewModels.MainViewModel
 import com.example.songs.viewModels.VmodelPlayer
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -135,6 +138,12 @@ class MainActivity : ComponentActivity() {
                     }
                 val permicaoNotificacao =
                     rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+                        if(it&&!viewmodel._permicaoNotificacao.value){
+                            val i = Intent(this@MainActivity, ServicMedia::class.java)
+                            startForegroundService(i)
+                            val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                            bindService(i1,serviceConection,BIND_IMPORTANT)
+                        }
                        viewmodel.mudancaSolicitarPermicaoNotificao(it)
                     }
 
@@ -151,10 +160,12 @@ class MainActivity : ComponentActivity() {
                     Scaffold(topBar = { BarraSuperio(titulo = "Songs") },
                              bottomBar = {
                                  if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                                     BararInferior(acaoNavegacao = {navController.navigate(it)})
+                                     BararInferior(acaoNavegacao = {navController.navigate(it)
+                                                                    })
                             else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
                                      if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
-                                           BararInferior(acaoNavegacao = {navController.navigate(it)})
+                                           BararInferior(acaoNavegacao = {navController.navigate(it)
+                                               })
 
 
                     },
@@ -304,18 +315,31 @@ class MainActivity : ComponentActivity() {
 
 
 
-        val i = Intent(this@MainActivity, ServicMedia::class.java)
-        startForegroundService(i)
+
         when(conecao.value){
             is ResultadosConecaoServiceMedia.Conectado->{}
             is ResultadosConecaoServiceMedia.Desconectado->{
+                if (ContextCompat.checkSelfPermission(
+                        this@MainActivity,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                ){
                 val i = Intent(this@MainActivity, ServicMedia::class.java)
-                bindService(i,serviceConection,BIND_IMPORTANT)
+                startForegroundService(i)
+                val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                bindService(i1,serviceConection,BIND_IMPORTANT)}
 
             }
             is ResultadosConecaoServiceMedia.Erro->{
+                if (ContextCompat.checkSelfPermission(
+                        this@MainActivity,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                ){
                 val i = Intent(this@MainActivity, ServicMedia::class.java)
-                bindService(i,serviceConection,BIND_IMPORTANT)
+                startForegroundService(i)
+                val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                bindService(i1,serviceConection,BIND_IMPORTANT)}
             }
 
         }
@@ -336,6 +360,7 @@ class MainActivity : ComponentActivity() {
         when(val r =conecao.value){
             is ResultadosConecaoServiceMedia.Conectado->{
                try {
+
                    unbindService(serviceConection)
                }catch (e:Exception){
                    Log.e("main",e.toString())

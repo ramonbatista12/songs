@@ -10,22 +10,14 @@ import android.util.Log
 import android.util.Size
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.Composable
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import com.example.songs.componentes.paineis.ArtistaId
 import com.example.songs.servicoDemidia.PlyListStados
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class RepositorioService(val context: Context) {
@@ -138,10 +130,11 @@ fun getArtistas()= flow<List<Artista>>{
           MediaStore.Audio.Artists._ID,
 
       )
-      val listaDeArtistas= mutableListOf<Artista>()
+
 
       val ordenacao="${MediaStore.Audio.Artists.ARTIST} ASC"
       while (true){
+      val listaDeArtistas= mutableListOf<Artista>()
       val  cursor=context.contentResolver.query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,projecao,null,null,ordenacao).use {
           val id=it!!.getColumnIndexOrThrow(projecao[0])
           val artista=it.getColumnIndexOrThrow(projecao[1])
@@ -171,7 +164,8 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
     MediaStore.Audio.Media.ARTIST,
     MediaStore.Audio.Media.ALBUM,
     MediaStore.Audio.Media.DURATION,
-    MediaStore.Audio.Media._ID)
+    MediaStore.Audio.Media._ID,
+    MediaStore.Audio.Media.ARTIST_ID)
     val ordenacao ="${MediaStore.Audio.Media.DISPLAY_NAME} ASC "
     val storege = if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
         MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -180,7 +174,7 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
         val listaDeMediaItems= mutableListOf<MediaItem>()
         val cursor=contentResolver.query(storege,
             projecao,
-            "${MediaStore.Audio.Media.ARTIST_ID}=?",
+            "${MediaStore.Audio.Media.ARTIST_ID}=? ",
             arrayOf(id.toString()),
             ordenacao,null).use { cursor->
 
@@ -204,24 +198,28 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
                         }.build()
                     ).build()
                 listaDeMediaItems.add(mediaItem)
-                delay(2000)
+
 
             }
 
-        }
+           }
+        emit(listaDeMediaItems)
+        delay(4000)
     }
 
 }
 
     @OptIn(UnstableApi::class)
     fun getMusicasPorAlbum(id:Long)= flow<List<MediaItem>>{
+     Log.d("TAG", "getMusicasPorAlbum: $id")
     val contentResolver=context.contentResolver
     val projecao=  arrayOf<String>(
         MediaStore.Audio.Media.DISPLAY_NAME,
         MediaStore.Audio.Media.ARTIST,
         MediaStore.Audio.Media.ALBUM,
         MediaStore.Audio.Media.DURATION,
-        MediaStore.Audio.Media._ID)
+        MediaStore.Audio.Media._ID,
+        MediaStore.Audio.Media.ALBUM_ID)
     val ordenacao ="${MediaStore.Audio.Media.DISPLAY_NAME} ASC "
     val storege = if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
         MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -230,7 +228,7 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
         val listaDeMediaItems= mutableListOf<MediaItem>()
         val cursor=contentResolver.query(storege,
             projecao,
-            "${MediaStore.Audio.Media.ALBUM_ID}=?",
+            "${MediaStore.Audio.Media.ALBUM_ID} =? ",
             arrayOf(id.toString()),
             ordenacao,null).use { cursor->
 
@@ -238,11 +236,11 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
             val artista=cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val album=cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
             val duracao=cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-            val id=cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val idm=cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
 
             while (cursor.moveToNext()){
-                val uri =ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getLong(id))
-                val mediaItem=MediaItem.Builder().setUri(uri).setMediaId("${cursor.getLong(id)}")
+                val uri =ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getLong(idm))
+                val mediaItem=MediaItem.Builder().setUri(uri).setMediaId("${cursor.getLong(idm)}")
                     .setMediaMetadata(
                         MediaMetadata.Builder().apply {
                             this.setTitle(cursor.getString(nome))
@@ -254,23 +252,26 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
                         }.build()
                     ).build()
                 listaDeMediaItems.add(mediaItem)
-                delay(2000)
+
+
 
             }
+            emit(listaDeMediaItems)
+            delay(2000)
 
         }
     }
 }
 
-fun getPlylist(estado: PlyListStados):Flow<List<MediaItem>>{
+fun getPlylist(estado:PlyListStados): Flow<List<MediaItem>> =
     when(val r=estado){
-        is PlyListStados.Album->{return getMusicasPorAlbum(r.albumId)}
-        is PlyListStados.Artista->{return getMusicasPorArtista(r.artistaId)}
-        is PlyListStados.Todas->{return getMusics()}
-        is PlyListStados.Playlist->{ return getMusics()}
-        else->{return getMusics()}
+        is PlyListStados.Album->{getMusicasPorAlbum(r.albumId)}
+        is PlyListStados.Artista->{getMusicasPorArtista(r.artistaId)}
+        is PlyListStados.Todas->{ getMusics()}
+        is PlyListStados.Playlist->{  getMusics()}
+        else->{ getMusics()}
     }
-}
+
 
  @RequiresApi(Build.VERSION_CODES.Q)
 fun getMetaData(uri: Uri, id: Long):Bitmap?{

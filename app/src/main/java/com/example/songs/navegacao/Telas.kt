@@ -1,6 +1,7 @@
 package com.example.songs.navegacao
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,9 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.songs.application.AplicationCuston
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
+import com.example.songs.componentes.paineis.AlbumId
+import com.example.songs.componentes.paineis.ArtistaId
 import com.example.songs.componentes.paineis.BigPlayer
 import com.example.songs.componentes.paineis.ListaDeAlbums
 import com.example.songs.componentes.paineis.ListaDeArtistas
@@ -39,6 +45,7 @@ import com.example.songs.viewModels.FabricaViewModelLista
 import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 /*
 * Navgrafic e o grafico de navegacao em sim suas rotas sao determinadas pela classe DestinosDENavegacao
@@ -63,6 +70,7 @@ fun Navgrafic(navController: NavHostController,
               acaoAvisoBigplyer:()->Unit,
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
+    val scope=rememberCoroutineScope()
 NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas.rota,modifier=modifier){
   composable(route = DestinosDENavegacao.Todas.rota){
    Box{
@@ -85,24 +93,66 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
       Box(modifier=Modifier){
           ListaDeAlbums(windowSizeClass = windowSizeClass,
                        transicaoMiniPlyer = transicaoMiniPlyer,
-                       vm =vmLista)
+                       vm =vmLista,
+                       acaoNavegarPorId = {s->
+                           Log.d("id artista", "Navgrafic: $s")
+                       scope.launch { navController.navigate(DestinosDENavegacao.AlbumId.rota+"$s")}})
          }}
 
 
   composable(route = DestinosDENavegacao.Configuracoes.rota){}
 
-  //  viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)
+  //
   composable(route = DestinosDENavegacao.Player.rota){
       BigPlayer(windowSizeClass = windowSizeClass,
                 paddingValues = paddingValues,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
-          vmlista = vmLista )
+          vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)) )
 
   }
 
   composable(route = DestinosDENavegacao.Artista.rota){
-      ListaDeArtistas(windowSizeClass = windowSizeClass,transicaoMiniPlyer = transicaoMiniPlyer)
+      ListaDeArtistas(windowSizeClass = windowSizeClass,
+                      transicaoMiniPlyer = transicaoMiniPlyer,
+                      acaoNavegarPorId ={s->
+                          Log.d("id artista", "Navgrafic: $s")
+                      scope.launch { navController.navigate(DestinosDENavegacao.ArtistaId.rota+"$s")
+                                     }},
+                      vmodel = vmLista)
+
   }
+
+  composable(route=DestinosDENavegacao.ArtistaId.rota+"{id}", arguments = listOf(navArgument("id"){
+      type= NavType.StringType
+      defaultValue="0"
+
+  }))  {
+      val id = it.arguments?.getString("id")?:"0"
+      ArtistaId(modifier = Modifier,
+          windowSizeClass = windowSizeClass,
+          paddingValues = paddingValues,
+          transicaoMiniPlyer = transicaoMiniPlyer,
+          viewModelListas = vmLista,
+          acaoCarregarPlyer = acaoCaregarPlyer,id=id.toLong())
+  }
+
+   composable(route=DestinosDENavegacao.AlbumId.rota+"{id}",
+       arguments = listOf(navArgument("id"){
+                                                 type= NavType.StringType
+                                                 defaultValue="0"
+
+   })){
+       val id = it.arguments?.getString("id")?:"0"
+       AlbumId(
+           modifier = Modifier,
+           windowSizeClass = windowSizeClass,
+           paddingValues = paddingValues,
+           transicaoMiniPlyer = transicaoMiniPlyer,
+           viewModelListas = vmLista,
+           acaoCarregarPlyer = acaoCaregarPlyer,id=id.toLong()
+       )
+
+   }
 
 
 }

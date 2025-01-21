@@ -10,13 +10,14 @@ import androidx.media3.common.MediaItem
 import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.PlyListStados
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -100,11 +101,13 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
         }
 
     }
+
+
+    fun flowAulbumId(id:Long)=repositorio.getMusicasPorAlbum(id)
+    fun flowArtistaId(id:Long)=repositorio.getMusicasPorArtista(id)
+     @OptIn(ExperimentalCoroutinesApi::class)
      @RequiresApi(Build.VERSION_CODES.Q)
-      fun plylist(): Flow<List<MediaItem>> = estadoPlylist.flatMapConcat {
-          val f= repositorio.getPlylist(it)
-         f
-     }
+      fun plylist(): Flow<List<MediaItem>> =repositorio.getPlylist(estadoPlylist.value)
      fun mudarPlylist(plyListStado: PlyListStados){
        scope.launch {
            when(val e=estado.value){

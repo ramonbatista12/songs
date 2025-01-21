@@ -104,6 +104,7 @@ import com.example.songs.viewModels.ModoDerepeticao
 import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -189,11 +190,10 @@ fun Player(modifier: Modifier=Modifier){
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope,vm:VmodelPlayer){
-    var range= remember {  mutableStateOf<Float>(0f)}
+
     val bitMap =remember{ mutableStateOf<Bitmap?>(null)}
     val mediaItem=vm._mediaItemAtual.collectAsState()
     val tempoTotal=vm._tempoTotal.collectAsState()
-    val tempoAtual=vm._duracao.collectAsState()
     val reproduzindo=vm._emreproducao .collectAsState()
     val modoAleatorio=vm._modoAleatorio.collectAsState()
     val modoRepeticao=vm._modoRepeticao.collectAsState()
@@ -212,7 +212,13 @@ fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: Shared
 
         }
     }
-    val stateRange = remember { derivedStateOf { range.value } }
+    DisposableEffect(Unit){
+        onDispose {
+            bitMap.value=null
+            scop.cancel()
+        }
+    }
+
     with(sharedTransitionScope){
         Column(modifier = modifier
             .padding(10.dp)
@@ -253,7 +259,7 @@ fun PlyerParaTransicao(modifier: Modifier=Modifier,sharedTransitionScope: Shared
                      modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
-                    val rangeValue:()->Float ={ stateRange.value }
+
                    Row(modifier=Modifier.fillMaxWidth()) {
 
                          Text(text = tempoTotalString.value, fontSize = 8.sp )
@@ -518,6 +524,12 @@ fun PlyerEspandido(modifier: Modifier=Modifier,windowSizeClass: WindowSizeClass,
                     bitmap.value=null}
             }
 
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                bitmap.value=null
+                scope.cancel()
+            }
         }
 
         Row(

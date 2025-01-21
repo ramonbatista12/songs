@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.collection.emptyLongSet
 import androidx.core.app.ActivityCompat
@@ -20,6 +21,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.IntentCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
@@ -47,7 +49,7 @@ class HelperNotification(val notification: Notification,
     val job= Job()
     val scope= CoroutineScope(Dispatchers.Main+job)
     val metaData= MutableStateFlow<MediaItem?>(null)
-    val fabricaDeNotificacoes= FabricaDeNotificacoes(notification,seviceContext)
+    val fabricaDeNotificacoes= FabricaDeNotificacoes(notification,seviceContext,secaoDeMedia)
     private val receiver=Receiver(this,scope)
     init {
         Log.i("service","helper notificacao")
@@ -134,37 +136,11 @@ class Receiver(val HelperNotification: HelperNotification,val scope: CoroutineSc
     override fun onReceive(context: Context?, intent: Intent?) {
       if(intent!=null){
           when(intent.action){
-              MensagemsBroadcast.play.mensagem->{
-                     Log.i("receiver","plyer chamado")
-                      HelperNotification.play()
-
-              }
-              MensagemsBroadcast.pause.mensagem->{
-
-                      HelperNotification.pause()
-
-
-              }
-              MensagemsBroadcast.next.mensagem->{
-
-                      HelperNotification.next()
-
-
-
-
-              }
-              MensagemsBroadcast.preview.mensagem->{
-
-                      HelperNotification.preview()
-
-
-              }
-              MensagemsBroadcast.stop.mensagem->{
-
-                      HelperNotification.stop()
-
-
-              }
+              MensagemsBroadcast.play.mensagem->scope.launch {HelperNotification.play() }
+              MensagemsBroadcast.pause.mensagem-> scope.launch { HelperNotification.pause() }
+              MensagemsBroadcast.next.mensagem-> scope.launch { HelperNotification.next() }
+              MensagemsBroadcast.preview.mensagem->scope.launch{ HelperNotification.preview() }
+              MensagemsBroadcast.stop.mensagem->scope.launch{HelperNotification.stop()}
               else->{}
           }
       }
@@ -177,15 +153,16 @@ class Receiver(val HelperNotification: HelperNotification,val scope: CoroutineSc
 *
 * */
 @RequiresApi(Build.VERSION_CODES.O)
-class FabricaDeNotificacoes(var notification: Notification, val contextoDoServico: Context){
+class FabricaDeNotificacoes(var notification: Notification, val contextoDoServico: Context,val secaoDemedia: MediaSession){
 
+    @OptIn(UnstableApi::class)
     @RequiresApi(Build.VERSION_CODES.P)
     fun atualizarNotificacao(reprodusindo:Boolean, metaData:MediaItem?){
         if(reprodusindo){
-            val dadosTitulo=metaData!!.mediaMetadata.title ?: "sem titulo"
-
+            val dadosTitulo=metaData?.mediaMetadata?.title ?: "sem titulo"
+            val a=MediaStyleNotificationHelper.MediaStyle(secaoDemedia).build()
             notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
-                .setContentText("Reproduzindo $dadosTitulo ")
+                .setContentText("Reproduzindo ${ if(metaData!=null)dadosTitulo else "sem titulo"}  ")
                 .setContentTitle(dadosTitulo)//.createWithResource()
 
                .addAction(android.app.Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
@@ -226,10 +203,10 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
 
     fun atualizarNotificacaoComprogresso(reprodusindo:Boolean, metaData:MediaItem?,progresso:Float,secaoDemedia:MediaSession){
         if(reprodusindo){
-            val dadosTitulo=metaData!!.mediaMetadata.title
+            val dadosTitulo=metaData?.mediaMetadata?.title
             val progresso=progresso.toInt()
             notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
-                .setContentText("Reproduzindo $dadosTitulo ")
+                .setContentText("Reproduzindo ${if(metaData!=null)dadosTitulo else "sem titulo" }")
                 .setContentTitle(dadosTitulo)//.createWithResource()
 
                 .addAction(android.app.Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
@@ -256,7 +233,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         else{
             notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                 .setContentText("Pronto para reprodusir")
-                .setContentTitle("servico de media")
+                .setContentTitle("Player de Audio")
 
                 .build()
 

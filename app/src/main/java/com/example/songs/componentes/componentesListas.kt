@@ -69,6 +69,7 @@ import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
 import com.example.songs.R
 import com.example.songs.repositorio.Album
+import com.example.songs.repositorio.Artista
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
 import kotlinx.coroutines.Dispatchers
@@ -274,14 +275,14 @@ fun ItemsAlbusColuna(modifier: Modifier=Modifier,item: Album){
     }
 }
 @Composable
-fun ItemsArtistas(modifier: Modifier=Modifier){
+fun ItemsArtistas(modifier: Modifier=Modifier,item:Artista){
     Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Image(painter = painterResource(id = R.drawable.baseline_artistas_24), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
         ).size(80.dp))
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
             Spacer(Modifier.padding(8.dp))
-            Text("Nome do Artista", maxLines = 2,fontSize = 18.sp, color = DarkPink)
+            Text(item.nome, maxLines = 2,fontSize = 18.sp, color = DarkPink)
             Spacer(Modifier.padding(3.dp))
            // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp, color = DarkPink)
 
@@ -290,14 +291,15 @@ fun ItemsArtistas(modifier: Modifier=Modifier){
 }
 
 @Composable
-fun ItemsArtistasColuna(modifier: Modifier=Modifier){
+fun ItemsArtistasColuna(modifier: Modifier=Modifier,item: Artista){
+
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
         Image(painter = painterResource(id = R.drawable.baseline_artistas_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Text("Nome da Artista", maxLines = 2,fontSize = 18.sp)
+                Text(item.nome, maxLines = 2,fontSize = 18.sp)
                // Text("Nome do Artista",maxLines = 1,fontSize = 14.sp)
 
             }
