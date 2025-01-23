@@ -152,6 +152,7 @@ class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,Auxi
     private val scopoCorotina= CoroutineScope(Dispatchers.Main+job)
     override fun prepare() {
         scopoCorotina.launch {
+
             mediaSession.player.prepare()
         }
     }

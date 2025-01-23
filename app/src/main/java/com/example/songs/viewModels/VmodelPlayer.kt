@@ -44,7 +44,7 @@ class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceM
 
 
 init {
-     scope.launch {
+     scope.launch(Dispatchers.Default) {
        estadoService.collect{
                when(it){
                  is ResultadosConecaoServiceMedia.Conectado->{
@@ -68,12 +68,12 @@ init {
 
    suspend private fun coleta(ponteiro:HelperPalyerEstados){
        if(job!=null) job!!.cancel()
-       job=scope.launch {
-
-       scope.launch {    ponteiro._tempoTotal.collect{
+       job=scope.launch(Dispatchers.Default) {
+        Log.i("corotinas","entrou thread da coleta ${Thread.currentThread().name}")
+       scope.launch(Dispatchers.Default)  {    ponteiro._tempoTotal.collect{
              tempoTotal.value=it
          } }
-       scope.launch {
+       scope.launch(Dispatchers.Default)  {
                ponteiro._tempoDereproducao.map {
                   // Log.i("coleta","it $it,tempoTotal ${tempoTotal.value}")
                     (it*100f) /tempoTotal.value
@@ -81,7 +81,7 @@ init {
                    duracao.value=it
                }
           }
-       scope.launch {
+       scope.launch(Dispatchers.Default) {
            ponteiro._tempoDereproducao.map {
                val horas=(it/3600000).toInt()
                val minutos=((it-horas*3600000)/60000).toInt()
@@ -89,6 +89,7 @@ init {
                val  s="${if(horas<10) "0$horas" else horas}:${if(minutos<10) "0$minutos" else minutos}:${if(segundos<10) "0$segundos" else segundos}"
                s
            }.collect{
+               Log.i("coleta","entrou thread do tempo de reproducao ${Thread.currentThread().name}")
                duracaoString.value=it
            }
        }
@@ -110,22 +111,24 @@ init {
 
                }
            }
-       scope.launch {
+       scope.launch(Dispatchers.Default) {
+
                ponteiro._metadataAtual.collect{
+                   Log.i("coleta","entrou thread da coleta de metadatas ${Thread.currentThread().name}")
                    mediaItemAtual.emit(it)
                }
            }
-       scope.launch {
+       scope.launch(Dispatchers.Default) {
                ponteiro._estaReproduzindo.collect{
                    emreproducao.value=it
                }
            }
-       scope.launch {
+       scope.launch(Dispatchers.Default) {
            ponteiro._modoAleatorio.collect{
                modoAleatorio.value=it
            }
        }
-       scope.launch {
+       scope.launch(Dispatchers.Default) {
            ponteiro._tempoTotal.map {
                val horas=(it/3600000).toInt()
                val minutos=((it-horas*3600000)/60000).toInt()
@@ -136,7 +139,7 @@ init {
                tempoTotalString.value=it
            }
        }
-       scope.launch {
+       scope.launch(Dispatchers.Default) {
            ponteiro._modoRepeticao.map {
                when(it){
                    0->ModoDerepeticao.Desativado

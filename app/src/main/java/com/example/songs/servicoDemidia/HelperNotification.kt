@@ -67,15 +67,15 @@ class HelperNotification(val notification: Notification,
 
 
 
-    scope.launch {
-        scope.launch {
+    scope.launch(Dispatchers.Default) {
+        scope.launch(Dispatchers.Default) {
         Log.i("service","helper notificacao scope")
         helperPalyerEstados._metadataAtual.collect{
             metaData.value=it
             if(it!=null)
             fabricaDeNotificacoes.atualizarNotificacao(true,metaData.value)
         }}
-      scope.launch {
+      scope.launch(Dispatchers.Default) {
           helperPalyerEstados._estaReproduzindo.collect{
               Log.i("service","helper notificacao scope esta reproduzindo $it")
               if(!it) fabricaDeNotificacoes.atualizarNotificacao(false,metaData.value)

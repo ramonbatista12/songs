@@ -53,7 +53,7 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
               else
                   ItemsAlbusColuna(modifier=Modifier.clickable {
                       Log.d("id album", "ListaDeAlbums: ${it.idDoalbum}")
-                      transicaoMiniPlyer.targetState=!transicaoMiniPlyer.targetState
+                      acaoNavegarPorId(it.idDoalbum.toString())
                   },it)
 
           }

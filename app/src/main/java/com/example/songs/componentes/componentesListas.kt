@@ -88,6 +88,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
     val context= LocalContext.current
     LaunchedEffect(Unit){
         scop.launch(Dispatchers.IO) {
+            Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item?.mediaMetadata?.title } ${item?.mediaId}")
             try {
                 val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
                 imagem.value=bitmap
@@ -196,6 +197,7 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
     val context= LocalContext.current
     LaunchedEffect(Unit){
         scop.launch(Dispatchers.IO) {
+            Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item.nome } ${item.idDoalbum}")
             try {
                 imagem.value= getMetaData(uri = item.uri,id = item.idDoalbum.toLong(),context = context)
             }catch (e:Exception){
@@ -239,7 +241,8 @@ fun ItemsAlbusColuna(modifier: Modifier=Modifier,item: Album){
     val bitmap= remember { mutableStateOf<Bitmap?>(null) }
     LaunchedEffect(Unit) {
         scop.launch(Dispatchers.IO) {
-                try {
+            Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item.nome } ${item.idDoalbum}")
+            try {
                     bitmap.value= getMetaData(item.uri,item.idDoalbum.toLong(),context)
                 }catch (e:Exception){
                     bitmap.value=null
@@ -293,7 +296,7 @@ fun ItemsArtistas(modifier: Modifier=Modifier,item:Artista){
 @Composable
 fun ItemsArtistasColuna(modifier: Modifier=Modifier,item: Artista){
 
-    Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
+    Column(modifier =modifier.padding(10.dp)) {
         Image(painter = painterResource(id = R.drawable.baseline_artistas_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))

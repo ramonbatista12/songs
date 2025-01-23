@@ -65,6 +65,7 @@ import com.example.songs.servicoDemidia.ServicMedia
 import com.example.songs.ui.theme.SongsTheme
 import com.example.songs.viewModels.FabricaMainViewmodel
 import com.example.songs.viewModels.FabricaViewmodelPlyer
+import com.example.songs.viewModels.HelperLifeciclerObserver
 import com.example.songs.viewModels.MainViewModel
 import com.example.songs.viewModels.VmodelPlayer
 import com.google.common.util.concurrent.MoreExecutors
@@ -118,11 +119,88 @@ class MainActivity : ComponentActivity() {
 
 
     }
+    lateinit var observadorDocicloDeVida: HelperLifeciclerObserver
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        observadorDocicloDeVida = HelperLifeciclerObserver(
+            acaoDeConectar = {
+                scop.launch(Dispatchers.Main){
+                when(conecao.value){
+                is ResultadosConecaoServiceMedia.Conectado->{}
+                is ResultadosConecaoServiceMedia.Desconectado->{
+                    if (ContextCompat.checkSelfPermission(
+                            this@MainActivity,
+                            android.Manifest.permission.POST_NOTIFICATIONS
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    ){
+                        val i = Intent(this@MainActivity, ServicMedia::class.java)
+                        startForegroundService(i)
+                        val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                        bindService(i1,serviceConection,BIND_IMPORTANT)}
+
+                }
+                is ResultadosConecaoServiceMedia.Erro->{
+                    if (ContextCompat.checkSelfPermission(
+                            this@MainActivity,
+                            android.Manifest.permission.POST_NOTIFICATIONS
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    ){
+                        val i = Intent(this@MainActivity, ServicMedia::class.java)
+                        startForegroundService(i)
+                        val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                        bindService(i1,serviceConection,BIND_IMPORTANT)}
+                }
+
+            }
+                }
+                             },
+            acaoDeDesconectar = { when(val r =conecao.value){
+                is ResultadosConecaoServiceMedia.Conectado->{
+                    try {
+
+                        unbindService(serviceConection)
+                    }catch (e:Exception){
+                        Log.e("main",e.toString())
+                        conecao.value=ResultadosConecaoServiceMedia.Desconectado
+                    }
+
+                }
+                else->{}
+            }},
+            acaoChecagemConecao ={
+                when(conecao.value){
+                    is ResultadosConecaoServiceMedia.Conectado->{}
+                    is ResultadosConecaoServiceMedia.Desconectado->{
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                android.Manifest.permission.POST_NOTIFICATIONS
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ){
+                            val i = Intent(this@MainActivity, ServicMedia::class.java)
+                            startForegroundService(i)
+                            val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                            bindService(i1,serviceConection,BIND_IMPORTANT)}
+
+                    }
+                    is ResultadosConecaoServiceMedia.Erro->{
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                android.Manifest.permission.POST_NOTIFICATIONS
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ){
+                            val i = Intent(this@MainActivity, ServicMedia::class.java)
+                            startForegroundService(i)
+                            val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+                            bindService(i1,serviceConection,BIND_IMPORTANT)}
+                    }
+
+                }
+            })
+        this.lifecycle.addObserver(observadorDocicloDeVida)
+
 
         setContent {
             SongsTheme {
@@ -311,42 +389,7 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStart() {
-        super.onStart()
-
-
-
-
-        when(conecao.value){
-            is ResultadosConecaoServiceMedia.Conectado->{}
-            is ResultadosConecaoServiceMedia.Desconectado->{
-                if (ContextCompat.checkSelfPermission(
-                        this@MainActivity,
-                        android.Manifest.permission.POST_NOTIFICATIONS
-                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                ){
-                val i = Intent(this@MainActivity, ServicMedia::class.java)
-                startForegroundService(i)
-                val i1 = Intent(this@MainActivity, ServicMedia::class.java)
-                bindService(i1,serviceConection,BIND_IMPORTANT)}
-
-            }
-            is ResultadosConecaoServiceMedia.Erro->{
-                if (ContextCompat.checkSelfPermission(
-                        this@MainActivity,
-                        android.Manifest.permission.POST_NOTIFICATIONS
-                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                ){
-                val i = Intent(this@MainActivity, ServicMedia::class.java)
-                startForegroundService(i)
-                val i1 = Intent(this@MainActivity, ServicMedia::class.java)
-                bindService(i1,serviceConection,BIND_IMPORTANT)}
-            }
-
-        }
-
-
-
-    }
+        super.onStart()}
 
     @SuppressLint("NewApi")
     override fun onResume() {
@@ -357,21 +400,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onPause() {
-        when(val r =conecao.value){
-            is ResultadosConecaoServiceMedia.Conectado->{
-               try {
-
-                   unbindService(serviceConection)
-               }catch (e:Exception){
-                   Log.e("main",e.toString())
-                   conecao.value=ResultadosConecaoServiceMedia.Desconectado
-               }
-
-            }
-            else->{}
-        }
-
-        super.onPause()
+       super.onPause()
     }
 
 }

@@ -15,11 +15,16 @@ import android.os.IBinder
 import android.os.IInterface
 import android.os.Parcel
 import android.os.PowerManager
+import android.util.EventLog
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -68,6 +73,18 @@ class ServicMedia: MediaSessionService() {
         startForeground(1,notification,ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         val player = ExoPlayer.Builder(this@ServicMedia).setAudioAttributes(AudioAttributes.DEFAULT,true)
                                                                 .build()
+        player.addAnalyticsListener(EventLogger())
+        player.addListener(object :Player.Listener {
+
+            override fun onPlayerError(error: PlaybackException) {
+                super.onPlayerError(error)
+                player.seekToNext()
+                player.prepare()
+                player.play()
+                var nome =if(helperPalyer!=null)   helperPalyer?._metadataAtual?.value?.mediaMetadata?.title?:"" else ""
+                Toast.makeText(this@ServicMedia,"Erro ao reprodusir  a faixa $nome",Toast.LENGTH_SHORT).show()
+            }
+        })
 
 
        mediaSession = MediaSession.Builder(this@ServicMedia, player).build()
