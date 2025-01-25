@@ -34,7 +34,7 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
                   ,windowSizeClass: WindowSizeClass,
                   transicaoMiniPlyer:MutableTransitionState<Boolean>,
                   vm:ViewModelListas,acaoNavegarPorId:(s:String)->Unit){
-  val listaAlbun =vm.albums.collectAsState()
+  val listaAlbun =vm.albums.collectAsState(initial = ListaAlbums.caregando)
   Box(modifier = modifier.fillMaxSize()){
 
       LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
@@ -68,6 +68,7 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
 
               }
           }
+          else->{}
       }
 
       }

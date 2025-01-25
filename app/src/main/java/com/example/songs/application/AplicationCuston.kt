@@ -22,6 +22,8 @@ class AplicationCuston(): Application(){
 
 
     }
-
+   override fun onTerminate() {
+       super.onTerminate()
+   }
 
 }

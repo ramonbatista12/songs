@@ -30,7 +30,7 @@ class RepositorioService(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(UnstableApi::class)
 fun getMusics()= flow<List<MediaItem>>{
-
+       if(checarCorotina()) Log.d("TAG", "getMusics: corrotina dentro do contexto IO")
         val contentResolver=context.contentResolver
 
         val projeca= arrayOf<String>(

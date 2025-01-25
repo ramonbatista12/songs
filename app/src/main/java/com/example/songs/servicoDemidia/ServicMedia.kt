@@ -92,7 +92,7 @@ class ServicMedia: MediaSessionService() {
        helperPalyer = HelperPalyerEstados(mediaSession!!)
        helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
        helperNotificacao=HelperNotification(notification=notification,
-                                            helperPalyerEstados = helperPalyer!!,
+           helperPalyerEstados = helperPalyer!!,
                                             helperPalyerComandes = helperPalyerComandes!!,
                                             seviceContext = this@ServicMedia,
                                             secaoDeMedia = mediaSession!!)

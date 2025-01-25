@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.PlyListStados
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -26,7 +28,7 @@ import kotlinx.coroutines.launch
 class ViewModelListas(val repositorio: RepositorioService, val estado:MutableStateFlow<ResultadosConecaoServiceMedia>):ViewModel(){
 
    @RequiresApi(Build.VERSION_CODES.Q)
-    val _listas=repositorio.getMusics().map {
+    val _listas=repositorio.getMusics().flowOn(Dispatchers.IO).map {
 
        delay(2000)
        if(it.isEmpty()){
@@ -43,14 +45,14 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
 
    }
    @RequiresApi(Build.VERSION_CODES.Q)
-   private val _albums=repositorio.getAlbums().map {
+   private val _albums=repositorio.getAlbums().flowOn(Dispatchers.IO).map {
        if(it.isEmpty()){
            ListaAlbums.Vasia
        }
        else ListaAlbums.Lista(it)
    }
    @RequiresApi(Build.VERSION_CODES.Q)
-   private val _artistas=repositorio.getArtistas()
+   private val _artistas=repositorio.getArtistas().flowOn(Dispatchers.IO)
    private val estadoPlylist=MutableStateFlow<PlyListStados>(PlyListStados.Todas)
    private val scope= viewModelScope
    private var job:Job?=null
@@ -103,11 +105,11 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
     }
 
 
-    fun flowAulbumId(id:Long)=repositorio.getMusicasPorAlbum(id)
-    fun flowArtistaId(id:Long)=repositorio.getMusicasPorArtista(id)
-     @OptIn(ExperimentalCoroutinesApi::class)
+    fun flowAulbumId(id:Long)=repositorio.getMusicasPorAlbum(id).flowOn(Dispatchers.IO)
+    fun flowArtistaId(id:Long)=repositorio.getMusicasPorArtista(id).flowOn(Dispatchers.IO)
+    @OptIn(ExperimentalCoroutinesApi::class)
      @RequiresApi(Build.VERSION_CODES.Q)
-      fun plylist(): Flow<List<MediaItem>> =repositorio.getPlylist(estadoPlylist.value)
+     fun plylist(): Flow<List<MediaItem>> =repositorio.getPlylist(estadoPlylist.value)
      fun mudarPlylist(plyListStado: PlyListStados){
        scope.launch {
            when(val e=estado.value){

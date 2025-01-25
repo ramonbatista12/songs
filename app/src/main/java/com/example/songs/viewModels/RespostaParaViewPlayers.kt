@@ -3,6 +3,7 @@ package com.example.songs.viewModels
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.example.songs.repositorio.Album
+import com.example.songs.repositorio.Artista
 
 sealed class PlayerResultado(){
     object Caregando:PlayerResultado()
@@ -25,6 +26,13 @@ sealed class ListaAlbums(){
     object caregando:ListaAlbums()
     object Vasia:ListaAlbums()
     class Lista(val lista:List<Album>):ListaAlbums()
+
+}
+
+sealed class ListaArtists(){
+    object caregando:ListaAlbums()
+    object Vasia:ListaAlbums()
+    class Lista(val lista:List<Artista>):ListaAlbums()
 
 }
 
