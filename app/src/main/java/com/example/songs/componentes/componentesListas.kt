@@ -70,6 +70,7 @@ import coil.compose.AsyncImage
 import com.example.songs.R
 import com.example.songs.repositorio.Album
 import com.example.songs.repositorio.Artista
+import com.example.songs.repositorio.PlyList
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
 import kotlinx.coroutines.Dispatchers
@@ -315,14 +316,14 @@ fun ItemsArtistasColuna(modifier: Modifier=Modifier,item: Artista){
 
 
 @Composable
-fun ItemsListaPlaylists(modifier: Modifier=Modifier){
+fun ItemsListaPlaylists(modifier: Modifier=Modifier,item:PlyList){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
         Image(painter = painterResource(id = R.drawable.baseline_playlist_play_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Text("Nome da PlyList", maxLines = 2,fontSize = 18.sp)
+                Text(item.nome, maxLines = 2,fontSize = 18.sp)
 
 
             }

@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    kotlin("plugin.serialization") version "2.0.21"
+
 }
 
 android {
@@ -18,6 +21,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
     }
 
     buildTypes {
@@ -64,16 +68,20 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0")
     implementation("androidx.compose.material3.adaptive:adaptive-navigation-android:1.0.0")
     //media 3
-    implementation("androidx.media3:media3-ui:1.5.0")
-    implementation("androidx.media3:media3-exoplayer:1.5.0")
-    implementation("androidx.media3:media3-session:1.5.0")
+    implementation("androidx.media3:media3-ui:1.5.1")
+    implementation("androidx.media3:media3-exoplayer:1.5.1")
+    implementation("androidx.media3:media3-session:1.5.1")
     //navegacao
-    implementation("androidx.navigation:navigation-compose:2.7.0")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
     //coil
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(libs.androidx.espresso.device)
     //fontes do google
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.3")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.6")
+    //pallet
+    implementation("androidx.palette:palette:1.0.0")
+    //serializacao
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     //teste
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

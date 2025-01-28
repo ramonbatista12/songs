@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.example.songs.application.AplicationCuston
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
@@ -71,8 +72,8 @@ fun Navgrafic(navController: NavHostController,
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
-NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas.rota,modifier=modifier){
-  composable(route = DestinosDENavegacao.Todas.rota){
+NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas,modifier=modifier){
+  composable<DestinosDENavegacao.Todas>{
    Box{
        ListaDemusicas(modifier = Modifier,
                       windowSizeClass = windowSizeClass,
@@ -83,27 +84,27 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
    }
   }
 
-  composable(route = DestinosDENavegacao.Playlist.rota){
+  composable<DestinosDENavegacao.Playlist>{
       Box{
-        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer)
+        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer, vm = vmLista)
        }}
 
 
-  composable(route = DestinosDENavegacao.Album.rota){
+  composable<DestinosDENavegacao.Album>{
       Box(modifier=Modifier){
           ListaDeAlbums(windowSizeClass = windowSizeClass,
                        transicaoMiniPlyer = transicaoMiniPlyer,
                        vm =vmLista,
                        acaoNavegarPorId = {s->
                            Log.d("id artista", "Navgrafic: $s")
-                       scope.launch { navController.navigate(DestinosDENavegacao.AlbumId.rota+"$s")}})
+                       scope.launch { navController.navigate(DestinosDENavegacao.AlbumId(s.toLong()))}})
          }}
 
 
-  composable(route = DestinosDENavegacao.Configuracoes.rota){}
+  composable<DestinosDENavegacao.Configuracoes>{}
 
   //
-  composable(route = DestinosDENavegacao.Player.rota){
+  composable<DestinosDENavegacao.Player>{
       BigPlayer(windowSizeClass = windowSizeClass,
                 paddingValues = paddingValues,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
@@ -111,45 +112,37 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
 
   }
 
-  composable(route = DestinosDENavegacao.Artista.rota){
+  composable<DestinosDENavegacao.Artista>{
       ListaDeArtistas(windowSizeClass = windowSizeClass,
                       transicaoMiniPlyer = transicaoMiniPlyer,
                       acaoNavegarPorId ={s->
                           Log.d("id artista", "Navgrafic: $s")
-                      scope.launch { navController.navigate(DestinosDENavegacao.ArtistaId.rota+"$s")
+                      scope.launch { navController.navigate(DestinosDENavegacao.ArtistaId(s.toLong()))
                                      }},
                       vmodel = vmLista)
 
   }
 
-  composable(route=DestinosDENavegacao.ArtistaId.rota+"{id}", arguments = listOf(navArgument("id"){
-      type= NavType.StringType
-      defaultValue="0"
+  composable<DestinosDENavegacao.ArtistaId>{
 
-  }))  {
-      val id = it.arguments?.getString("id")?:"0"
+      val artistaId:DestinosDENavegacao.ArtistaId=it.toRoute()
       ArtistaId(modifier = Modifier,
           windowSizeClass = windowSizeClass,
           paddingValues = paddingValues,
           transicaoMiniPlyer = transicaoMiniPlyer,
           viewModelListas = vmLista,
-          acaoCarregarPlyer = acaoCaregarPlyer,id=id.toLong())
+          acaoCarregarPlyer = acaoCaregarPlyer,id=artistaId.id)
   }
 
-   composable(route=DestinosDENavegacao.AlbumId.rota+"{id}",
-       arguments = listOf(navArgument("id"){
-                                                 type= NavType.StringType
-                                                 defaultValue="0"
-
-   })){
-       val id = it.arguments?.getString("id")?:"0"
+   composable<DestinosDENavegacao.AlbumId>{
+       val id:DestinosDENavegacao.AlbumId=it.toRoute()
        AlbumId(
            modifier = Modifier,
            windowSizeClass = windowSizeClass,
            paddingValues = paddingValues,
            transicaoMiniPlyer = transicaoMiniPlyer,
            viewModelListas = vmLista,
-           acaoCarregarPlyer = acaoCaregarPlyer,id=id.toLong()
+           acaoCarregarPlyer = acaoCaregarPlyer,id=id.id
        )
 
    }

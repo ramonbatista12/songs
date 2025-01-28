@@ -53,6 +53,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
    }
    @RequiresApi(Build.VERSION_CODES.Q)
    private val _artistas=repositorio.getArtistas().flowOn(Dispatchers.IO)
+   private val _plylist=repositorio.fluxoPlyList().flowOn(Dispatchers.IO)
    private val estadoPlylist=MutableStateFlow<PlyListStados>(PlyListStados.Todas)
    private val scope= viewModelScope
    private var job:Job?=null
@@ -75,6 +76,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
     val _playListAtual=playlistAtual.stateIn(scope=scope,
                                              started = SharingStarted.WhileSubscribed(5000),
                                              initialValue = emptyList())
+    val plylist=_plylist.stateIn(scope=scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         scope.launch {
@@ -109,7 +111,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
     fun flowArtistaId(id:Long)=repositorio.getMusicasPorArtista(id).flowOn(Dispatchers.IO)
     @OptIn(ExperimentalCoroutinesApi::class)
      @RequiresApi(Build.VERSION_CODES.Q)
-     fun plylist(): Flow<List<MediaItem>> =repositorio.getPlylist(estadoPlylist.value)
+     fun plylist(): Flow<List<MediaItem>> =repositorio.getPlylist(estadoPlylist.value).flowOn(Dispatchers.IO)
      fun mudarPlylist(plyListStado: PlyListStados){
        scope.launch {
            when(val e=estado.value){
@@ -122,6 +124,21 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
            }
        }
    }
+
+
+    fun adicionarPlyList(nome:String){
+        scope.launch(Dispatchers.IO) {
+            repositorio.criarPlyList(nome)
+        }
+    }
+
+    fun excluirPlyList(nome:String){
+        scope.launch(Dispatchers.IO) {
+            repositorio.removerPlyList(nome)
+        }
+
+    }
+
 
     override fun onCleared() {
         if(job!=null){

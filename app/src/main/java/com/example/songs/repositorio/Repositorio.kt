@@ -18,10 +18,12 @@ import com.example.songs.servicoDemidia.PlyListStados
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class RepositorioService(val context: Context) {
 
+private val interfassePlylist=PlyLists(context)
 
 
 
@@ -209,8 +211,8 @@ fun getMusicasPorArtista(id:Long)= flow<List<MediaItem>>{
 
 }
 
-    @OptIn(UnstableApi::class)
-    fun getMusicasPorAlbum(id:Long)= flow<List<MediaItem>>{
+@OptIn(UnstableApi::class)
+fun getMusicasPorAlbum(id:Long)= flow<List<MediaItem>>{
      Log.d("TAG", "getMusicasPorAlbum: $id")
     val contentResolver=context.contentResolver
     val projecao=  arrayOf<String>(
@@ -285,5 +287,62 @@ fun getMetaData(uri: Uri, id: Long):Bitmap?{
 
  }
 
+fun fluxoPlyList():Flow<List<PlyList>> = interfassePlylist.listaPlaylist().map {
+      it.map {
+          PlyList(0,it)
+      }
+}
+
+suspend fun criarPlyList(nome:String):Resultado{
+    try {
+        interfassePlylist.criarPlyList(nome)
+        return Resultado.Ok<Boolean>(true)
+    }catch (e:Exception){
+        return  Resultado.Erro(e.message.toString())
+    }
+}
+
+suspend fun criarPlyList(nome: String,mediaItem: MediaItem):Resultado{
+     try {
+         interfassePlylist.criarPlaylist(nome,mediaItem)
+         return Resultado.Ok<Boolean>(true)
+     }catch (e:Exception){
+         return Resultado.Erro(e.message.toString())
+     }
+ }
+
+suspend fun adicionarAPlyList(nome: String,mediaItem: MediaItem):Resultado{
+     try {
+         interfassePlylist.adicionarAplyList(nome,mediaItem)
+         return Resultado.Ok(true)
+     }catch (e:Exception){
+         return Resultado.Erro(e.message.toString())
+     }
+ }
+
+suspend fun removerPlyList(nome: String):Resultado{
+    try {
+    interfassePlylist.removerPlaylist(nome)
+      return Resultado.Ok(true)
+    }catch (e:Exception){
+        Log.d("TAG", "removerPlyList: ${e.message}")
+        return Resultado.Erro(mensagem = e.message.toString())
+    }
+}
+
+fun flowMediaItemPlylist(nome: String) = flow<List<MediaItem>> {
+    while (true)
+    try {
+        emit(interfassePlylist.listarArquivo(nome))
+        delay(2000)
+    }catch (e:Exception){
+        emit(emptyList())
+        delay(2000)
+    }
+}
+
+
+
 
 }
+

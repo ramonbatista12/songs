@@ -25,6 +25,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.songs.R
+import com.example.songs.navegacao.DestinosDENavegacao
+
 /*
 * aqui esta presente os componentes para o scafolld
 * como topbar ou bottonbar
@@ -40,11 +42,11 @@ fun BarraSuperio(modifier: Modifier=Modifier,titulo: String){
 
 
 @Composable
-fun BararInferior(modifier: Modifier=Modifier,acaoNavegacao:(s:String)->Unit){
+fun BararInferior(modifier: Modifier=Modifier,acaoNavegacao:(ob:DestinosDENavegacao)->Unit){
     NavigationBar(modifier=modifier.fillMaxWidth().background(Color.Transparent),containerColor = MaterialTheme.colorScheme.background,contentColor = MaterialTheme.colorScheme.onBackground) {
         Icones.list.forEach {
             NavigationBarItem(selected = false, onClick = {
-                 acaoNavegacao(it.rota.rota)
+                 acaoNavegacao(it.rota)
             },
                               icon = { Icon(painter = painterResource(id = it.icone),
                                             contentDescription = null) }
@@ -57,7 +59,7 @@ fun BararInferior(modifier: Modifier=Modifier,acaoNavegacao:(s:String)->Unit){
 
 
 @Composable
-fun PermanenteNavigationDrawer(modifier: Modifier=Modifier,acaoNavegacao: (s: String) -> Unit){
+fun PermanenteNavigationDrawer(modifier: Modifier=Modifier,acaoNavegacao: (ob:DestinosDENavegacao) -> Unit){
 
 
     PermanentDrawerSheet(modifier=modifier.width(90.dp)) {
@@ -66,7 +68,7 @@ fun PermanenteNavigationDrawer(modifier: Modifier=Modifier,acaoNavegacao: (s: St
              NavigationDrawerItem(label ={ Text("") },
                  icon = { Icon(painter = painterResource(it.icone), contentDescription = null) },
                  onClick = {
-                      acaoNavegacao(it.rota.rota)
+                      acaoNavegacao(it.rota)
                  }, modifier = Modifier, selected = false)
 
          }

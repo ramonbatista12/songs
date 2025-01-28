@@ -19,6 +19,7 @@ import androidx.compose.animation.core.animateValue
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -34,6 +35,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -46,6 +48,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +60,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.alpha
+import androidx.core.graphics.red
+import androidx.palette.graphics.Palette
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.R
@@ -83,6 +91,8 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
+    val cores=remember { mutableStateOf<List<Color>?>(null) }
+    val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -93,6 +103,10 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
             }
         }
     }
+
+
+
+
     DisposableEffect(Unit){
         onDispose {
             bitmap.value=null
@@ -101,21 +115,12 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     }
 
 
-    val infiniteTransition= rememberInfiniteTransition("animacao mini plyer")
-    val animacaoScroll=infiniteTransition.animateFloat(initialValue = -200f,
-                                                      targetValue = 400f,
-
-                                                      animationSpec = InfiniteRepeatableSpec(animation = tween(5000,1000, easing = LinearEasing),
-                                                                                             repeatMode = RepeatMode.Restart),
-                                                      label = "animacao scroll")
-    val scrollState= rememberScrollState(animacaoScroll.value.toInt())
 
 
 
 
-
-
-    Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier
+        ,verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
              contentDescription = null,
@@ -171,6 +176,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
     val bitmap= remember { mutableStateOf<android.graphics.Bitmap?>(null)  }
     val  metadata= vm._mediaItemAtual.collectAsState()
     val reproduzindo=vm._emreproducao.collectAsState()
+
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     LaunchedEffect(metadata.value) {

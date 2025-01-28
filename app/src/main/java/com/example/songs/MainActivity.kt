@@ -304,7 +304,7 @@ class MainActivity : ComponentActivity() {
                                     Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
                                         scopMain.launch {
                                             transicaoMiniPlyer.targetState=false
-                                        navController.navigate(DestinosDENavegacao.Player.rota)}
+                                        navController.navigate(DestinosDENavegacao.Player)}
                                     },
                                     vm = vieModelPlyers,
                                     windoSizeClass = windowsizeclass)
