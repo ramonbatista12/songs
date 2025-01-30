@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    id("com.google.devtools.ksp")
     kotlin("plugin.serialization") version "2.0.21"
 
 }
@@ -53,7 +54,9 @@ android {
     }
 }
 
-dependencies {
+    dependencies {
+    val  room="2.6.1"
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -82,6 +85,10 @@ dependencies {
     implementation("androidx.palette:palette:1.0.0")
     //serializacao
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    //room
+    implementation("androidx.room:room-runtime:$room")
+    implementation("androidx.room:room-ktx:$room")
+    ksp("androidx.room:room-compiler:2.6.1")
     //teste
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

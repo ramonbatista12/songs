@@ -91,8 +91,8 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
-    val cores=remember { mutableStateOf<List<Color>?>(null) }
-    val int=MaterialTheme.colorScheme.background.value.toInt()
+    //val cores=remember { mutableStateOf<List<Color>?>(null) }
+   // val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -101,7 +101,9 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                 Log.e("Load tumbmail",e.message.toString())
                 bitmap.value=null
             }
-        }
+
+            }
+
     }
 
 
@@ -119,8 +121,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 
 
-    Row(modifier = modifier
-        ,verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
              contentDescription = null,

@@ -52,11 +52,7 @@ fun PlyList(modifier: Modifier =Modifier,
         LazyVerticalGrid(columns = GridCells.Fixed(  if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 2 else 3),
                          modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter)
                                             .padding(bottom = if (transicaoMiniPlyer.targetState) 80.dp else 0.dp) ) {
-            items(items = plylist.value) {
-                ItemsListaPlaylists(modifier=Modifier.combinedClickable(onClick = {}, onLongClick = {
-                    vm.excluirPlyList("nova")
-                }) ,item = it)
-            }
+
             item {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier=Modifier.clickable {
@@ -70,6 +66,13 @@ fun PlyList(modifier: Modifier =Modifier,
                     }
                 }
             }
+
+            items(items = plylist.value) {
+                ItemsListaPlaylists(modifier=Modifier.combinedClickable(onClick = {}, onLongClick = {
+                    vm.excluirPlyList()
+                }) ,item = it)
+            }
+
 
         }
 

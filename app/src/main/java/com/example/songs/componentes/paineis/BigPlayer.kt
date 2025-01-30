@@ -72,6 +72,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -88,6 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.palette.graphics.Palette
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -130,11 +132,14 @@ fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,pad
             acaoAvisoBigplyer()
         }
     }
+    val int =MaterialTheme.colorScheme.background.value.toInt()
+    val coresBackgrad=remember { mutableStateOf<List<Color>?>(null) }
   if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-      PlayerCompat2(modifier=modifier, vm = vm, vmlista = vmlista)
+      PlayerCompat2(modifier=modifier,
+                   vm = vm, vmlista = vmlista)
 
  else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
-             if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM)PlayerCompat2( vm = vm,vmlista = vmlista)
+             if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM)PlayerCompat2(modifier, vm = vm,vmlista = vmlista)
                           else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
     else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
 
@@ -407,7 +412,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,sharedTransitionScope: SharedTransi
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer,vmlista:ViewModelListas) {
+fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer,vmlista:ViewModelListas,acaoMudarLista:(p:Palette)->Unit={}) {
     val listaAvberta = remember { mutableStateOf(false) }
     val slidervalue = remember { mutableStateOf(0f) }
 

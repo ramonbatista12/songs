@@ -1,20 +1,14 @@
 package com.example.songs.repositorio
 
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
+import androidx.room.Room
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import java.io.File
-import java.io.FileNotFoundException
-import kotlin.jvm.Throws
 
 @OptIn(ExperimentalStdlibApi::class)
 suspend fun checarCorotina():Boolean{
@@ -22,109 +16,63 @@ suspend fun checarCorotina():Boolean{
     return true
 }
 class PlyLists(private val context: Context):InterfacePlylist {
-    private final val extencao=".sng"
+
+   private val roomDatabase by lazy{
+       Room.databaseBuilder(context,RoomBd::class.java,"bd").build()
+   }
+   private val dao by lazy {
+       roomDatabase.dao()
+   }
 
 
 
 
-  suspend  private fun criarArquivo(nome :String):Boolean{
-        try {
-
-            val file =File(context.filesDir,nome)
-            if(!file.exists()) file.createNewFile()
-            else return false
-            return true
-        }catch (e:Exception){
-            return false
-        }
-
-        return  false
-    }
-   override suspend fun criarPlyList(nome:String){
-
-       checarCorotina()
-       val criado=  criarArquivo(nome+extencao)
-       if(!criado) Toast.makeText(context,"nao foi posivla criar a PlyList $nome",Toast.LENGTH_SHORT).show()
-       else Toast.makeText(context,"PlyList $nome criada com sucesso",Toast.LENGTH_SHORT).show()
-
+    override suspend fun criarPlyList(nome: String) {
+       dao.inserirPlylist(ListaPlaylist(0,nome))
     }
 
-   override suspend fun criarPlaylist(nome: String,mediaItem: MediaItem){
-        checarCorotina()
-        val metadata= mediaItem.mediaMetadata
-        val criado=  criarArquivo(nome+extencao)
-        if(!criado){
-            Toast.makeText(context,"nao foi posivla criar a PlyList $nome",Toast.LENGTH_SHORT).show()
-            return}
-        val imput = context.openFileOutput(nome,Context.MODE_PRIVATE).use {
-            it.write("#${metadata.title.toString()},${metadata.artist.toString()},${metadata.albumArtist.toString()},${metadata.artworkUri.toString()},${mediaItem.mediaId},\n".toByteArray())
-
-        }
-
-
-        }
-
-   override suspend fun adicionarAplyList(nome: String,mediaItem: MediaItem){
-        checarCorotina()
-        var string = "#${mediaItem.mediaMetadata.title.toString()},${mediaItem.mediaMetadata.artist.toString()},${mediaItem.mediaMetadata.albumArtist.toString()},${mediaItem.mediaMetadata.artworkUri.toString()},${mediaItem.mediaId},\n}"
-        val file= File(context.filesDir,nome+extencao)
-        if(!file.exists()) throw FileNotFoundException(" $nome nao encontrado")
-        val imput = context.openFileOutput(nome,Context.MODE_APPEND).use {
-            it.write(string.toByteArray())
-        }
+    @androidx.annotation.OptIn(UnstableApi::class)
+    override suspend fun criarPlaylist(nome: String, mediaItem: MediaItem) {
+        dao.inserirPlylist(ListaPlaylist(0,nome))
+       val plylist= dao.plyListCriada()
+       val id=plylist?.id ?: 0
+       val metadata=mediaItem.mediaMetadata
+       dao.inserirItemDeMedia(ItemsDeMedia(
+            id=0,
+            idPlylist = id.toLong(),
+            titulo = metadata.title.toString(),
+            album = metadata.albumArtist.toString(),
+            uri = metadata.artworkUri.toString(),
+            idMedia = mediaItem.mediaId.toString(),
+            artista = metadata.artist.toString(),
+            duracao = metadata.durationMs!!.toLong())
+            )
     }
 
-   override suspend fun removerPlaylist(nome: String){
-        checarCorotina()
-        val file= File(context.filesDir,nome+extencao)
-       Log.i("TAG", "removerPlaylist: ${nome+extencao}")
-        if(file.exists())
-            file.delete()
-        else throw FileNotFoundException(" $nome nao encontrado")
+    @androidx.annotation.OptIn(UnstableApi::class)
+    override suspend fun adicionarAplyList(idPlylist: Long, mediaItem: MediaItem) {
+        val metadata=mediaItem.mediaMetadata
+        dao.inserirItemDeMedia(ItemsDeMedia(
+            id=0,
+            idPlylist = idPlylist,
+            titulo = metadata.title.toString(),
+            album = metadata.albumArtist.toString(),
+            uri = metadata.artworkUri.toString(),
+            idMedia = mediaItem.mediaId.toString(),
+            artista = metadata.artist.toString(),
+            duracao = metadata.durationMs!!.toLong())
+        )
     }
 
-    override suspend fun listarArquivo(
-        nome: String,
-
-    ): List<MediaItem> {
-        checarCorotina()
-        val list= mutableListOf("")
-        val file= File(context.filesDir,nome+extencao)
-       context.openFileInput(nome+extencao).bufferedReader().useLines {
-              list.add( it.fold(""){some,text->
-                  "$some\n$text"
-
-              })
-           }
-      val l= list.map {
-         val aux=  it.split("#")
-         val aux2=aux[1].split(",")
-           MediaItem.Builder().setUri(aux2[3])
-               .setMediaId(aux2[4])
-               .setMediaMetadata(MediaMetadata.Builder().setTitle(aux2[0])
-                                                        .setArtist(aux2[1])
-                                                        .setAlbumArtist(aux2[3])
-                                                        .build()).build()
-       }
-
-        return l
+    override suspend fun removerPlaylist(id: Long) {
+        dao.inserirPlylist(ListaPlaylist(id=id,nome = ""))
     }
 
-   override fun listaPlaylist(): Flow<List<String>> = flow{
-
-    while (true)
-        try {
-
-            emit(context.fileList().toList())
-            delay(2000)
-        }catch (e:Exception){
-            emit(emptyList())
-            delay(2000)
-        }
-
-
-
-
-
+    override suspend fun removerItemDaPlaylist(idPlylist: Long) {
+        dao.removerItemDeMedia(idPlylist.toString())
     }
+    override fun listaPlaylist(): Flow<List<ListaPlaylist>> = dao.fluxoPlyList()
+
+    override suspend fun mediaItemsDaPlylist(id: Long): Flow<List<ItemsDeMedia>> =dao.fluxoDeItemsDeMedia(id)
+
 }

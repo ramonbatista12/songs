@@ -1,5 +1,6 @@
 package com.example.songs.navegacao
 
+import android.net.Uri
 import kotlinx.serialization.Serializable
 
 /*
@@ -12,25 +13,30 @@ import kotlinx.serialization.Serializable
 * cada objet deve ser serializavel
 * */
 sealed class DestinosDENavegacao {
-@Serializable
-object Player:DestinosDENavegacao()
-@Serializable
-object Todas:DestinosDENavegacao()
-@Serializable
-object Playlist:DestinosDENavegacao()
-@Serializable
-object Album:DestinosDENavegacao()
-@Serializable
-class Buscador:DestinosDENavegacao()
-@Serializable
-object Artista:DestinosDENavegacao()
-
-@Serializable
-class ArtistaId(val id:Long):DestinosDENavegacao()
-@Serializable
-class AlbumId(val id: Long):DestinosDENavegacao()
-
-
-@Serializable
-object Configuracoes:DestinosDENavegacao()
+sealed class DestinosDeTela:DestinosDENavegacao(){
+      @Serializable
+      object Player:DestinosDENavegacao()
+      @Serializable
+      object Todas:DestinosDENavegacao()
+      @Serializable
+      object Playlist:DestinosDENavegacao()
+      @Serializable
+      object Album:DestinosDENavegacao()
+      @Serializable
+      class Buscador:DestinosDENavegacao()
+      @Serializable
+      object Artista:DestinosDENavegacao()
+      @Serializable
+      class ArtistaId(val id:Long):DestinosDENavegacao()
+      @Serializable
+      class AlbumId(val id: Long):DestinosDENavegacao()
+      @Serializable
+      object Configuracoes:DestinosDENavegacao()
+  }
+sealed class DestinosDeDialogo:DestinosDENavegacao(){
+     @Serializable
+     data class AdiconarPlaylist(val titulo:String,val url:String,val album:String,val id:String):DestinosDeDialogo()
+     @Serializable
+     data class OpcoesItemsDaLista(val uri: String):DestinosDeDialogo()
+   }
 }

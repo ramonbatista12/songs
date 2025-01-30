@@ -53,7 +53,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
    }
    @RequiresApi(Build.VERSION_CODES.Q)
    private val _artistas=repositorio.getArtistas().flowOn(Dispatchers.IO)
-   private val _plylist=repositorio.fluxoPlyList().flowOn(Dispatchers.IO)
+   private val _plylist=repositorio.listaPlaylist()
    private val estadoPlylist=MutableStateFlow<PlyListStados>(PlyListStados.Todas)
    private val scope= viewModelScope
    private var job:Job?=null
@@ -128,13 +128,13 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
 
     fun adicionarPlyList(nome:String){
         scope.launch(Dispatchers.IO) {
-            repositorio.criarPlyList(nome)
+            //repositorio.criarPlyList(nome)
         }
     }
 
-    fun excluirPlyList(nome:String){
+    fun excluirPlyList(){
         scope.launch(Dispatchers.IO) {
-            repositorio.removerPlyList(nome)
+           // repositorio.removerPlaylist()
         }
 
     }

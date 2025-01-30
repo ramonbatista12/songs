@@ -72,8 +72,8 @@ fun Navgrafic(navController: NavHostController,
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
-NavHost(navController = navController, startDestination = DestinosDENavegacao.Todas,modifier=modifier){
-  composable<DestinosDENavegacao.Todas>{
+NavHost(navController = navController, startDestination = DestinosDENavegacao.DestinosDeTela.Todas,modifier=modifier){
+  composable<DestinosDENavegacao.DestinosDeTela.Todas>{
    Box{
        ListaDemusicas(modifier = Modifier,
                       windowSizeClass = windowSizeClass,
@@ -84,27 +84,27 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
    }
   }
 
-  composable<DestinosDENavegacao.Playlist>{
+  composable<DestinosDENavegacao.DestinosDeTela.Playlist>{
       Box{
         PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer, vm = vmLista)
        }}
 
 
-  composable<DestinosDENavegacao.Album>{
+  composable<DestinosDENavegacao.DestinosDeTela.Album>{
       Box(modifier=Modifier){
           ListaDeAlbums(windowSizeClass = windowSizeClass,
                        transicaoMiniPlyer = transicaoMiniPlyer,
                        vm =vmLista,
                        acaoNavegarPorId = {s->
                            Log.d("id artista", "Navgrafic: $s")
-                       scope.launch { navController.navigate(DestinosDENavegacao.AlbumId(s.toLong()))}})
+                       scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeTela.AlbumId(s.toLong()))}})
          }}
 
 
-  composable<DestinosDENavegacao.Configuracoes>{}
+  composable<DestinosDENavegacao.DestinosDeTela.Configuracoes>{}
 
   //
-  composable<DestinosDENavegacao.Player>{
+  composable<DestinosDENavegacao.DestinosDeTela.Player>{
       BigPlayer(windowSizeClass = windowSizeClass,
                 paddingValues = paddingValues,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
@@ -112,20 +112,20 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
 
   }
 
-  composable<DestinosDENavegacao.Artista>{
+  composable<DestinosDENavegacao.DestinosDeTela.Artista>{
       ListaDeArtistas(windowSizeClass = windowSizeClass,
                       transicaoMiniPlyer = transicaoMiniPlyer,
                       acaoNavegarPorId ={s->
                           Log.d("id artista", "Navgrafic: $s")
-                      scope.launch { navController.navigate(DestinosDENavegacao.ArtistaId(s.toLong()))
+                      scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeTela.ArtistaId(s.toLong()))
                                      }},
                       vmodel = vmLista)
 
   }
 
-  composable<DestinosDENavegacao.ArtistaId>{
+  composable<DestinosDENavegacao.DestinosDeTela.ArtistaId>{
 
-      val artistaId:DestinosDENavegacao.ArtistaId=it.toRoute()
+      val artistaId:DestinosDENavegacao.DestinosDeTela.ArtistaId=it.toRoute()
       ArtistaId(modifier = Modifier,
           windowSizeClass = windowSizeClass,
           paddingValues = paddingValues,
@@ -134,8 +134,8 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.To
           acaoCarregarPlyer = acaoCaregarPlyer,id=artistaId.id)
   }
 
-   composable<DestinosDENavegacao.AlbumId>{
-       val id:DestinosDENavegacao.AlbumId=it.toRoute()
+   composable<DestinosDENavegacao.DestinosDeTela.AlbumId>{
+       val id:DestinosDENavegacao.DestinosDeTela.AlbumId=it.toRoute()
        AlbumId(
            modifier = Modifier,
            windowSizeClass = windowSizeClass,
