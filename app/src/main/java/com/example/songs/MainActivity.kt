@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -251,7 +252,8 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .safeDrawingPadding()
                             .safeGesturesPadding()
-                            .safeContentPadding(),//PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
+                            .safeContentPadding()
+                            .imePadding(),//PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
                         containerColor = MaterialTheme.colorScheme.background,
                         snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
 

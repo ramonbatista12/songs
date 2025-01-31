@@ -86,7 +86,7 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
 
   composable<DestinosDENavegacao.DestinosDeTela.Playlist>{
       Box{
-        PlyList(windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer, vm = vmLista)
+        PlyList(modifier = modifier,windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer, vm = vmLista)
        }}
 
 
