@@ -29,17 +29,23 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavType
+import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.example.songs.application.AplicationCuston
 import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
+import com.example.songs.componentes.dialog.DialogoCriarPlyList
+import com.example.songs.componentes.dialog.DialogoDeSelecaoDePlyList
+import com.example.songs.componentes.dialog.DialogoOpcoesItemsAlbums
+import com.example.songs.componentes.dialog.DialogoOpcoesItemsDaLista
 import com.example.songs.componentes.paineis.AlbumId
 import com.example.songs.componentes.paineis.ArtistaId
 import com.example.songs.componentes.paineis.BigPlayer
 import com.example.songs.componentes.paineis.ListaDeAlbums
 import com.example.songs.componentes.paineis.ListaDeArtistas
 import com.example.songs.componentes.paineis.ListaDemusicas
+import com.example.songs.componentes.paineis.PlayListId
 import com.example.songs.componentes.paineis.PlyList
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.viewModels.FabricaViewModelLista
@@ -80,13 +86,35 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
                       paddingValues = paddingValues,
                       transicaoMiniPlyer = transicaoMiniPlyer,
                       viewModelListas = vmLista,
-                      acaoCarregarPlyer = acaoCaregarPlyer)
+                      acaoCarregarPlyer = acaoCaregarPlyer,acaoNavegarOpcoes = {
+
+                              val metadata=it?.mediaMetadata
+               navController.navigate(   DestinosDENavegacao.DestinosDeDialogo
+                                                             .OpcoesItemsDaLista(titulo = metadata?.title.toString(),
+                                                                                 artista = metadata?.artist.toString(),
+                                                                                 uri =metadata?.artworkUri.toString(),
+                                                                                 album = metadata?.albumArtist.toString(),
+                                                                                 id=it?.mediaId.toString(),
+                                                                                 duracao = metadata?.durationMs.toString() ))
+
+           })
    }
   }
 
   composable<DestinosDENavegacao.DestinosDeTela.Playlist>{
       Box{
-        PlyList(modifier = modifier,windowSizeClass = windowSizeClass,paddingValues = paddingValues,transicaoMiniPlyer = transicaoMiniPlyer, vm = vmLista)
+        PlyList(modifier = modifier,
+                windowSizeClass = windowSizeClass,
+                paddingValues = paddingValues,
+                transicaoMiniPlyer = transicaoMiniPlyer,
+                vm = vmLista,
+                acaoNavegarDialoCriarPlaylist = {
+                    scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeDialogo.CriarPlaylist)} },
+            acaONavegacao = {id->
+                scope.launch {
+                    navController.navigate(DestinosDENavegacao.DestinosDeTela.PlyListId(id=id))
+                }
+            })
        }}
 
 
@@ -131,7 +159,41 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
           paddingValues = paddingValues,
           transicaoMiniPlyer = transicaoMiniPlyer,
           viewModelListas = vmLista,
-          acaoCarregarPlyer = acaoCaregarPlyer,id=artistaId.id)
+          acaoCarregarPlyer = acaoCaregarPlyer,
+          id=artistaId.id, acaoNavegarOpcoes = {
+            scope.launch {
+              val metadata=it?.mediaMetadata
+              navController.navigate(   DestinosDENavegacao.DestinosDeDialogo
+                  .OpcoesItemsDaLista(titulo = metadata?.title.toString(),
+                      uri =metadata?.artworkUri.toString(),
+                      artista = metadata?.artist.toString(),
+                      album = metadata?.albumArtist.toString(),
+                      id=it?.mediaId.toString(),
+                      duracao = metadata?.durationMs.toString() ))}
+          })
+  }
+
+  composable<DestinosDENavegacao.DestinosDeTela.PlyListId> {
+      val id =it.toRoute<DestinosDENavegacao.DestinosDeTela.PlyListId>()
+      PlayListId(modifier = Modifier,
+          windowSizeClass = windowSizeClass,
+          paddingValues = paddingValues,
+          transicaoMiniPlyer = transicaoMiniPlyer,
+          vm = vmLista,
+          acaoCarregarPlyer = acaoCaregarPlyer,
+          id=id.id,
+          acaoNavegarOpcoes = {
+
+              val metadata=it?.mediaMetadata
+              navController.navigate(   DestinosDENavegacao.DestinosDeDialogo
+                  .OpcoesItemsDaLista(titulo = metadata?.title.toString(),
+                      artista = metadata?.artist.toString(),
+                      uri =metadata?.artworkUri.toString(),
+                      album = metadata?.albumArtist.toString(),
+                      id=it?.mediaId.toString(),
+                      duracao = metadata?.durationMs.toString() ))
+
+          })
   }
 
    composable<DestinosDENavegacao.DestinosDeTela.AlbumId>{
@@ -142,11 +204,54 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
            paddingValues = paddingValues,
            transicaoMiniPlyer = transicaoMiniPlyer,
            viewModelListas = vmLista,
-           acaoCarregarPlyer = acaoCaregarPlyer,id=id.id
+           acaoCarregarPlyer = acaoCaregarPlyer,
+           id=id.id,
+           acaoNavegarOpcoes = {
+             scope.launch {
+               val metadata=it?.mediaMetadata
+               navController.navigate(   DestinosDENavegacao.DestinosDeDialogo
+                   .OpcoesItemsDaLista(titulo = metadata?.title.toString(),
+                       uri =metadata?.artworkUri.toString(),
+                       artista = metadata?.artist.toString(),
+                       album = metadata?.albumArtist.toString(),
+                       id=it?.mediaId.toString(),
+                       duracao = metadata?.durationMs.toString() ))}
+           }
        )
 
    }
+   dialog<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsDaLista> {
+       val objeto= it.toRoute<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsDaLista>()
+       DialogoOpcoesItemsDaLista(acaoDeCompartilhar = {},
+                                 acaoAdicionarPlaylist = {
+                                     scope.launch {
+                                      navController.navigate(DestinosDENavegacao.DestinosDeDialogo
+                                                                               .AdiconarPlaylist(titulo = objeto.titulo,
+                                                                                                artista = objeto.artista ,
+                                                                                                 uri = objeto.uri,
+                                                                                                 album = objeto.album,
+                                                                                                 id = objeto.id,
+                                                                                                 duracao = objeto.duracao))}
+                                 },
+                                 acaoDeCancelar = {navController.popBackStack()})
+   }
 
+   dialog<DestinosDENavegacao.DestinosDeDialogo.AdiconarPlaylist> {
+       val objeto= it.toRoute<DestinosDENavegacao.DestinosDeDialogo.AdiconarPlaylist>()
+      DialogoDeSelecaoDePlyList(item = objeto,acaoCamcelar = {scope.launch {navController.popBackStack()}}, vm = vmLista)
+   }
+
+   dialog<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsAlbums>{
+       val albumid=it.toRoute<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsAlbums>()
+       DialogoOpcoesItemsAlbums(acaoDeCompartilhar = {},
+                                acaoDeCancelar = {scope.launch {navController.popBackStack()  }}, idDoAlbums = albumid.idDoAlbum,vm=vmLista)
+   }
+
+   dialog<DestinosDENavegacao.DestinosDeDialogo.CriarPlaylist> {
+
+       DialogoCriarPlyList(acaoAdicionarPlaylist = {},
+                           acaoCamcelar = { scope.launch { navController.popBackStack() }}, vm = vmLista)
+   }
 
 }
 

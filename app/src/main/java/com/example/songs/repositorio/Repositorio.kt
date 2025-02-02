@@ -4,13 +4,17 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.util.Size
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import com.example.songs.servicoDemidia.PlyListStados
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class RepositorioService(val context: Context):InterfacePlylist,InterfasseMediaStore {
@@ -26,14 +30,7 @@ private val mediaStore=ManipularMediaStore(context)
     override fun getMusicasPorArtista(id:Long)= mediaStore.getMusicasPorArtista(id)
     @OptIn(UnstableApi::class)
     override fun getMusicasPorAlbum(id:Long)= mediaStore.getMusicasPorAlbum(id)
-    fun getPlylist(estado:PlyListStados): Flow<List<MediaItem>> =
-        when(val r=estado){
-            is PlyListStados.Album->{getMusicasPorAlbum(r.albumId)}
-            is PlyListStados.Artista->{getMusicasPorArtista(r.artistaId)}
-            is PlyListStados.Todas->{ getMusics()}
-            is PlyListStados.Playlist->{  getMusics()}
-            else->{ getMusics()}
-        }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getMetaData(uri: Uri, id: Long):Bitmap?{
    try {
@@ -54,7 +51,9 @@ private val mediaStore=ManipularMediaStore(context)
     override suspend fun removerPlaylist(idPlylist: Long)=plylist.removerPlaylist(idPlylist)
     override suspend fun removerItemDaPlaylist(idPlylist: Long) = plylist.removerItemDaPlaylist(idPlylist)
     override fun listaPlaylist(): Flow<List<ListaPlaylist>> =plylist.listaPlaylist()
-    override suspend fun mediaItemsDaPlylist(idPlylist: Long): Flow<List<ItemsDeMedia>> =plylist.mediaItemsDaPlylist(idPlylist)
+    override  fun mediaItemsDaPlylist(idPlylist: Long): Flow<List<ItemsDeMedia>> = plylist.mediaItemsDaPlylist(idPlylist)
+
+   // fun getPlylist(estado:PlyListStados): Flow<List<MediaItem>>
 
 
 }

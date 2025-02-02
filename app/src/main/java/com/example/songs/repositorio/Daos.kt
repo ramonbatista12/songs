@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface Daos {
     @Query("SELECT * FROM ListaPlaylist")
     fun fluxoPlyList(): Flow<List<ListaPlaylist>>
-    @Query("SELECT * FROM ItemsDeMedia WHERE idPlylist=:id")
+    @Query("SELECT * FROM ItemsDeMedia WHERE idPlylist = :id")
     fun fluxoDeItemsDeMedia(id: Long): Flow<List<ItemsDeMedia>>
     @Query("SELECT * FROM ListaPlaylist ORDER BY nome DESC  limit  1 offset 1")
     suspend fun plyListCriada(): ListaPlaylist?

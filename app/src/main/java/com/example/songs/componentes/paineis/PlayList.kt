@@ -46,31 +46,31 @@ fun PlyList(modifier: Modifier =Modifier,
             windowSizeClass: WindowSizeClass,
             paddingValues: PaddingValues,
             transicaoMiniPlyer:MutableTransitionState<Boolean>,
-            vm:ViewModelListas){
+            vm:ViewModelListas,
+            acaONavegacao:(idPlyList:Long)->Unit={},
+            acaoNavegarDialoCriarPlaylist:()->Unit={}){
      val plylist=vm.plylist.collectAsState()
     Box(modifier = modifier){
         LazyVerticalGrid(columns = GridCells.Fixed(  if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 2 else 3),
                          modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter)
-                                            .padding(bottom = if (transicaoMiniPlyer.targetState) 80.dp else 0.dp) ) {
+                                            .padding(bottom = if (transicaoMiniPlyer.targetState) 80.dp else 0.dp,start = 10.dp,end = 10.dp) ) {
 
             item {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier=Modifier.clickable {
-                        vm.adicionarPlyList("nova")
+                        acaoNavegarDialoCriarPlaylist()
                     }) {
                     Text("Criar Playlist")
-                    IconButton(onClick = {
-                        vm.adicionarPlyList("nova1")
-                    }) {
+                    IconButton(onClick = acaoNavegarDialoCriarPlaylist) {
                         Icon(Icons.Rounded.AddCircle, contentDescription = null)
                     }
                 }
             }
 
             items(items = plylist.value) {
-                ItemsListaPlaylists(modifier=Modifier.combinedClickable(onClick = {}, onLongClick = {
-                    vm.excluirPlyList()
-                }) ,item = it)
+                ItemsListaPlaylists(modifier=Modifier.clickable {
+                    acaONavegacao(it.id)
+                } ,item = it)
             }
 
 

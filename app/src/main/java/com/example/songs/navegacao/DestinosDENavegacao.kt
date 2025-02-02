@@ -1,6 +1,7 @@
 package com.example.songs.navegacao
 
 import android.net.Uri
+import com.example.songs.repositorio.Artista
 import kotlinx.serialization.Serializable
 
 /*
@@ -13,6 +14,7 @@ import kotlinx.serialization.Serializable
 * cada objet deve ser serializavel
 * */
 sealed class DestinosDENavegacao {
+
 sealed class DestinosDeTela:DestinosDENavegacao(){
       @Serializable
       object Player:DestinosDENavegacao()
@@ -31,12 +33,35 @@ sealed class DestinosDeTela:DestinosDENavegacao(){
       @Serializable
       class AlbumId(val id: Long):DestinosDENavegacao()
       @Serializable
+      data class PlyListId(val id:Long):DestinosDENavegacao()
+
+      @Serializable
       object Configuracoes:DestinosDENavegacao()
   }
-sealed class DestinosDeDialogo:DestinosDENavegacao(){
-     @Serializable
-     data class AdiconarPlaylist(val titulo:String,val url:String,val album:String,val id:String):DestinosDeDialogo()
-     @Serializable
-     data class OpcoesItemsDaLista(val uri: String):DestinosDeDialogo()
-   }
+
+    sealed class DestinosDeDialogo:DestinosDENavegacao(){
+
+        @Serializable
+        class AdiconarPlaylist(val titulo:String="",
+                               val uri: String="",
+                               val artista: String="",
+                               val album:String="",
+                               val id:String="",
+                               val duracao:String=""):DestinosDeDialogo()
+
+        @Serializable
+        data class OpcoesItemsDaLista(val titulo:String="",
+                                      val uri: String="",
+                                      val artista: String="",
+                                      val album:String="",
+                                      val id:String="",
+                                      val duracao:String=""):DestinosDeDialogo()
+
+        @Serializable
+        data class OpcoesItemsAlbums(val idDoAlbum:Long):DestinosDeDialogo()
+
+        @Serializable
+        object CriarPlaylist:DestinosDeDialogo()
+
+    }
 }

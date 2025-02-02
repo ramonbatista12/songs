@@ -16,9 +16,9 @@ import androidx.navigation.compose.DialogHost
 
 
 @Composable
-fun DialogoOpcoesItemsDaLista(modifier:Modifier=Modifier,item:ObjetosDeDialog ) {
+fun ItemsDialogoOpcoesItems(modifier:Modifier=Modifier,item:ObjetosDeDialog ) {
 
-    Row(modifier = Modifier.fillMaxWidth())   {
+    Row(modifier = modifier.fillMaxWidth())   {
         Text(text = item.opcao)
         Spacer(modifier=Modifier.padding(10.dp))
         if(item.icone!=null) Icon(painter = painterResource(id = item.icone), contentDescription = null)

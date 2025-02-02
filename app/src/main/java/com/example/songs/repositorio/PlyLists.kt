@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalStdlibApi::class)
 suspend fun checarCorotina():Boolean{
-    if(!Dispatchers.IO.equals(currentCoroutineContext()[CoroutineDispatcher])) throw(RuntimeException("corrotina fora do contexto IO"))
+  // if(!Dispatchers.IO.equals(currentCoroutineContext()[CoroutineDispatcher]))// throw(RuntimeException("corrotina fora do contexto IO"))
     return true
 }
 class PlyLists(private val context: Context):InterfacePlylist {
@@ -73,6 +73,6 @@ class PlyLists(private val context: Context):InterfacePlylist {
     }
     override fun listaPlaylist(): Flow<List<ListaPlaylist>> = dao.fluxoPlyList()
 
-    override suspend fun mediaItemsDaPlylist(id: Long): Flow<List<ItemsDeMedia>> =dao.fluxoDeItemsDeMedia(id)
+    override  fun mediaItemsDaPlylist(id: Long): Flow<List<ItemsDeMedia>> =dao.fluxoDeItemsDeMedia(id)
 
 }

@@ -1,5 +1,6 @@
 package com.example.songs.viewModels
 
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -7,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.PlyListStados
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
@@ -18,7 +20,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -86,11 +90,13 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
                     job=scope.launch {
                         scope.launch {
                             r.setvice.plyListStados.collect{
+                                Log.d("estado","${it.toString()}")
                                 estadoPlylist.value=it
                             }
                         }
                         scope.launch {
                             plylist().collect{
+
                                 playlistAtual.value=it
                             }
                         }
@@ -109,9 +115,30 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
 
     fun flowAulbumId(id:Long)=repositorio.getMusicasPorAlbum(id).flowOn(Dispatchers.IO)
     fun flowArtistaId(id:Long)=repositorio.getMusicasPorArtista(id).flowOn(Dispatchers.IO)
+    fun flowPlaylistId(id:Long)=repositorio.mediaItemsDaPlylist(id).flowOn(Dispatchers.IO).map {
+        it.map {
+            Log.d("media item map ","${it.idMedia},${it.uri},${it.artista}")
+            MediaItem.Builder().setMediaId(it.idMedia)
+                               .setUri(it.uri).setMediaMetadata(MediaMetadata.Builder().setArtworkUri(Uri.parse(it.uri))
+                                                                                       .setTitle(it.titulo)
+                                                                                       .setArtist(it.artista)
+                                                                                       .setAlbumArtist(it.album)
+                                                                                       .setDurationMs(it.duracao.toLong())
+                                                                                       .build())
+                               .build()
+        }
+    }
     @OptIn(ExperimentalCoroutinesApi::class)
      @RequiresApi(Build.VERSION_CODES.Q)
-     fun plylist(): Flow<List<MediaItem>> =repositorio.getPlylist(estadoPlylist.value).flowOn(Dispatchers.IO)
+     fun plylist(): Flow<List<MediaItem>> =estadoPlylist.flatMapLatest {
+         when(val r =it){
+             is PlyListStados.Todas->{repositorio.getMusics()}
+             is PlyListStados.Album->{flowAulbumId(r.albumId)}
+             is PlyListStados.Playlist->{flowPlaylistId(r.playlistId).flowOn(Dispatchers.IO)}
+             is PlyListStados.Artista->{flowArtistaId(r.artistaId)}
+             else ->{emptyFlow()}
+         }.flowOn(Dispatchers.IO)
+    }
      fun mudarPlylist(plyListStado: PlyListStados){
        scope.launch {
            when(val e=estado.value){
@@ -126,15 +153,50 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
    }
 
 
-    fun adicionarPlyList(nome:String){
+    fun criarNovaPlylist(nome:String, acaoDecomclusao:()->Unit){
         scope.launch(Dispatchers.IO) {
-            //repositorio.criarPlyList(nome)
+            repositorio.criarPlyList(nome)
+        }.invokeOnCompletion {
+            scope.launch(Dispatchers.Main) {
+                acaoDecomclusao()
+            }
+
         }
     }
 
-    fun excluirPlyList(){
+    fun adicionarMusicaNaPlyList(m: MediaItem,idPlylist:Long,acaoDecomclusao: () -> Unit={}){
         scope.launch(Dispatchers.IO) {
-           // repositorio.removerPlaylist()
+            Log.d("mediaItem","${m.mediaMetadata.title.toString()}")
+            repositorio.adicionarAplyList(idPlylist,m)
+        }.invokeOnCompletion {
+            scope.launch(Dispatchers.Main) {
+                acaoDecomclusao()
+            }
+        }
+    }
+
+    fun adicionarMusicaNaPlyList(idAlbum:Long,idPlylist:Long,acaoDecomclusao: () -> Unit={}){
+        scope.launch(Dispatchers.IO) {
+          val lista = MutableStateFlow<List<MediaItem>>(emptyList())
+
+            flowAulbumId(idAlbum).collectLatest {
+                lista.value=it
+            }
+
+            lista.value.forEach {
+                adicionarMusicaNaPlyList(it,idPlylist)
+            }
+        }.invokeOnCompletion {
+            scope.launch(Dispatchers.Main) {
+        }
+    }
+    }
+
+    fun excluirPlyList(idDalsita:Long,acaoDecomclusao: () -> Unit){
+        scope.launch(Dispatchers.IO) {
+           repositorio.removerPlaylist(idDalsita)
+        }.invokeOnCompletion {
+            acaoDecomclusao()
         }
 
     }

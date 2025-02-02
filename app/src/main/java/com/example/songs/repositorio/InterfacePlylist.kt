@@ -10,6 +10,6 @@ interface InterfacePlylist {
   suspend fun removerPlaylist(idPlylist: Long)
   suspend fun removerItemDaPlaylist(idPlylist: Long)
   fun listaPlaylist(): Flow<List<ListaPlaylist>>
-  suspend fun mediaItemsDaPlylist(idPlylist: Long):Flow<List<ItemsDeMedia>>
+   fun mediaItemsDaPlylist(idPlylist: Long):Flow<List<ItemsDeMedia>>
 
 }

@@ -62,7 +62,8 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                    windowSizeClass: WindowSizeClass,
                    transicaoMiniPlyer:MutableTransitionState<Boolean>,
                    viewModelListas: ViewModelListas,
-                   acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit){
+                   acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit,
+                   acaoNavegarOpcoes:(MediaItem?)->Unit){
     val lista=viewModelListas.listas.collectAsState(ListaMusicas.caregando)
 
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
@@ -87,11 +88,11 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT||windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                        ItemDaLista(modifier = Modifier.clickable(onClick = {
                           acaoCarregarPlyer(r.lista,indice)
-                          viewModelListas.mudarPlylist(PlyListStados.Todas)
+                          viewModelListas.mudarPlylist(PlyListStados.Todas,)
 
-                       }), item = item)
+                       }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
                    }else{
-                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item)
+                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarDialogoDeOpcoes = acaoNavegarOpcoes)
                    }
                }
                }
@@ -152,7 +153,7 @@ fun previewListaDemusicas(){
                           transicaoMiniPlyer = transicaoMiniPlyer,
                           viewModelListas = viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,
                               MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)
-                          )), acaoCarregarPlyer={ it, id->})
+                          )), acaoCarregarPlyer={ it, id->}, acaoNavegarOpcoes = {})
         }
 
        // }

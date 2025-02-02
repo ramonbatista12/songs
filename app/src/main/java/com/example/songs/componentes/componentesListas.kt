@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,7 +28,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -66,7 +70,7 @@ import kotlinx.coroutines.launch
 * */
 
 @Composable
-fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
+fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?,acaoNavegarOpcoes:(item:MediaItem?)->Unit={}){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
     val scop=rememberCoroutineScope()
     val context= LocalContext.current
@@ -99,7 +103,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
             RoundedCornerShape(10.dp)).size(80.dp))
         }
 
-        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.8f)) {
+        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)) {
             Spacer(Modifier.padding(8.dp))
             Text(if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(), maxLines = 2,fontSize = 18.sp)
             Spacer(Modifier.padding(3.dp))
@@ -107,7 +111,9 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?){
 
         }
 
-
+     IconButton(onClick = {acaoNavegarOpcoes(item)}) {
+         Icon(Icons.Default.MoreVert, contentDescription = null)
+     }
 
     }
 }
@@ -126,7 +132,7 @@ suspend  fun getMetaData(uri: Uri, id: Long,context: Context):Bitmap?{
 }
 
 @Composable
-fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
+fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null,acaoNavegarDialogoDeOpcoes:(item:MediaItem?)->Unit={}){
 
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
     val scop=rememberCoroutineScope()
@@ -169,7 +175,9 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null){
                 Text(if (item==null) "Nome do Artista" else item.mediaMetadata.artist.toString(),maxLines = 1,fontSize = 14.sp)
 
             }
-
+         IconButton(onClick = { acaoNavegarDialogoDeOpcoes(item)}) {
+             Icon(Icons.Default.MoreVert, contentDescription = null)
+         }
         }
     }
 }
@@ -202,12 +210,15 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
                 RoundedCornerShape(15.dp)
             ).size(80.dp))}
-        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp)){
+        Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)){
             Spacer(Modifier.padding(8.dp))
             Text(item.nome, maxLines = 2,fontSize = 18.sp, fontFamily = FontFamily.Monospace)
             Spacer(Modifier.padding(3.dp))
             Text(item.artista,maxLines = 1,fontSize = 14.sp)
 
+        }
+        IconButton(onClick = {}) {
+            Icon(Icons.Default.MoreVert, contentDescription = null)
         }
     }
     DisposableEffect(Unit) {
@@ -299,19 +310,36 @@ fun ItemsArtistasColuna(modifier: Modifier=Modifier,item: Artista){
 
 
 @Composable
-fun ItemsListaPlaylists(modifier: Modifier=Modifier,item:ListaPlaylist){
+fun ItemsListaPlaylists(modifier: Modifier=Modifier,item:ListaPlaylist?){
     Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
         Image(painter = painterResource(id = R.drawable.baseline_playlist_play_24),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
         Row {
             Column{
-                Text(item.nome, maxLines = 2,fontSize = 18.sp)
+                Text(if(item==null)"plalyst" else item.nome, maxLines = 2,fontSize = 18.sp)
 
 
             }
 
         }
+    }
+
+}
+@Composable
+fun ItemsListaPlaylistsLista(modifier: Modifier=Modifier,item:ListaPlaylist?){
+    Row (modifier =modifier.padding(10.dp)) {
+        Image(painter = painterResource(id = R.drawable.baseline_playlist_play_24),
+            contentDescription = null,
+            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
+
+            Column(modifier.fillMaxWidth()){
+                Text(if(item==null)"plalyst" else item.nome, maxLines = 2,fontSize = 18.sp)
+
+
+            }
+
+
     }
 
 }
@@ -324,21 +352,19 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,item:ListaPlaylist){
 @Composable
 fun PreviewItemDaLista() {
     SongsTheme {
-     val grad= remember { mutableStateOf(true) }
+     val grad= remember { mutableStateOf(false) }
    Scaffold (modifier=Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).safeContentPadding().safeGesturesPadding().safeDrawingPadding()) {
        val teste = MaterialTheme.colorScheme.background.toString()
        LaunchedEffect(Unit) {
           Log.i("teste cor",teste)
        }
     Box(modifier = Modifier.padding(it)) {
-       LazyVerticalGrid(columns = GridCells.Fixed(if(grad.value) 3 else 1),horizontalArrangement = Arrangement.Center, modifier = Modifier.align(
+       LazyVerticalGrid(columns = GridCells.Fixed(/*if(grad.value) 3 else*/ 1),horizontalArrangement = Arrangement.Center, modifier = Modifier.align(
            Alignment.Center)) {
-       if(grad.value)   items(5){
-                      LoadingListaMusicasColunas()
+       items(5){
+                      ItemDaLista(item = null)
                             }
-       else items(10){
-           LoadingListaMusicasColunas()
-       }
+
 
 
       }

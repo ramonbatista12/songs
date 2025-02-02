@@ -131,7 +131,7 @@ private fun criarNotificacao(){
 }
     fun muudarPlyList(plyListStado: PlyListStados){
         scope.launch {
-
+           Log.d("estado","estado ${plyListStado.toString()}")
            plyListStados.emit(plyListStado)
             Log.d("service","muudarPlyList: $plyListStado")
         }

@@ -39,7 +39,8 @@ fun AlbumId(modifier: Modifier = Modifier,
             windowSizeClass: WindowSizeClass,
             transicaoMiniPlyer: MutableTransitionState<Boolean>,
             viewModelListas: ViewModelListas,
-            acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit,id:Long){
+            acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit,id:Long,
+            acaoNavegarOpcoes:(item:MediaItem?)->Unit={} ){
     val lista= viewModelListas.flowAulbumId(id).collectAsState(initial = emptyList())
 
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
@@ -55,7 +56,9 @@ fun AlbumId(modifier: Modifier = Modifier,
             else   3
 
         }
-        LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),horizontalArrangement = Arrangement.SpaceBetween ,modifier = Modifier.align(
+        LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),
+                         horizontalArrangement = Arrangement.SpaceBetween ,
+                         modifier = Modifier.align(
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
 
                     itemsIndexed(items= lista.value){ indice, item->
@@ -64,7 +67,7 @@ fun AlbumId(modifier: Modifier = Modifier,
                                 acaoCarregarPlyer(lista.value,indice)
                                 viewModelListas.mudarPlylist(PlyListStados.Album(id))
 
-                            }), item = item)
+                            }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
                         }else{
                             ItemsListaColunas(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), item = item)
                         }

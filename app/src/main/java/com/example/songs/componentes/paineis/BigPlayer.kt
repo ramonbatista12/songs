@@ -432,7 +432,10 @@ fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer,vmlista:ViewModelL
                                            ,onclick = {listaAvberta.value=!listaAvberta.value},vm=vm)
 
                             } else {
+
+                                val estadoPlylist=vmlista._estadoPlylsist.collectAsState()
                                 val lista =vmlista._playListAtual.collectAsState()
+
                                 Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)) {
                                   Row (modifier=Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
                                       MiniplayerParaTransicao(
