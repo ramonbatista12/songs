@@ -49,6 +49,7 @@ import com.example.songs.componentes.paineis.PlayListId
 import com.example.songs.componentes.paineis.PlyList
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.viewModels.FabricaViewModelLista
+import com.example.songs.viewModels.FabricaViewModelPlylist
 import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -136,7 +137,8 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
       BigPlayer(windowSizeClass = windowSizeClass,
                 paddingValues = paddingValues,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
-          vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)) )
+          vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)),
+           )
 
   }
 

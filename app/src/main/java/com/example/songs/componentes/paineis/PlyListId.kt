@@ -63,7 +63,7 @@ fun PlayListId(modifier: Modifier = Modifier,
                 if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT||windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM){
                     ItemDaLista(modifier = Modifier.clickable(onClick = {
                         acaoCarregarPlyer(lista.value,indice)
-                        vm.mudarPlylist(PlyListStados.Album(id))
+                        vm.mudarPlylist(PlyListStados.Playlist(id))
 
                     }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
                 }else{

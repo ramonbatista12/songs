@@ -104,6 +104,7 @@ import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
 import com.example.songs.viewModels.ModoDerepeticao
 import com.example.songs.viewModels.ViewModelListas
+import com.example.songs.viewModels.ViewModelPlyList
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -122,7 +123,11 @@ import kotlin.time.toDuration
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun BigPlayer(modifier: Modifier = Modifier,windowSizeClass: WindowSizeClass,paddingValues: PaddingValues,vm: VmodelPlayer,vmlista: ViewModelListas ,acaoAvisoBigplyer:()->Unit){
+fun BigPlayer(modifier: Modifier = Modifier,
+              windowSizeClass: WindowSizeClass,
+              paddingValues: PaddingValues,
+              vm: VmodelPlayer,vmlista: ViewModelListas,
+              acaoAvisoBigplyer:()->Unit){
    LaunchedEffect(Unit) {
        acaoAvisoBigplyer()
    }
@@ -434,7 +439,7 @@ fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer,vmlista:ViewModelL
                             } else {
 
                                 val estadoPlylist=vmlista._estadoPlylsist.collectAsState()
-                                val lista =vmlista._playListAtual.collectAsState()
+                                val lista =vmlista.plylist().collectAsState(emptyList()) //
 
                                 Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)) {
                                   Row (modifier=Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
@@ -453,6 +458,7 @@ fun PlayerCompat2(modifier: Modifier=Modifier,vm:VmodelPlayer,vmlista:ViewModelL
                                     } }
                                     val  metadata=vm._mediaItemAtual.collectAsState()
                                     LazyColumn {
+
                                         itemsIndexed(items = lista.value) {indice,item->
                                            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
                                                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
