@@ -99,6 +99,7 @@ import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.Miniplayer
 import com.example.songs.componentes.MiniplayerParaTransicao
 import com.example.songs.componentes.getMetaData
+import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
@@ -144,7 +145,7 @@ fun BigPlayer(modifier: Modifier = Modifier,
                    vm = vm, vmlista = vmlista)
 
  else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
-             if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM)PlayerCompat2(modifier, vm = vm,vmlista = vmlista)
+             if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)PlayerCompat2(modifier, vm = vm,vmlista = vmlista)
                           else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
     else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
 
@@ -752,8 +753,11 @@ fun PlayerPreview(){
             .safeContentPadding()) {
 
             val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
-           /*BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
-                MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),{})*/
+            val context= LocalContext.current
+           BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
+                MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),
+                acaoAvisoBigplyer = {},
+                vmlista = ViewModelListas(repositorio = RepositorioService(context), estado =  MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)))
 
         }
         }

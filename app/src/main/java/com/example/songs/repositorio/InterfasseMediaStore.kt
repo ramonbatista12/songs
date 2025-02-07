@@ -10,4 +10,5 @@ interface InterfasseMediaStore {
     fun getArtistas():Flow<List<Artista>>
     fun getMusicasPorArtista(id:Long):Flow<List<MediaItem>>
     fun getMusicasPorAlbum(id:Long):Flow<List<MediaItem>>
+
 }

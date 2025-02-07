@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.ItemsListaPlaylists
@@ -48,29 +51,36 @@ fun PlyList(modifier: Modifier =Modifier,
             transicaoMiniPlyer:MutableTransitionState<Boolean>,
             vm:ViewModelListas,
             acaONavegacao:(idPlyList:Long)->Unit={},
-            acaoNavegarDialoCriarPlaylist:()->Unit={}){
+            acaoNavegarDialoCriarPlaylist:()->Unit={},
+            acaoNavegarOpcoes:(id:Long?)->Unit={}){
      val plylist=vm.plylist.collectAsState()
+    val gradcels:(w:WindowSizeClass)->Int ={w->
+        if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1
+        else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
+            if(w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
+            else 1
+        else if (windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.EXPANDED)
+            if (w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
+            else 3
+        else   3}
     Box(modifier = modifier){
-        LazyVerticalGrid(columns = GridCells.Fixed(  if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 2 else 3),
+        LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),
                          modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter)
                                             .padding(bottom = if (transicaoMiniPlyer.targetState) 80.dp else 0.dp,start = 10.dp,end = 10.dp) ) {
 
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    modifier=Modifier.clickable {
-                        acaoNavegarDialoCriarPlaylist()
-                    }) {
+            item(span = { GridItemSpan(1) }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedButton(onClick = acaoNavegarDialoCriarPlaylist) {
                     Text("Criar Playlist")
-                    IconButton(onClick = acaoNavegarDialoCriarPlaylist) {
-                        Icon(Icons.Rounded.AddCircle, contentDescription = null)
-                    }
+                    Icon(Icons.Rounded.AddCircle, contentDescription = null)
+                     }
                 }
             }
 
             items(items = plylist.value) {
                 ItemsListaPlaylists(modifier=Modifier.clickable {
                     acaONavegacao(it.id)
-                } ,item = it)
+                }, vm = vm ,item = it,acaoNavegarOpcoes=acaoNavegarOpcoes)
             }
 
 

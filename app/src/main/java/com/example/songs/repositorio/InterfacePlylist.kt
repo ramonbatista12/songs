@@ -9,7 +9,11 @@ interface InterfacePlylist {
   suspend fun adicionarAplyList(idPlylist:Long,mediaItem: MediaItem)
   suspend fun removerPlaylist(idPlylist: Long)
   suspend fun removerItemDaPlaylist(idPlylist: Long)
+  suspend fun atualizarPlylist(plylist:ListaPlaylist)
+  suspend fun removerItemDaPlyList(idMedia:String)
+  suspend fun tumbmails(id: Long): List<ImagemTumbmail>
   fun listaPlaylist(): Flow<List<ListaPlaylist>>
-   fun mediaItemsDaPlylist(idPlylist: Long):Flow<List<ItemsDeMedia>>
+  fun mediaItemsDaPlylist(idPlylist: Long):Flow<List<ItemsDeMedia>>
+
 
 }

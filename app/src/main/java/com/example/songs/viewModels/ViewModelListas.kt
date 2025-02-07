@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.example.songs.repositorio.ListaPlaylist
 import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.PlyListStados
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
@@ -196,11 +197,31 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
         scope.launch(Dispatchers.IO) {
            repositorio.removerPlaylist(idDalsita)
         }.invokeOnCompletion {
-            acaoDecomclusao()
+           scope.launch(Dispatchers.Main) { acaoDecomclusao() }
         }
 
     }
+    fun editarTituloPlyList(id: Long,titulo:String,acaoDecomclusao: () -> Unit){
+        scope.launch(Dispatchers.IO) {
+            repositorio.atualizarPlylist(ListaPlaylist(id,titulo))
+        }.invokeOnCompletion {
+            scope.launch(Dispatchers.Main){
+                acaoDecomclusao()
+            }
+        }
+    }
 
+    fun removerDaPlyList(idMedia:String,acaoDecomclusao: () -> Unit){
+        scope.launch(Dispatchers.IO) {
+            repositorio.removerItemDaPlyList(idMedia)
+        }.invokeOnCompletion {
+            scope.launch(Dispatchers.Main) {
+                acaoDecomclusao()
+            }
+        }
+    }
+
+    suspend fun getTumbmail(id:Long)=repositorio.tumbmails(id)
 
     override fun onCleared() {
         if(job!=null){

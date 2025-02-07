@@ -1,5 +1,9 @@
 package com.example.songs.navegacao
 
+import android.content.Context
+import android.content.Intent
+import android.content.Intent.ACTION_SEND
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -26,6 +30,8 @@ import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.ItemsListaColunas
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavType
@@ -37,8 +43,10 @@ import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
 import com.example.songs.componentes.dialog.DialogoCriarPlyList
 import com.example.songs.componentes.dialog.DialogoDeSelecaoDePlyList
+import com.example.songs.componentes.dialog.DialogoEditarPlyList
 import com.example.songs.componentes.dialog.DialogoOpcoesItemsAlbums
 import com.example.songs.componentes.dialog.DialogoOpcoesItemsDaLista
+import com.example.songs.componentes.dialog.DialogoOpcoesPlalystOpcoes
 import com.example.songs.componentes.paineis.AlbumId
 import com.example.songs.componentes.paineis.ArtistaId
 import com.example.songs.componentes.paineis.BigPlayer
@@ -54,6 +62,8 @@ import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.junit.runner.manipulation.Ordering
+import java.io.File
 
 /*
 * Navgrafic e o grafico de navegacao em sim suas rotas sao determinadas pela classe DestinosDENavegacao
@@ -115,7 +125,8 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
                 scope.launch {
                     navController.navigate(DestinosDENavegacao.DestinosDeTela.PlyListId(id=id))
                 }
-            })
+            },
+            acaoNavegarOpcoes = {scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeDialogo.OpcoesPlaylist(id=it ?:0)) }})
        }}
 
 
@@ -193,7 +204,7 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
                       uri =metadata?.artworkUri.toString(),
                       album = metadata?.albumArtist.toString(),
                       id=it?.mediaId.toString(),
-                      duracao = metadata?.durationMs.toString() ))
+                      duracao = metadata?.durationMs.toString(), estraNaplylist = true ))
 
           })
   }
@@ -224,7 +235,16 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
    }
    dialog<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsDaLista> {
        val objeto= it.toRoute<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsDaLista>()
-       DialogoOpcoesItemsDaLista(acaoDeCompartilhar = {},
+       val comtext= LocalContext.current
+       DialogoOpcoesItemsDaLista(acaoDeCompartilhar = {
+          val intent= Intent().apply {
+              action= Intent.ACTION_SEND
+              putExtra(Intent.EXTRA_STREAM,Uri.parse(objeto.uri))
+              type="audio/*"
+          }
+         comtext.startActivity(Intent.createChooser(intent,null))
+
+       },
                                  acaoAdicionarPlaylist = {
                                      scope.launch {
                                       navController.navigate(DestinosDENavegacao.DestinosDeDialogo
@@ -235,12 +255,32 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
                                                                                                  id = objeto.id,
                                                                                                  duracao = objeto.duracao))}
                                  },
-                                 acaoDeCancelar = {navController.popBackStack()})
+                                 acaoDeCancelar = {navController.popBackStack()},
+                                 acaoRemoverDaPlylist = {
+                                     vmLista.removerDaPlyList(idMedia = objeto.id,{navController.popBackStack()})
+                                 }, estaNaplylist = objeto.estraNaplylist)
+
+   }
+
+   dialog<DestinosDENavegacao.DestinosDeDialogo.OpcoesPlaylist>{
+       val objeto= it.toRoute<DestinosDENavegacao.DestinosDeDialogo.OpcoesPlaylist>()
+       DialogoOpcoesPlalystOpcoes(acaoDeApagarPlylist = { vmLista.excluirPlyList(objeto.id,
+                                                                                 acaoDecomclusao = { navController.popBackStack()})},
+                                  acaoDeCancelar = {
+                                      scope.launch { navController.popBackStack() }},
+                                  acaoRenomearPlylis = {
+                                      scope.launch {
+                                          navController.navigate(DestinosDENavegacao.DestinosDeDialogo.EditarPlyList(id=objeto.id, titulo = ""))
+                                      }
+                                  })
    }
 
    dialog<DestinosDENavegacao.DestinosDeDialogo.AdiconarPlaylist> {
        val objeto= it.toRoute<DestinosDENavegacao.DestinosDeDialogo.AdiconarPlaylist>()
-      DialogoDeSelecaoDePlyList(item = objeto,acaoCamcelar = {scope.launch {navController.popBackStack()}}, vm = vmLista)
+      DialogoDeSelecaoDePlyList(item = objeto,
+                                acaoCamcelar = {scope.launch {navController.popBackStack()}},
+                                acaoCriarNovaLista = {scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeDialogo.CriarPlaylist) }},
+                                vm = vmLista)
    }
 
    dialog<DestinosDENavegacao.DestinosDeDialogo.OpcoesItemsAlbums>{
@@ -251,8 +291,16 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
 
    dialog<DestinosDENavegacao.DestinosDeDialogo.CriarPlaylist> {
 
+
+
        DialogoCriarPlyList(acaoAdicionarPlaylist = {},
-                           acaoCamcelar = { scope.launch { navController.popBackStack() }}, vm = vmLista)
+                           acaoCamcelar = { scope.launch { navController.popBackStack() }},
+                           vm = vmLista )
+   }
+
+   dialog<DestinosDENavegacao.DestinosDeDialogo.EditarPlyList> {
+       val plylist= it.toRoute<DestinosDENavegacao.DestinosDeDialogo.EditarPlyList>()
+       DialogoEditarPlyList(vm=vmLista, acaoCamcelar = {navController.popBackStack()},plyListEditacao = plylist )
    }
 
 }

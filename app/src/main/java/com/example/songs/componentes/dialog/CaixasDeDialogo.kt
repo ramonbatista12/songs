@@ -2,20 +2,28 @@ package com.example.songs.componentes.dialog
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.example.songs.componentes.ItemsListaPlaylistsLista
+import com.example.songs.componentes.ItemsListaPlaylists
 import com.example.songs.navegacao.DestinosDENavegacao
 import com.example.songs.viewModels.ViewModelListas
 
@@ -43,7 +51,10 @@ import com.example.songs.viewModels.ViewModelListas
 fun DialogoOpcoesItemsDaLista(modifier: Modifier =Modifier,
                               text:String="Opcoes",
                               acaoDeCompartilhar:(uri:Uri)->Unit={},
-                              acaoAdicionarPlaylist:(nome:String)->Unit={},acaoDeCancelar:()->Unit={}){
+                              acaoAdicionarPlaylist:(nome:String)->Unit={},
+                              acaoDeCancelar:()->Unit={},
+                              acaoRemoverDaPlylist:()->Unit={} ,
+                              estaNaplylist:Boolean){
     Dialog(onDismissRequest = { acaoDeCancelar() }) {
         //aqui vai o conteudo do dialogo
         OutlinedCard(modifier = modifier.width(280.dp).height(200.dp)) {
@@ -51,17 +62,49 @@ fun DialogoOpcoesItemsDaLista(modifier: Modifier =Modifier,
             Box(modifier = Modifier.fillMaxSize()){
                   Text(text = text,modifier=Modifier.align(Alignment.TopCenter))
                   Column(modifier=Modifier.align(Alignment.CenterStart).padding(start = 20.dp)) {
-                     ItemsDialogoOpcoesItems(item = ObjetosDeDialog.Compartilha,
+                     ItemsDialogoOpcoesItems(item = ObjetosDeDialogOpcoesItemsListaMusicas.Compartilha,
                                              modifier = Modifier.clickable { acaoDeCompartilhar(Uri.parse("https://www.google.com")) })
                      Spacer(modifier = Modifier.padding(10.dp))
-                     ItemsDialogoOpcoesItems(item = ObjetosDeDialog.AdicionarAplyList,
+                     ItemsDialogoOpcoesItems(item = ObjetosDeDialogOpcoesItemsListaMusicas.AdicionarAplyList,
                                              modifier = Modifier.clickable { acaoAdicionarPlaylist("Nova Playlist") })
+                      Spacer(modifier=Modifier.padding(10.dp))
+                      if(estaNaplylist)
+                      ItemsDialogoOpcoesItems(modifier = Modifier.clickable { acaoRemoverDaPlylist() }, item = ObjetosDeDialogOpcoesItemsListaMusicas.AdicionarRemoverDaPlylist)
                   }
 
             }
         }
     }
 }
+
+
+
+
+@Composable
+fun DialogoOpcoesPlalystOpcoes(modifier: Modifier =Modifier,
+                              text:String="Opcoes",
+                              acaoDeApagarPlylist:()->Unit={},
+                              acaoRenomearPlylis:()->Unit={},
+                              acaoDeCancelar:()->Unit={}){
+    Dialog(onDismissRequest = { acaoDeCancelar() }) {
+        //aqui vai o conteudo do dialogo
+        OutlinedCard(modifier = modifier.width(280.dp).height(200.dp)) {
+
+            Box(modifier = Modifier.fillMaxSize()){
+                Text(text = text,modifier=Modifier.align(Alignment.TopCenter))
+                Column(modifier=Modifier.align(Alignment.CenterStart).padding(start = 20.dp)) {
+                   ItemsDialogoOpcoesPlyList(modifier = Modifier.clickable {acaoRenomearPlylis()},
+                                             item = ObjetosDeDialogOpcoesPlyList.Editar)
+                    Spacer(modifier = Modifier.padding(10.dp))
+                   ItemsDialogoOpcoesPlyList(modifier = Modifier.clickable { acaoDeApagarPlylist()  },
+                                             item = ObjetosDeDialogOpcoesPlyList.Apagar)
+                }
+
+                }
+
+            }
+        }
+    }
 
 @Composable
 fun DialogoOpcoesItemsAlbums(modifier: Modifier =Modifier,
@@ -79,7 +122,7 @@ fun DialogoOpcoesItemsAlbums(modifier: Modifier =Modifier,
                 Column(modifier=Modifier.align(Alignment.CenterStart).padding(start = 20.dp)) {
 
 
-                    ItemsDialogoOpcoesItems(item = ObjetosDeDialog.AdicionarAplyList,
+                    ItemsDialogoOpcoesItems(item = ObjetosDeDialogOpcoesItemsListaMusicas.AdicionarAplyList,
                         modifier = Modifier.clickable {  })
                 }
 
@@ -127,10 +170,52 @@ fun DialogoCriarPlyList(modifier: Modifier =Modifier,
 
 }}
 
+@Composable
+fun DialogoEditarPlyList(modifier: Modifier =Modifier,
+                        text:String="Novo Titulo",
+                        acaoCamcelar:()->Unit={},
+                        acaoAdicionarPlaylist:(nome:String)->Unit={},
+                        vm:ViewModelListas,
+                        plyListEditacao:DestinosDENavegacao.DestinosDeDialogo.EditarPlyList ){
+    Dialog(onDismissRequest = { }) {
+        //aqui vai o conteudo do dialogo
+        OutlinedCard(modifier = modifier.width(280.dp).height(200.dp)) {
+            val textoDigitado= rememberSaveable { mutableStateOf(plyListEditacao.titulo) }
+            Box(modifier = Modifier.fillMaxSize()){
+                Text(text = text,modifier=Modifier.align(Alignment.TopCenter))
+                Column(modifier=Modifier.align(Alignment.CenterStart).padding(start = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    OutlinedTextField(value = textoDigitado.value,
+                        onValueChange = {textoDigitado.value=it},
+                        modifier = Modifier.width(250.dp),
+                        label = { Text(text = "Titulo")})
 
+                }
+                Row(modifier=Modifier.align(Alignment.BottomCenter))  {
+                    TextButton(onClick = { acaoCamcelar()}) {
+                        Text(text = "Cancelar")
+                    }
+                    TextButton(onClick = {
+                        vm.editarTituloPlyList(id = plyListEditacao.id,textoDigitado.value, acaoDecomclusao = acaoCamcelar)
+                    }) {
+                        Text(text = "Criar")
+                    }
+                }
+            }
+        }
+
+
+
+    }}
+
+
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialogoDeSelecaoDePlyList(item:DestinosDENavegacao.DestinosDeDialogo.AdiconarPlaylist,acaoCamcelar: () -> Unit={},vm: ViewModelListas){
+fun DialogoDeSelecaoDePlyList(item:DestinosDENavegacao.DestinosDeDialogo.AdiconarPlaylist,
+                              acaoCamcelar: () -> Unit={},
+                              acaoCriarNovaLista:()->Unit={},
+                              vm: ViewModelListas){
  val sheetState =rememberModalBottomSheetState()
  LaunchedEffect(Unit) {
      sheetState.show()
@@ -142,8 +227,16 @@ ModalBottomSheet (onDismissRequest = acaoCamcelar,sheetState = sheetState)  {
      OutlinedCard {
          Column(horizontalAlignment = Alignment.CenterHorizontally){
              LazyColumn{
+                 item {
+                     Spacer(modifier = Modifier.padding(20.dp))
+                  Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                      OutlinedButton(onClick = acaoCriarNovaLista)   { Text("Criar nova")
+                           Icon(Icons.Rounded.AddCircle,contentDescription = null)
+                     }}
+                 Spacer(Modifier.padding(4.dp))
+                 }
                  items(items = plylist.value){
-                     ItemsListaPlaylistsLista(modifier = Modifier.clickable {
+                     ItemsListaPlaylists(modifier = Modifier.clickable {
                          vm.adicionarMusicaNaPlyList(MediaItem.Builder().setMediaId(item.id)
                                                                         .setUri(item.uri)
                                                                         .setMediaMetadata(MediaMetadata.Builder().setAlbumArtist(item.album)
@@ -153,7 +246,7 @@ ModalBottomSheet (onDismissRequest = acaoCamcelar,sheetState = sheetState)  {
                                                                                                                  .setArtworkUri(Uri.parse(item.uri))
                                                                                                                  .build()).build(),
                                                        idPlylist = it.id, acaoDecomclusao = acaoCamcelar)
-                     },item = it)
+                     }, vm = vm,item = it)
                  }
              }
          }
@@ -175,7 +268,7 @@ fun PreviaDialog(){
 
  Surface {
  Scaffold(Modifier.fillMaxSize()) {
-       DialogoOpcoesItemsDaLista()
+     //  DialogoOpcoesItemsDaLista()
  }
  }
  }

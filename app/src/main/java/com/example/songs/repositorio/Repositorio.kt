@@ -50,8 +50,12 @@ private val mediaStore=ManipularMediaStore(context)
     override suspend fun adicionarAplyList(idPlylist: Long, mediaItem: MediaItem) =plylist.adicionarAplyList(idPlylist,mediaItem)
     override suspend fun removerPlaylist(idPlylist: Long)=plylist.removerPlaylist(idPlylist)
     override suspend fun removerItemDaPlaylist(idPlylist: Long) = plylist.removerItemDaPlaylist(idPlylist)
+    override suspend fun atualizarPlylist(plylist: ListaPlaylist) = this.plylist.atualizarPlylist(plylist)
+    override suspend fun removerItemDaPlyList(idMedia: String) = plylist.removerItemDaPlyList(idMedia)
+    override suspend fun tumbmails(id: Long): List<ImagemTumbmail> =plylist.tumbmails(id)
     override fun listaPlaylist(): Flow<List<ListaPlaylist>> =plylist.listaPlaylist()
     override  fun mediaItemsDaPlylist(idPlylist: Long): Flow<List<ItemsDeMedia>> = plylist.mediaItemsDaPlylist(idPlylist)
+
 
    // fun getPlylist(estado:PlyListStados): Flow<List<MediaItem>>
 

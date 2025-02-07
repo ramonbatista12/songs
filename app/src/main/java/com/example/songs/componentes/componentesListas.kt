@@ -1,7 +1,9 @@
 package com.example.songs.componentes
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.DiscretePathEffect
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -12,6 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -53,6 +57,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import com.example.songs.R
 import com.example.songs.repositorio.Album
@@ -60,9 +65,11 @@ import com.example.songs.repositorio.Artista
 import com.example.songs.repositorio.ListaPlaylist
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
+import com.example.songs.viewModels.ViewModelListas
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicReference
 
 /*
 * aqui estao os items de lista cada funcao de descreve como cada item deve ser mostrado
@@ -126,6 +133,7 @@ suspend  fun getMetaData(uri: Uri, id: Long,context: Context):Bitmap?{
         val tumbmail=resolver.loadThumbnail(uri, Size(400,400),null)
         return tumbmail
     }catch (e:Exception){
+        Log.d("Metadata loaad tumb","erro ao carregar tumbmail, ${e.message}")
         return null
     }
 
@@ -223,7 +231,7 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
     }
     DisposableEffect(Unit) {
         onDispose {
-            imagem.value=null
+            //imagem.value=null
             scop.cancel()
         }
     }
@@ -309,23 +317,87 @@ fun ItemsArtistasColuna(modifier: Modifier=Modifier,item: Artista){
 
 
 
+@SuppressLint("SuspiciousIndentation")
+@RequiresApi(Build.VERSION_CODES.Q)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ItemsListaPlaylists(modifier: Modifier=Modifier,item:ListaPlaylist?){
-    Column(modifier =modifier.padding(10.dp).wrapContentSize()) {
-        Image(painter = painterResource(id = R.drawable.baseline_playlist_play_24),
-            contentDescription = null,
-            modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp))
-        Row {
-            Column{
+fun ItemsListaPlaylists(modifier: Modifier=Modifier,
+                        vm: ViewModelListas,
+                        item:ListaPlaylist?,
+                        acaoNavegarOpcoes:(id:Long?)->Unit={}){
+    val context= LocalContext.current
+    val scop=rememberCoroutineScope()
+    val PlylistVasia=remember { mutableStateOf(false) }
+    val bitmaps= arrayOf( remember { mutableStateOf<Bitmap?>(null) },
+                          remember { mutableStateOf<Bitmap?>(null) } ,
+                          remember { mutableStateOf<Bitmap?>(null) },
+                          remember { mutableStateOf<Bitmap?>(null) } )
+    LaunchedEffect(Unit) {
+        scop.launch(Dispatchers.IO) {
+            Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmails ${item?.nome } ${item?.id}")
+          val vms=vm.getTumbmail(item!!.id)
+            if(vms.isEmpty()) PlylistVasia.value=true
+          vms.forEachIndexed { index, i ->
+              scop.launch {
+              try {
+                  bitmaps[index].value=getMetaData(uri = i.uri.toUri(),id = i.idMedia.toLong(),context = context)
+              }catch (e:Exception){
+                  bitmaps[index].value= null
+              }
+              }
+          }
+
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            bitmaps.forEach {
+                it.value=null
+            }
+            scop.cancel()
+
+        }
+    }
+    Row (modifier =modifier.padding(10.dp).wrapContentSize(),
+         horizontalArrangement = Arrangement.SpaceBetween,
+         verticalAlignment = Alignment.CenterVertically) {
+
+
+        FlowRow (Modifier.size(80.dp)){
+            if(PlylistVasia.value)
+                Icon(painter = painterResource(id = R.drawable.baseline_playlist_play_24), contentDescription = null,modifier = Modifier.clip(
+                RoundedCornerShape(15.dp)
+            ).size(80.dp), tint = DarkPink)
+            else
+            bitmaps.forEach {
+                if(it.value!=null){
+                    val _bitmap=it?.value?.asImageBitmap()
+                    Image(bitmap = _bitmap!!,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp))
+                }
+                else Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+                    contentDescription = null,
+                    tint = DarkPink,
+                    modifier = Modifier.size(40.dp))
+                }
+        }
+
+
+            Spacer(Modifier.padding(10.dp))
+            Column(Modifier.fillMaxWidth(0.7f)){
                 Text(if(item==null)"plalyst" else item.nome, maxLines = 2,fontSize = 18.sp)
 
 
             }
+            Spacer(Modifier.padding(10.dp))
+            IconButton(onClick = {acaoNavegarOpcoes(item?.id)}) {
+                Icon(Icons.Default.MoreVert, contentDescription = null)
+            }
 
-        }
-    }
 
-}
+
+}}
 @Composable
 fun ItemsListaPlaylistsLista(modifier: Modifier=Modifier,item:ListaPlaylist?){
     Row (modifier =modifier.padding(10.dp)) {

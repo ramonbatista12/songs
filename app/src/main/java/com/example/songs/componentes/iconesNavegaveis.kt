@@ -3,7 +3,10 @@ package com.example.songs.componentes
 import android.graphics.drawable.Drawable
 import com.example.songs.R
 import com.example.songs.navegacao.DestinosDENavegacao
-
+/*
+* classe responsavel por reprensetar os icones da barra superior e da bara de navegacao
+*
+* */
 sealed class Icones(val rota:DestinosDENavegacao,val icone:Int){
     object Todas:Icones(rota=DestinosDENavegacao.DestinosDeTela.Todas, icone = R.drawable.baseline_list_24)
     object PlayList:Icones(rota=DestinosDENavegacao.DestinosDeTela.Playlist, icone = R.drawable.baseline_playlist_play_24)
@@ -13,7 +16,7 @@ sealed class Icones(val rota:DestinosDENavegacao,val icone:Int){
 
 
    companion object {
-       val list:List<Icones> = listOf(Todas,PlayList,Album,Artista,Configuracoes)
+       val list:List<Icones> = listOf(Todas,PlayList,Album,Artista/*,Configuracoes*/)
 
    }
 

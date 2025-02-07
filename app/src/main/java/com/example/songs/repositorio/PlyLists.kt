@@ -65,14 +65,18 @@ class PlyLists(private val context: Context):InterfacePlylist {
     }
 
     override suspend fun removerPlaylist(id: Long) {
-        dao.inserirPlylist(ListaPlaylist(id=id,nome = ""))
+        dao.deletarPlylist(ListaPlaylist(id=id,nome = ""))
     }
 
     override suspend fun removerItemDaPlaylist(idPlylist: Long) {
         dao.removerItemDeMedia(idPlylist.toString())
     }
+
+    override suspend fun atualizarPlylist(plylist: ListaPlaylist) =dao.atualizarPlylist(plylist)
+    override suspend fun removerItemDaPlyList(idMedia: String) = dao.removerItemDeMedia(idMedia)
     override fun listaPlaylist(): Flow<List<ListaPlaylist>> = dao.fluxoPlyList()
 
     override  fun mediaItemsDaPlylist(id: Long): Flow<List<ItemsDeMedia>> =dao.fluxoDeItemsDeMedia(id)
+    override suspend fun tumbmails(id: Long): List<ImagemTumbmail> =dao.tumbmails(id)
 
 }

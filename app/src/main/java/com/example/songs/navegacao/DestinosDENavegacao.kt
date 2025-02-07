@@ -55,13 +55,19 @@ sealed class DestinosDeTela:DestinosDENavegacao(){
                                       val artista: String="",
                                       val album:String="",
                                       val id:String="",
-                                      val duracao:String=""):DestinosDeDialogo()
+                                      val duracao:String="",
+                                      val estraNaplylist:Boolean=false ):DestinosDeDialogo()
 
         @Serializable
         data class OpcoesItemsAlbums(val idDoAlbum:Long):DestinosDeDialogo()
-
+        @Serializable
+        data class EditarPlaylist(val id:Long):DestinosDeDialogo()
+        @Serializable
+        data class OpcoesPlaylist(val id:Long):DestinosDeDialogo()
         @Serializable
         object CriarPlaylist:DestinosDeDialogo()
+        @Serializable
+        data class EditarPlyList(val id: Long,val titulo: String)
 
     }
 }
