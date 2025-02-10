@@ -91,12 +91,26 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
+    val backgraudColor =MaterialTheme.colorScheme.background.value.toInt()
+    val textColorSquemas=MaterialTheme.colorScheme.scrim
+    val cor = remember { mutableStateOf(Color(backgraudColor)) }
+    val corTexto=remember { mutableStateOf(Color.Black) }
     //val cores=remember { mutableStateOf<List<Color>?>(null) }
    // val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
                 bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+                if(bitmap.value!=null){
+                val palette= Palette.from(bitmap.value!!).generate()
+                val int =palette.getMutedColor(backgraudColor)
+                cor.value=Color(int)
+                corTexto.value= Color(palette.mutedSwatch?.bodyTextColor?: textColorSquemas.value.toInt())
+                }
+                else{
+                    cor.value=Color(backgraudColor)
+                    corTexto.value=textColorSquemas
+                }
             }catch (e:Exception){
                 Log.e("Load tumbmail",e.message.toString())
                 bitmap.value=null
@@ -121,7 +135,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 
 
-    Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.clip(RoundedCornerShape(15.dp)).background(cor.value),verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
              contentDescription = null,
@@ -138,11 +152,12 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
         Column {
    Text(text = if(metadata.value==null) text else metadata.value!!.mediaMetadata.title.toString(),
                  maxLines = 1,
-
+                 color = corTexto.value,
                  fontFamily = FontFamily.Monospace,
                  modifier = Modifier.fillMaxWidth(largura))
         Text(text = if (metadata.value==null)"Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
                  fontSize = 10.sp,
+                 color = corTexto.value,
                  maxLines = 1,
                  overflow = TextOverflow.Ellipsis,modifier=Modifier.fillMaxWidth(largura))
 
@@ -154,16 +169,16 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
             }
         }) {
             if(reprodusind.value)
-            Icon(painter = painterResource(id = R.drawable.baseline_pause_24), contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.baseline_pause_24), contentDescription = null, tint = corTexto.value)
             else
-            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24), contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24), contentDescription = null, tint = corTexto.value)
         }
         IconButton(onClick = {
             scope.launch {
                 vm.next()
             }
         }) {
-            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24), contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24), contentDescription = null, tint = corTexto.value)
         }
     }
 }
