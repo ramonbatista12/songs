@@ -18,11 +18,15 @@ import android.os.PowerManager
 import android.util.EventLog
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.BitmapLoader
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.MediaNotification
@@ -62,6 +66,8 @@ class ServicMedia: MediaSessionService() {
 
         return START_NOT_STICKY
     }
+
+    @OptIn(UnstableApi::class)
     @SuppressLint("InvalidWakeLockTag")
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
@@ -87,7 +93,13 @@ class ServicMedia: MediaSessionService() {
         })
 
 
-       mediaSession = MediaSession.Builder(this@ServicMedia, player).build()
+
+
+
+       mediaSession = MediaSession.Builder(this@ServicMedia, player)
+                                  .build()
+
+
        //onUpdateNotification(mediaSession!!,true)
        helperPalyer = HelperPalyerEstados(mediaSession!!)
        helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
@@ -125,7 +137,7 @@ private fun criarNotificacao(){
         description="notificacao do servico de media"
     }
     val notificationManager=(getSystemService(NotificationManager::class.java) as NotificationManager).createNotificationChannel(canal)
-    notification=Notification.Builder(this,"1").setContentTitle("servico de media")
+    notification=NotificationCompat.Builder(this,"1").setContentTitle("servico de media")
                                                                     .setContentText("rodando")
                                                                      .setSmallIcon(R.drawable.baseline_music_note_24_darkpink).build()
 }

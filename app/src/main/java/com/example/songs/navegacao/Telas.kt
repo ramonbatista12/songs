@@ -148,7 +148,7 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
       BigPlayer(windowSizeClass = windowSizeClass,
                 paddingValues = paddingValues,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
-          vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)),
+          vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)), acaoDeVoutar = {navController.popBackStack()}
            )
 
   }

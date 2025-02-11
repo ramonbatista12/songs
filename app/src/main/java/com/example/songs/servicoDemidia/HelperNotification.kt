@@ -88,8 +88,8 @@ class HelperNotification(val notification: Notification,
             val f:Float=    (it*100f)/helperPalyerEstados._tempoTotal.value
                 f
             }.collect{
-             //   if(helperPalyerEstados._estaReproduzindo.value&&metaData.value!=null)
-                   // fabricaDeNotificacoes.atualizarNotificacaoComprogresso(true,metaData.value,it,secaoDeMedia)
+                if(helperPalyerEstados._estaReproduzindo.value&&metaData.value!=null)
+                    fabricaDeNotificacoes.atualizarNotificacaoComprogresso(true,metaData.value,it,secaoDeMedia)
             }
         }
 
@@ -161,22 +161,22 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         if(reprodusindo){
             val dadosTitulo=metaData?.mediaMetadata?.title ?: "sem titulo"
             val a=MediaStyleNotificationHelper.MediaStyle(secaoDemedia).build()
-            notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+            notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                 .setContentText("Reproduzindo ${ if(metaData!=null)dadosTitulo else "sem titulo"}  ")
                 .setContentTitle(dadosTitulo)//.createWithResource()
 
-               .addAction(android.app.Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
+               .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_skip_previous_24
-                ) ,"voltar",criarPeddingIntent(MensagemsBroadcast.preview.mensagem)).build())
+                ,"voltar",criarPeddingIntent(MensagemsBroadcast.preview.mensagem)).build())
 
-                .addAction(Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
+                .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_pause_24
-                ),"parar",criarPeddingIntent(MensagemsBroadcast.pause.mensagem)).build())
+                ,"parar",criarPeddingIntent(MensagemsBroadcast.pause.mensagem)).build())
 
-                .addAction(Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
+                .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_skip_next_24
-                ),"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
-                .setStyle(Notification.MediaStyle())
+                ,"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
+                .setStyle(MediaStyleNotificationHelper.MediaStyle(secaoDemedia))
                 .build()
 
             NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
@@ -205,24 +205,27 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         if(reprodusindo){
             val dadosTitulo=metaData?.mediaMetadata?.title
             val progresso=progresso.toInt()
-            notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+           notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                 .setContentText("Reproduzindo ${if(metaData!=null)dadosTitulo else "sem titulo" }")
                 .setContentTitle(dadosTitulo)//.createWithResource()
 
-                .addAction(android.app.Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
+                .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_skip_previous_24
-                ) ,"voltar",criarPeddingIntent(MensagemsBroadcast.preview.mensagem)).build())
-                .addAction(Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
+                 ,"voltar",criarPeddingIntent(MensagemsBroadcast.preview.mensagem)).build())
+
+                .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_pause_24
-                ),"parar",criarPeddingIntent(MensagemsBroadcast.pause.mensagem)).build())
+                ,"parar",criarPeddingIntent(MensagemsBroadcast.pause.mensagem)).build())
 
-                .addAction(Notification.Action.Builder(Icon.createWithResource(contextoDoServico,
+                .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_skip_next_24
-                ),"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
+                ,"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
                 .setProgress(100,progresso,false)
-                .setStyle(Notification.MediaStyle())
+                .setStyle(MediaStyleNotificationHelper.MediaStyle(secaoDemedia))
+               .build()
 
-                .build()
+
+
 
             NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
 

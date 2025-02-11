@@ -43,6 +43,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -103,7 +104,7 @@ fun BigPlayer(modifier: Modifier = Modifier,
               windowSizeClass: WindowSizeClass,
               paddingValues: PaddingValues,
               vm: VmodelPlayer,vmlista: ViewModelListas,
-              acaoAvisoBigplyer:()->Unit){
+              acaoAvisoBigplyer:()->Unit,acaoDeVoutar: () -> Unit){
    LaunchedEffect(Unit) {
        acaoAvisoBigplyer()
    }
@@ -114,7 +115,7 @@ fun BigPlayer(modifier: Modifier = Modifier,
         }
     }
 
-SelecaoDosPlyer(modifier,windowSizeClass,paddingValues,vm,vmlista,acaoAvisoBigplyer)
+SelecaoDosPlyer(modifier,windowSizeClass,paddingValues,vm,vmlista,acaoAvisoBigplyer,acaoDeVoutar=acaoDeVoutar)
 
 
 
@@ -127,15 +128,15 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     windowSizeClass: WindowSizeClass,
                     paddingValues: PaddingValues,
                     vm: VmodelPlayer,vmlista: ViewModelListas,
-                    acaoAvisoBigplyer:()->Unit){
+                    acaoAvisoBigplyer:()->Unit,acaoDeVoutar: () -> Unit={}){
     val int =MaterialTheme.colorScheme.background.value.toInt()
     val coresBackgrad=remember { mutableStateOf<List<Color>?>(null) }
     if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
         PlayerCompat(modifier=modifier,
-            vm = vm, vmlista = vmlista)
+            vm = vm, vmlista = vmlista,acaoDeVoutar=acaoDeVoutar)
 
     else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
-        if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)PlayerCompat(modifier, vm = vm,vmlista = vmlista)
+        if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)PlayerCompat(modifier, vm = vm,vmlista = vmlista,acaoDeVoutar=acaoDeVoutar)
         else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
     else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista)
 }
@@ -339,7 +340,7 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier,
                      acaoMudarBackgraud:suspend (bitmap:Bitmap?)->Unit={}){
     val listaAvberta=remember{ mutableStateOf(false)}
       with(sharedTransitionScope){
-          Box(modifier = modifier.background(Color.Transparent)
+          Box(modifier = modifier.background(Color.Transparent).padding(top = 30.dp)
               .fillMaxSize()
               .imePadding()
               .sharedBounds(
@@ -383,7 +384,8 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier,
 fun PlayerCompat(modifier: Modifier=Modifier,
                  vm:VmodelPlayer,
                  vmlista:ViewModelListas,
-                 acaoMudarLista:(p:Palette)->Unit={}) {
+                 acaoMudarLista:(p:Palette)->Unit={},
+                 acaoDeVoutar:()->Unit={}) {
     val listaAvberta = remember { mutableStateOf(false) }
     val backgraudColor =MaterialTheme.colorScheme.background
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
@@ -391,7 +393,9 @@ fun PlayerCompat(modifier: Modifier=Modifier,
     val corTexto=remember { mutableStateOf(Color.Black) }
 
     Box(modifier = Modifier.fillMaxSize().background(cor.value)) {
-
+      IconButton (onClick =acaoDeVoutar) {
+          Icon(painter = painterResource(R.drawable.outline_west_24), contentDescription = null, tint = corTexto.value, modifier = Modifier)
+      }
         SharedTransitionLayout {
             AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
 
@@ -409,8 +413,14 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                                     val palette =Palette.from(it).generate()
                                                     val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
                                                     cor.value=Color(int)
-                                                    val luminessencia =cor.value.luminance()
-                                                    corTexto.value=if(luminessencia>0.5f) Color.Black else Color.White
+                                                    val luminessenciaBackgraud=cor.value.luminance()
+                                                    corTexto.value=when{
+                                                        (luminessenciaBackgraud == 0.0f)-> textColorSquemas
+                                                        (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
+                                                        (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
+
+                                                        else -> Color.Unspecified
+                                                    }
 
                                                 }
                                         else {
@@ -432,17 +442,25 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                         sharedTransitionScope = this@SharedTransitionLayout,
                                         animatedVisibilityScope = this@AnimatedContent,
                                         vm = vm, corDotexto = corTexto.value, backgraud = cor.value,
-                                          acaoMudarBackgraud = {
-                                              if(it!=null){
-                                                  val palette =Palette.from(it).generate()
-                                                  val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
-                                                  cor.value=Color(int)
-                                                  corTexto.value=Color(palette.darkMutedSwatch?.bodyTextColor ?: textColorSquemas.value.toInt())
+                                          acaoMudarBackgraud = {if(it!=null){
+                                              val palette =Palette.from(it).generate()
+                                              val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
+                                              cor.value=Color(int)
+                                              val luminessenciaBackgraud=cor.value.luminance()
+                                              corTexto.value=when{
+                                                  (luminessenciaBackgraud == 0.0f)-> textColorSquemas
+                                                  (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
+                                                  (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
+
+                                                  else -> Color.Unspecified
                                               }
-                                              else{
-                                                  cor.value=backgraudColor
-                                                  corTexto.value=textColorSquemas
-                                              }
+
+                                          }
+                                          else {
+                                              cor.value=backgraudColor
+                                              corTexto.value=textColorSquemas
+
+                                          }
                                           }
                                     )
                                 }
@@ -753,7 +771,8 @@ fun PlayerPreview(){
            BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
                 MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),
                 acaoAvisoBigplyer = {},
-                vmlista = ViewModelListas(repositorio = RepositorioService(context), estado =  MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)))
+                vmlista = ViewModelListas(repositorio = RepositorioService(context), estado =  MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)),
+                acaoDeVoutar = { })
 
         }
         }

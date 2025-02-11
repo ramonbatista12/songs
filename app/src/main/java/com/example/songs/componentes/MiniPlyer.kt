@@ -49,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
@@ -73,6 +74,7 @@ import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 
 /*
 * aqui esta  a representacao do Plyer redusido
@@ -111,8 +113,14 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                 val corAux =Color(palette.darkMutedSwatch?.titleTextColor ?: textColorSquemas.value.toInt())
                 val luminessenciaBackgraud=cor.value.luminance()
 
-                corTexto.value=if(luminessenciaBackgraud>=0.5f)Color.Black else Color.White
-                    Log.e("cor do texto ",corTexto.value.toString())
+                corTexto.value=when{
+                    (luminessenciaBackgraud == 0.0f)-> textColorSquemas
+                     (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
+                     (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
+
+                    else -> corAux
+                }
+                    Log.e("cor do texto ",corTexto.value.toString() +",,luminosidade do backgraud ${luminessenciaBackgraud}")
                 }
                 else{
                     cor.value=Color(backgraudColor)
