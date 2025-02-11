@@ -230,21 +230,32 @@ class MainActivity : ComponentActivity() {
                 val scopMain = rememberCoroutineScope()
                 val transicaoMiniPlyer = remember { MutableTransitionState(false) }
                 val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao))
+                val emreproducao =vieModelPlyers._emreproducao.collectAsState()
+                val bigPlyer =viewmodel._bigPlyer.collectAsState()
+                var funcao:()->Boolean ={
+                if(bigPlyer.value && emreproducao.value){
+                    if(bigPlyer.value)Log.i("bigplyer","true")
+                    if(emreproducao.value)Log.i("emreproducao","true")
+                    true}
+                else{
+                    if(!bigPlyer.value)Log.i("bigplyer","false")
+                    if(!emreproducao.value)Log.i("emreproducao","false")
+                    false}
+            }
                 Surface {
                     LaunchedEffect(Unit) {
                         scopMain.launch {
                          checarPermicaoAudio(viewmodel)
                         checarPermicaoNotificacao(viewmodel)}}
 
-                    Scaffold(topBar = { BarraSuperio(titulo = "Songs") },
+                    Scaffold(topBar = { AnimatedVisibility(visible = !bigPlyer.value){BarraSuperio(titulo = "Songs") } },
                              bottomBar = {
                                  if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                                     BararInferior(acaoNavegacao = {navController.navigate(it)
-                                                                    })
+                                   AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(it)})}
+
                             else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
                                      if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
-                                           BararInferior(acaoNavegacao = {navController.navigate(it)
-                                               })
+                                         AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it)}) }
 
 
                     },
@@ -281,19 +292,9 @@ class MainActivity : ComponentActivity() {
                                                    vieModelPlyers.play()
 
                                                }
-                                           },{viewmodel.mudarBigPlyer()}, estadoService = conecao)
-                                val emreproducao =vieModelPlyers._emreproducao.collectAsState()
-                                val bigPlyer =viewmodel._bigPlyer.collectAsState()
-                                var funcao:()->Boolean ={
-                                    if(bigPlyer.value && emreproducao.value){
-                                        if(bigPlyer.value)Log.i("bigplyer","true")
-                                        if(emreproducao.value)Log.i("emreproducao","true")
-                                        true}
-                                    else{
-                                        if(!bigPlyer.value)Log.i("bigplyer","false")
-                                        if(!emreproducao.value)Log.i("emreproducao","false")
-                                        false}
-                                }
+                                           }, acaoAvisoBigplyer = {viewmodel.mudarBigPlyer()}, estadoService = conecao)
+
+
                                 AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter)) {
                                   if(!bigPlyer.value){  DisposableEffect(Unit) {
                                         scop.launch {

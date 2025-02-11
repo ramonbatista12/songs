@@ -1,5 +1,6 @@
 package com.example.songs.componentes
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -78,6 +80,7 @@ import kotlinx.coroutines.launch
 * dentro do app
 * */
 
+@SuppressLint("SuspiciousIndentation")
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeClass: WindowSizeClass,vm: VmodelPlayer){
@@ -92,7 +95,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
     val backgraudColor =MaterialTheme.colorScheme.background.value.toInt()
-    val textColorSquemas=MaterialTheme.colorScheme.scrim
+    val textColorSquemas=MaterialTheme.colorScheme.onBackground
     val cor = remember { mutableStateOf(Color(backgraudColor)) }
     val corTexto=remember { mutableStateOf(Color.Black) }
     //val cores=remember { mutableStateOf<List<Color>?>(null) }
@@ -103,9 +106,13 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                 bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
                 if(bitmap.value!=null){
                 val palette= Palette.from(bitmap.value!!).generate()
-                val int =palette.getMutedColor(backgraudColor)
+                val int =palette.getDarkMutedColor(backgraudColor)
                 cor.value=Color(int)
-                corTexto.value= Color(palette.mutedSwatch?.bodyTextColor?: textColorSquemas.value.toInt())
+                val corAux =Color(palette.darkMutedSwatch?.titleTextColor ?: textColorSquemas.value.toInt())
+                val luminessenciaBackgraud=cor.value.luminance()
+
+                corTexto.value=if(luminessenciaBackgraud>=0.5f)Color.Black else Color.White
+                    Log.e("cor do texto ",corTexto.value.toString())
                 }
                 else{
                     cor.value=Color(backgraudColor)
@@ -186,7 +193,12 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplayer",sharedTransitionScope: SharedTransitionScope,animatedVisibilityScope: AnimatedVisibilityScope,vm: VmodelPlayer){
+fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
+                            text:String="Miniplayer",
+                            sharedTransitionScope: SharedTransitionScope,
+                            animatedVisibilityScope: AnimatedVisibilityScope,
+                            vm: VmodelPlayer,corDotexto:Color,acaoMudarBackgraud:suspend (bitmap:android.graphics.Bitmap?)->Unit,
+                            backgraud:Color=MaterialTheme.colorScheme.background ){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
     val bitmap= remember { mutableStateOf<android.graphics.Bitmap?>(null)  }
@@ -199,6 +211,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
         scope.launch(Dispatchers.IO) {
             try {
                 bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+                acaoMudarBackgraud(bitmap.value)
             }catch (e:Exception){
                 bitmap.value=null
             }
@@ -214,10 +227,10 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
 
   with(sharedTransitionScope){
 
-    Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.clip(RoundedCornerShape(15.dp)).background(backgraud),verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
-        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
-              contentDescription = null,
+        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+              contentDescription = null, tint = corDotexto,
               modifier=Modifier.size(50.dp).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
         else{
             val _bitMap=bitmap.value!!.asImageBitmap()
@@ -232,13 +245,13 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
         Column {
 
             Text(text = if (metadata.value==null)text else metadata.value!!.mediaMetadata.title.toString(),
-                maxLines = 1,
+                maxLines = 1,color = corDotexto,
                 overflow = TextOverflow.Ellipsis,
                 fontFamily = FontFamily.Monospace,
                 modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope)
                                    .fillMaxWidth(0.5f))
             Text(text = if (metadata.value==null) "Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
-                fontSize = 10.sp,
+                fontSize = 10.sp, color = corDotexto,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope)
@@ -257,16 +270,16 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,text:String="Miniplaye
         },
                   modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope)) {
             if(!reproduzindo.value)
-            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24), contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24), contentDescription = null, tint = corDotexto)
             else
-            Icon(painter = painterResource(id = R.drawable.baseline_pause_24), contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.baseline_pause_24), contentDescription = null,tint = corDotexto)
         }
         IconButton(onClick = {
             scope.launch {
                 vm.next()
             }
         }, modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope)){
-            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
+            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24), tint = corDotexto,
                   contentDescription = null)
         }
     }}

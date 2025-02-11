@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,6 +53,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -142,7 +145,12 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionScope, animatedVisibilityScope: AnimatedVisibilityScope, vm:VmodelPlayer,acaoMudarBackgraud:(cor:Int)->Unit={}){
+fun Plyer(modifier: Modifier=Modifier,
+          sharedTransitionScope: SharedTransitionScope,
+          animatedVisibilityScope: AnimatedVisibilityScope,
+          vm:VmodelPlayer,
+          acaoMudarBackgraud:suspend (bitmap:Bitmap?)->Unit={},
+          cor:Color=MaterialTheme.colorScheme.onBackground){
 
     val bitMap =remember{ mutableStateOf<Bitmap?>(null)}
     val mediaItem=vm._mediaItemAtual.collectAsState()
@@ -159,10 +167,7 @@ fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionSc
         scop.launch(Dispatchers.IO) {
             try {
                bitMap.value= getMetaData(context = context,uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())
-               if(bitMap.value!=null){
-                  val palette=Palette.from(bitMap.value!!)
-
-               }
+               acaoMudarBackgraud(bitMap.value)
             }catch (e:Exception){
                 bitMap.value=null
             }
@@ -180,7 +185,7 @@ fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionSc
     with(sharedTransitionScope){
         Column(modifier = modifier
             .padding(10.dp)
-            .background(color = MaterialTheme.colorScheme.background),
+            .background(color =Color.Transparent),
                horizontalAlignment = Alignment.CenterHorizontally) {
             if(bitMap.value==null)
             Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
@@ -210,19 +215,21 @@ fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionSc
 
                 Text(text =if(mediaItem.value==null) "Nome da Musica" else mediaItem.value!!.mediaMetadata.title.toString(),
                      modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope),
+                    color = cor,
                       maxLines = 2,
                      fontFamily = FontFamily.Monospace)
                 Spacer(Modifier.padding( 3.dp))
-                Text(text = if (mediaItem.value==null) "Nome do Artista" else mediaItem.value!!.mediaMetadata.artist.toString(),
+                Text(text = if (mediaItem.value==null) "Nome do Artista" else mediaItem.value!!.mediaMetadata.artist.toString(), color = cor,
                      modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
 
                    Row(modifier=Modifier.fillMaxWidth()) {
 
-                         Text(text = tempoTotalString.value, fontSize = 8.sp )
-                         Text("/", fontSize = 8.sp )
-                        Text(text =duracaoString.value, fontSize = 8.sp )
+                         Text(text = tempoTotalString.value,
+                             color = cor, fontSize = 8.sp )
+                         Text("/", fontSize = 8.sp, color = cor )
+                        Text(text =duracaoString.value, fontSize = 8.sp, color = cor )
 
                    }
 
@@ -232,23 +239,23 @@ fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionSc
                             vm.seekTo(valor.toLong())
                         }
                     },
-                         colors = SliderDefaults.colors(activeTrackColor = DarkPink),
+                         colors = SliderDefaults.colors(activeTrackColor = cor),
                          valueRange = 0f..100f,
                          modifier = Modifier.height(10.dp))
                     Spacer(Modifier.padding(10.dp))
 
                     Row (modifier = Modifier.fillMaxWidth(),horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween){
                     IconButton({scop.launch { vm.preview() }}) {
-                        Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = DarkPink)
+                        Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = cor)
                     }
                     IconButton({
                         scop.launch {
                            vm.setModoAleatorio(!modoAleatorio.value)}
                     }) {
                         if(!modoAleatorio.value)
-                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_24), contentDescription = null,tint = DarkPink)
+                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_24), contentDescription = null,tint = cor)
                         else
-                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_on_24), contentDescription = null,tint = DarkPink)
+                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_on_24), contentDescription = null,tint = cor)
                         }
 
                     IconButton({
@@ -262,12 +269,12 @@ fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionSc
                         if (reproduzindo.value)
                         Icon(painter = painterResource(id = R.drawable.baseline_pause_24),
                             contentDescription = null,
-                            tint = DarkPink,
+                            tint = cor,
                             modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
                         else
                             Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24),
                                 contentDescription = null,
-                                tint = DarkPink,
+                                tint = cor,
                                 modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
                         }
 
@@ -283,16 +290,16 @@ fun Plyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionSc
 
                         }) {
                             when(modoRepeticao.value){
-                                is ModoDerepeticao.Desativado->Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint = DarkPink)
-                                is ModoDerepeticao.RepetirEssa->Icon(painter = painterResource(id = R.drawable.baseline_repeat_one_on_24), contentDescription = null,tint = DarkPink)
-                                is ModoDerepeticao.RepetirTodos->Icon(painter = painterResource(id = R.drawable.baseline_repeat_on_24), contentDescription = null,tint = DarkPink)
+                                is ModoDerepeticao.Desativado->Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint =cor)
+                                is ModoDerepeticao.RepetirEssa->Icon(painter = painterResource(id = R.drawable.baseline_repeat_one_on_24), contentDescription = null,tint = cor)
+                                is ModoDerepeticao.RepetirTodos->Icon(painter = painterResource(id = R.drawable.baseline_repeat_on_24), contentDescription = null,tint = cor)
                             }
 
                         }
                         IconButton({vm.next()}) {
                             Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
                                 contentDescription = null,
-                                tint = DarkPink,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope))
+                                tint = cor,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope))
 
                         }
 
@@ -323,10 +330,16 @@ fun getMetaData(c: Context, uri: Uri, id: Long):Bitmap?{
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun ComtroladorPlyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedTransitionScope, animatedVisibilityScope:AnimatedVisibilityScope, onclick:()->Unit={}, vm:VmodelPlayer ){
+fun ComtroladorPlyer(modifier: Modifier=Modifier,
+                     sharedTransitionScope: SharedTransitionScope,
+                     animatedVisibilityScope:AnimatedVisibilityScope,
+                     onclick:()->Unit={},
+                     vm:VmodelPlayer,
+                     cor:MutableState<Color>,
+                     acaoMudarBackgraud:suspend (bitmap:Bitmap?)->Unit={}){
     val listaAvberta=remember{ mutableStateOf(false)}
       with(sharedTransitionScope){
-          Box(modifier = modifier
+          Box(modifier = modifier.background(Color.Transparent)
               .fillMaxSize()
               .imePadding()
               .sharedBounds(
@@ -334,7 +347,9 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedT
                   animatedVisibilityScope,
                   resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
               )){
-              Plyer(Modifier.align( Alignment.TopCenter),animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope,vm=vm)
+              Plyer(Modifier.align( Alignment.TopCenter).background(Color.Transparent),
+                    animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope,
+                    vm=vm, acaoMudarBackgraud = acaoMudarBackgraud,cor = cor.value)
 
 
               IconButton({
@@ -344,7 +359,8 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedT
                   .align(Alignment.BottomCenter)
                   .size(70.dp)
                   .padding(5.dp)) {
-                  Icon(painter = painterResource(id = R.drawable.baseline_list_24), contentDescription = null, tint = DarkPink, modifier = Modifier
+                  Icon(painter = painterResource(id = R.drawable.baseline_list_24),
+                       contentDescription = null, tint = cor.value, modifier = Modifier
                       .align(
                           Alignment.BottomCenter
                       )
@@ -364,11 +380,17 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier, sharedTransitionScope: SharedT
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlayerCompat(modifier: Modifier=Modifier, vm:VmodelPlayer, vmlista:ViewModelListas, acaoMudarLista:(p:Palette)->Unit={}) {
+fun PlayerCompat(modifier: Modifier=Modifier,
+                 vm:VmodelPlayer,
+                 vmlista:ViewModelListas,
+                 acaoMudarLista:(p:Palette)->Unit={}) {
     val listaAvberta = remember { mutableStateOf(false) }
-    val slidervalue = remember { mutableStateOf(0f) }
+    val backgraudColor =MaterialTheme.colorScheme.background
+    val textColorSquemas=MaterialTheme.colorScheme.onBackground
+    val cor = remember { mutableStateOf(Color(backgraudColor.value.toInt())) }
+    val corTexto=remember { mutableStateOf(Color.Black) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(cor.value)) {
 
         SharedTransitionLayout {
             AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
@@ -379,21 +401,49 @@ fun PlayerCompat(modifier: Modifier=Modifier, vm:VmodelPlayer, vmlista:ViewModel
                     SharedTransitionLayout {
                         AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
                             if (!targetState) {
-                                ComtroladorPlyer(modifier = Modifier.align(Alignment.TopCenter),sharedTransitionScope = this@SharedTransitionLayout,
+                                ComtroladorPlyer(modifier = Modifier.align(Alignment.TopCenter).background(Color.Transparent),sharedTransitionScope = this@SharedTransitionLayout,
                                             animatedVisibilityScope = this@AnimatedContent
-                                           ,onclick = {listaAvberta.value=!listaAvberta.value},vm=vm)
+                                           ,onclick = {listaAvberta.value=!listaAvberta.value},
+                                            vm=vm,cor=corTexto ,acaoMudarBackgraud = {
+                                                if(it!=null){
+                                                    val palette =Palette.from(it).generate()
+                                                    val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
+                                                    cor.value=Color(int)
+                                                    val luminessencia =cor.value.luminance()
+                                                    corTexto.value=if(luminessencia>0.5f) Color.Black else Color.White
+
+                                                }
+                                        else {
+                                            cor.value=backgraudColor
+                                            corTexto.value=textColorSquemas
+
+                                        }
+                                    })
 
                             } else {
 
                                 val estadoPlylist=vmlista._estadoPlylsist.collectAsState()
                                 val lista =vmlista.plylist().collectAsState(emptyList()) //
 
-                                Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)) {
+                                Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)
+                                    .background(backgraudColor)) {
                                   Row (modifier=Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
                                       MiniplayerParaTransicao(
                                         sharedTransitionScope = this@SharedTransitionLayout,
                                         animatedVisibilityScope = this@AnimatedContent,
-                                        vm = vm
+                                        vm = vm, corDotexto = corTexto.value, backgraud = cor.value,
+                                          acaoMudarBackgraud = {
+                                              if(it!=null){
+                                                  val palette =Palette.from(it).generate()
+                                                  val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
+                                                  cor.value=Color(int)
+                                                  corTexto.value=Color(palette.darkMutedSwatch?.bodyTextColor ?: textColorSquemas.value.toInt())
+                                              }
+                                              else{
+                                                  cor.value=backgraudColor
+                                                  corTexto.value=textColorSquemas
+                                              }
+                                          }
                                     )
                                 }
                                     Spacer(Modifier.padding(0.4.dp))
@@ -404,12 +454,12 @@ fun PlayerCompat(modifier: Modifier=Modifier, vm:VmodelPlayer, vmlista:ViewModel
                                         Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = DarkPink,modifier=Modifier.size(50.dp))
                                     } }
                                     val  metadata=vm._mediaItemAtual.collectAsState()
-                                    LazyColumn {
+                                    LazyColumn(modifier=Modifier.background(color = backgraudColor).fillMaxWidth().fillMaxHeight()) {
 
                                         itemsIndexed(items = lista.value) {indice,item->
                                            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
                                                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                                                   Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = DarkPink)
+                                                   Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = corTexto.value)
                                                    ItemDaLista(Modifier.clickable {
                                                        vm.seekToItem(indice)
 
