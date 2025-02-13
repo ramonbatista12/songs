@@ -3,6 +3,7 @@ package com.example.songs.viewModels
 import android.util.Log
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,10 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
     val dialoLeitura= MutableStateFlow(if(permicaoLeitura.value)false else true)
     val _bigPlyer= bigPlyer.asStateFlow()
     val snackbarHostState= SnackbarHostState()
+    private val  corBackGround= MutableStateFlow<Color>(Color.Unspecified)
+    val _corBackGround=corBackGround.asStateFlow()
+    val corDotextonoAppBar= MutableStateFlow(Color.Unspecified)
+    val _corDotextonoAppBar=corDotextonoAppBar.asStateFlow()
     init {
         scope.launch(Dispatchers.IO) {
             estateService.collect{
@@ -49,6 +54,7 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
         if(bigPlyer.value)bigPlyer.value=false
         else bigPlyer.value=true
     }
+
 
     fun mudarPermicaoLeitura(value:Boolean){
         permicaoLeitura.value=value
@@ -79,8 +85,22 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
         }
     }
 
+   fun mudarCorBackGround(value:Color){
+         scope.launch {
+             corBackGround.emit(value)
+         }
 
 
+   }
+
+    fun mudarCorBackGroundEtexto(backGround:Color,textonoAppBar:Color){
+        scope.launch {
+            corBackGround.emit(backGround)
+            corDotextonoAppBar.emit(textonoAppBar)
+        }
+
+
+    }
 
 
 

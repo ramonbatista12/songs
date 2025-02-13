@@ -59,14 +59,17 @@ fun BararInferior(modifier: Modifier=Modifier,acaoNavegacao:(ob:DestinosDENavega
 
 
 @Composable
-fun PermanenteNavigationDrawer(modifier: Modifier=Modifier,acaoNavegacao: (ob:DestinosDENavegacao) -> Unit){
+fun PermanenteNavigationDrawer(modifier: Modifier=Modifier,
+                               acaoNavegacao: (ob:DestinosDENavegacao) -> Unit,
+                               cor:Color=MaterialTheme.colorScheme.onBackground,
+                               corBackgrand:Color=MaterialTheme.colorScheme.background){
 
 
     PermanentDrawerSheet(modifier=modifier.width(90.dp)) {
-        Column {
+        Column(modifier = Modifier.background(corBackgrand).fillMaxHeight()) {
          Icones.list.forEach {
              NavigationDrawerItem(label ={ Text("") },
-                 icon = { Icon(painter = painterResource(it.icone), contentDescription = null) },
+                 icon = { Icon(painter = painterResource(it.icone), contentDescription = null,tint = cor) },
                  onClick = {
                       acaoNavegacao(it.rota)
                  }, modifier = Modifier, selected = false)

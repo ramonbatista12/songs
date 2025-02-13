@@ -29,6 +29,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.ItemsListaColunas
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
@@ -85,7 +86,8 @@ fun Navgrafic(navController: NavHostController,
               transicaoMiniPlyer:MutableTransitionState<Boolean>,
               vm: VmodelPlayer,
               acaoCaregarPlyer:(List<MediaItem>,indice:Int)->Unit,
-              acaoAvisoBigplyer:()->Unit,
+              acaoAvisoBigplyer:()->Unit,acaoMudaBackgraundScafolld:(Color)->Unit={},
+              acaoMudarcorBackgrandEBarraPermanent:(backgrand:Color,corBarra:Color)->Unit={b,c->},
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
@@ -146,10 +148,12 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
   //
   composable<DestinosDENavegacao.DestinosDeTela.Player>{
       BigPlayer(windowSizeClass = windowSizeClass,
+          modifier = Modifier,
                 paddingValues = paddingValues,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
           vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)), acaoDeVoutar = {navController.popBackStack()}
-           )
+           , acaMudarBackgraudScafolld = {acaoMudaBackgraundScafolld(it)},
+          acaoMudarCorScafollEBArraPermanente = acaoMudarcorBackgrandEBarraPermanent)
 
   }
 

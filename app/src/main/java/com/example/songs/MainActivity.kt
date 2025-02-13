@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
@@ -232,17 +233,9 @@ class MainActivity : ComponentActivity() {
                 val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao))
                 val emreproducao =vieModelPlyers._emreproducao.collectAsState()
                 val bigPlyer =viewmodel._bigPlyer.collectAsState()
-                var funcao:()->Boolean ={
-                if(bigPlyer.value && emreproducao.value){
-                    if(bigPlyer.value)Log.i("bigplyer","true")
-                    if(emreproducao.value)Log.i("emreproducao","true")
-                    true}
-                else{
-                    if(!bigPlyer.value)Log.i("bigplyer","false")
-                    if(!emreproducao.value)Log.i("emreproducao","false")
-                    false}
-            }
-                Surface {
+                val corBackGround =viewmodel._corBackGround.collectAsState()
+
+                Surface(modifier = Modifier) {
                     LaunchedEffect(Unit) {
                         scopMain.launch {
                          checarPermicaoAudio(viewmodel)
@@ -251,16 +244,16 @@ class MainActivity : ComponentActivity() {
                     Scaffold(topBar = { AnimatedVisibility(visible = !bigPlyer.value){BarraSuperio(titulo = "Songs") } },
                              bottomBar = {
                                  if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                                   AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(it)})}
+                                   AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} })}
 
                             else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
                                      if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
-                                         AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it)}) }
+                                         AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} }) }
 
 
                     },
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxSize().background( corBackGround.value)
                             .safeDrawingPadding()
                             .safeGesturesPadding()
                             .safeContentPadding()
@@ -269,15 +262,23 @@ class MainActivity : ComponentActivity() {
                         snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
 
                         PermanentNavigationDrawer(drawerContent = {
+                            val cor =viewmodel._corDotextonoAppBar.collectAsState()
                                                              if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
-                                                                 PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
+
+                                                                 PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
+                                                                                            acaoNavegacao = {navController.navigate(it){
+                                                                     launchSingleTop=true
+                                                                 } },cor = cor.value,corBackgrand = corBackGround.value)
                                                      else   if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                                                                  if(windowsizeclass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
-                                                                     PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
+                                                                     PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
+                                                                                               acaoNavegacao = {navController.navigate(it){
+                                                                         launchSingleTop=true
+                                                                     } },cor = cor.value,corBackgrand = corBackGround.value)
                                                                  }
                                                      else{}
-                                                                  },
-                                                 modifier = Modifier.padding(paddingValues = it).fillMaxSize()) {
+                                                                  },//
+                                                 modifier = Modifier.fillMaxSize().padding(paddingValues = it)) {
                             Box(modifier = Modifier.fillMaxSize()) {
                                 Navgrafic( navController = navController,
                                            windowSizeClass = windowsizeclass,
@@ -292,7 +293,14 @@ class MainActivity : ComponentActivity() {
                                                    vieModelPlyers.play()
 
                                                }
-                                           }, acaoAvisoBigplyer = {viewmodel.mudarBigPlyer()}, estadoService = conecao)
+                                           }, acaoAvisoBigplyer = {
+                                               viewmodel.mudarCorBackGround(Color.Unspecified)
+                                               viewmodel.mudarBigPlyer()
+                                                              },acaoMudaBackgraundScafolld = {
+                                               Log.i("corbackgraund scafolld",it.toString())
+                                               viewmodel.mudarCorBackGround(it)},
+                                           acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
+                                    estadoService = conecao)
 
 
                                 AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter)) {

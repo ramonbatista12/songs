@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +69,7 @@ import com.example.songs.ui.theme.SongsTheme
 import com.example.songs.viewModels.ViewModelListas
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 
@@ -77,7 +79,9 @@ import java.util.concurrent.atomic.AtomicReference
 * */
 
 @Composable
-fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?,acaoNavegarOpcoes:(item:MediaItem?)->Unit={}){
+fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.onBackground,
+                item:MediaItem?,
+                acaoNavegarOpcoes:(item:MediaItem?)->Unit={}){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
     val scop=rememberCoroutineScope()
     val context= LocalContext.current
@@ -112,9 +116,9 @@ fun ItemDaLista(modifier: Modifier=Modifier,item:MediaItem?,acaoNavegarOpcoes:(i
 
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)) {
             Spacer(Modifier.padding(8.dp))
-            Text(if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(), maxLines = 2,fontSize = 18.sp)
+            Text(if(item==null) "Nome da musica" else item.mediaMetadata.title.toString(), maxLines = 2,fontSize = 18.sp, color = cor)
             Spacer(Modifier.padding(3.dp))
-            Text(if(item==null)"nome do artista" else item.mediaMetadata.artist.toString(),maxLines = 1,fontSize = 14.sp)
+            Text(if(item==null)"nome do artista" else item.mediaMetadata.artist.toString(),maxLines = 1,fontSize = 14.sp, color = cor)
 
         }
 
@@ -328,31 +332,40 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,
     val context= LocalContext.current
     val scop=rememberCoroutineScope()
     val PlylistVasia=remember { mutableStateOf(false) }
-    val bitmaps= arrayOf( remember { mutableStateOf<Bitmap?>(null) },
-                          remember { mutableStateOf<Bitmap?>(null) } ,
-                          remember { mutableStateOf<Bitmap?>(null) },
-                          remember { mutableStateOf<Bitmap?>(null) } )
+    val bitmaps= mutableListOf( remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) },
+                          remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando)  } ,
+                          remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) },
+                          remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) } )
     LaunchedEffect(Unit) {
         scop.launch(Dispatchers.IO) {
             Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmails ${item?.nome } ${item?.id}")
           val vms=vm.getTumbmail(item!!.id)
             if(vms.isEmpty()) PlylistVasia.value=true
+            var indice=0
           vms.forEachIndexed { index, i ->
+              indice=index
               scop.launch {
               try {
-                  bitmaps[index].value=getMetaData(uri = i.uri.toUri(),id = i.idMedia.toLong(),context = context)
+                  delay(1000)
+                  val bitmap=getMetaData(uri = i.uri.toUri(),id = i.idMedia.toLong(),context = context)
+                  bitmaps[index].value= if(bitmap==null) EstadosDeCarregamento.okVasio else EstadosDeCarregamento.ok(bitmap)
               }catch (e:Exception){
-                  bitmaps[index].value= null
+                  Log.d("corotinas load metadatas plylist","erro ao carregar tumbmail ${e.message}")
+                  bitmaps[index].value = EstadosDeCarregamento.okVasio
               }
               }
           }
+            if(indice<3)
+                for(i in indice..3)
+                  bitmaps[i].value=EstadosDeCarregamento.Erro
+
 
         }
     }
     DisposableEffect(Unit) {
         onDispose {
             bitmaps.forEach {
-                it.value=null
+               it.value=null
             }
             scop.cancel()
 
@@ -370,17 +383,36 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,
             ).size(80.dp), tint = DarkPink)
             else
             bitmaps.forEach {
-                if(it.value!=null){
-                    val _bitmap=it?.value?.asImageBitmap()
-                    Image(bitmap = _bitmap!!,
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp))
+                when (val r = it.value) {
+                   is EstadosDeCarregamento.Carregando -> {
+                        CircularProgressIndicator()
+                    }
+                    is EstadosDeCarregamento.ok -> {
+
+                        val _bitmap = r.bitmap.asImageBitmap()
+                        Image(
+                            bitmap = _bitmap!!,
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                   is EstadosDeCarregamento.okVasio -> {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+                            contentDescription = null,
+                            tint = DarkPink,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                    else->{
+
+                    }
                 }
-                else Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
-                    contentDescription = null,
-                    tint = DarkPink,
-                    modifier = Modifier.size(40.dp))
-                }
+
+
+            }
         }
 
 
@@ -417,7 +449,12 @@ fun ItemsListaPlaylistsLista(modifier: Modifier=Modifier,item:ListaPlaylist?){
 }
 
 
-
+sealed class EstadosDeCarregamento{
+    object Carregando:EstadosDeCarregamento()
+    data class ok(val bitmap: Bitmap) : EstadosDeCarregamento()
+    object okVasio:EstadosDeCarregamento()
+    object Erro:EstadosDeCarregamento()
+}
 
 
 @Preview(showBackground = true)
