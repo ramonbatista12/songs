@@ -8,6 +8,8 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
@@ -21,27 +23,46 @@ import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DataSourceBitmapLoader
+import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.TransferListener
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.example.songs.R
+import com.example.songs.componentes.getMetaData
+import com.example.songs.componentes.getMetaData2
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.ListeningExecutorService
+import com.google.common.util.concurrent.ListeningScheduledExecutorService
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
+import org.xmlpull.v1.XmlPullParser
 import java.io.FileDescriptor
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class ServicMedia: MediaSessionService() {
 
@@ -97,6 +118,31 @@ class ServicMedia: MediaSessionService() {
 
 
        mediaSession = MediaSession.Builder(this@ServicMedia, player)
+                                  .setBitmapLoader(object: BitmapLoader{
+                                      override fun supportsMimeType(mimeType: String): Boolean {
+                                         return true
+                                      }
+
+                                      override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> {
+                                          val exeuctor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
+                                          val future=exeuctor.submit(Callable{
+                                              BitmapFactory.decodeByteArray(data,0,data.size)
+                                          })
+                                          return future
+
+                                      }
+
+                                      override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> {
+                                         val service=MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
+                                         val future:ListenableFuture<Bitmap> = service.submit ( Callable{
+                                            val arrayStrings = uri.toString().split("/")
+                                            val id = arrayStrings[arrayStrings.size-1].split(".")[0]
+                                            val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,200,200)
+                                            bitmap ?: this@ServicMedia.getDrawable(R.drawable.baseline_music_note_24_darkpink)?.toBitmap(200,200,null)
+                                         })
+                                        return future
+                                      }
+                                  })
                                   .build()
 
 
@@ -148,6 +194,7 @@ private fun criarNotificacao(){
             Log.d("service","muudarPlyList: $plyListStado")
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
         Log.i("service","onDestroy")
         if(mediaSession!=null)
@@ -177,4 +224,5 @@ private fun criarNotificacao(){
     }
 
     }
+
 

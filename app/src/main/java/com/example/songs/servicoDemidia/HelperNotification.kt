@@ -187,9 +187,9 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
 
         else{
             notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
-                                                                .setContentText("Pronto para reprodusir")
-                                                                .setContentTitle("servico de media")
-                                                                .build()
+                                                                             .setContentText("Pronto para reprodusir")
+                                                                             .setContentTitle("servico de media")
+                                                                             .build()
 
             NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
         }
