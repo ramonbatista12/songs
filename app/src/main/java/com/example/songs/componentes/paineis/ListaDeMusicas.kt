@@ -67,19 +67,10 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
     val lista=viewModelListas.listas.collectAsState(ListaMusicas.caregando)
 
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
+    val medicoes=remember { com.example.songs.componentes.MedicoesItemsDeList() }
     Box(modifier = modifier.fillMaxSize()){
-      val gradcels:(w:WindowSizeClass)->Int ={w->
-        if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1
-        else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
-                   if(w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
-                   else 1
-        else if (windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.EXPANDED)
-                 if (w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
-                 else 3
-        else   3
-
-    }
-      LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
+      val gradcels=medicoes.gradCell(windowSizeClass)
+      LazyVerticalGrid(columns = GridCells.Fixed(gradcels),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
            when(val r =lista.value){
 

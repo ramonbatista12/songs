@@ -23,6 +23,7 @@ import com.example.songs.componentes.ItemsAlbums
 import com.example.songs.componentes.ItemsAlbusColuna
 import com.example.songs.componentes.LoadingAlbumsColuna
 import com.example.songs.componentes.LoadingListaAlbums
+import com.example.songs.componentes.MedicoesItemsDeList
 import com.example.songs.viewModels.ListaAlbums
 import com.example.songs.viewModels.ViewModelListas
 
@@ -36,9 +37,9 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
                   vm:ViewModelListas,acaoNavegarPorId:(s:String)->Unit){
   val listaAlbun =vm.albums.collectAsState(initial = ListaAlbums.caregando)
   Box(modifier = modifier.fillMaxSize()){
-
+      val medicoes=remember { MedicoesItemsDeList() }
       LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
-                       columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1 else 3),
+                       columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
                        horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
           when(val a=listaAlbun.value){
 

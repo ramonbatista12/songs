@@ -7,6 +7,9 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
@@ -63,6 +67,7 @@ import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 import org.junit.runner.manipulation.Ordering
 import java.io.File
 
@@ -91,8 +96,16 @@ fun Navgrafic(navController: NavHostController,
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
-NavHost(navController = navController, startDestination = DestinosDENavegacao.DestinosDeTela.Todas,modifier=modifier){
+NavHost(navController = navController,
+        startDestination = DestinosDENavegacao.DestinosDeTela.Todas,
+        modifier=modifier){
   composable<DestinosDENavegacao.DestinosDeTela.Todas>{
+      val backgrand = MaterialTheme.colorScheme.background
+      val corBarra= MaterialTheme.colorScheme.onBackground
+      LaunchedEffect(Unit) {
+          acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+          acaoMudaBackgraundScafolld(backgrand)
+      }
    Box{
        ListaDemusicas(modifier = Modifier,
                       windowSizeClass = windowSizeClass,
@@ -115,6 +128,12 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
   }
 
   composable<DestinosDENavegacao.DestinosDeTela.Playlist>{
+      val backgrand = MaterialTheme.colorScheme.background
+      val corBarra= MaterialTheme.colorScheme.onBackground
+      LaunchedEffect(Unit) {
+          acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+          acaoMudaBackgraundScafolld(backgrand)
+      }
       Box{
         PlyList(modifier = modifier,
                 windowSizeClass = windowSizeClass,
@@ -133,6 +152,12 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
 
 
   composable<DestinosDENavegacao.DestinosDeTela.Album>{
+      val backgrand = MaterialTheme.colorScheme.background
+      val corBarra= MaterialTheme.colorScheme.onBackground
+      LaunchedEffect(Unit) {
+          acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+          acaoMudaBackgraundScafolld(backgrand)
+      }
       Box(modifier=Modifier){
           ListaDeAlbums(windowSizeClass = windowSizeClass,
                        transicaoMiniPlyer = transicaoMiniPlyer,
@@ -158,6 +183,12 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
   }
 
   composable<DestinosDENavegacao.DestinosDeTela.Artista>{
+      val backgrand = MaterialTheme.colorScheme.background
+      val corBarra= MaterialTheme.colorScheme.onBackground
+      LaunchedEffect(Unit) {
+          acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+          acaoMudaBackgraundScafolld(backgrand)
+      }
       ListaDeArtistas(windowSizeClass = windowSizeClass,
                       transicaoMiniPlyer = transicaoMiniPlyer,
                       acaoNavegarPorId ={s->
@@ -169,7 +200,12 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
   }
 
   composable<DestinosDENavegacao.DestinosDeTela.ArtistaId>{
-
+      val backgrand = MaterialTheme.colorScheme.background
+      val corBarra= MaterialTheme.colorScheme.onBackground
+      LaunchedEffect(Unit) {
+          acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+          acaoMudaBackgraundScafolld(backgrand)
+      }
       val artistaId:DestinosDENavegacao.DestinosDeTela.ArtistaId=it.toRoute()
       ArtistaId(modifier = Modifier,
           windowSizeClass = windowSizeClass,
@@ -191,7 +227,14 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
   }
 
   composable<DestinosDENavegacao.DestinosDeTela.PlyListId> {
+
       val id =it.toRoute<DestinosDENavegacao.DestinosDeTela.PlyListId>()
+      val backgrand = MaterialTheme.colorScheme.background
+      val corBarra= MaterialTheme.colorScheme.onBackground
+      LaunchedEffect(Unit) {
+          acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+          acaoMudaBackgraundScafolld(backgrand)
+      }
       PlayListId(modifier = Modifier,
           windowSizeClass = windowSizeClass,
           paddingValues = paddingValues,
@@ -215,6 +258,12 @@ NavHost(navController = navController, startDestination = DestinosDENavegacao.De
 
    composable<DestinosDENavegacao.DestinosDeTela.AlbumId>{
        val id:DestinosDENavegacao.DestinosDeTela.AlbumId=it.toRoute()
+       val backgrand = MaterialTheme.colorScheme.background
+       val corBarra= MaterialTheme.colorScheme.onBackground
+       LaunchedEffect(Unit) {
+           acaoMudarcorBackgrandEBarraPermanent(backgrand,corBarra)
+           acaoMudaBackgraundScafolld(backgrand)
+       }
        AlbumId(
            modifier = Modifier,
            windowSizeClass = windowSizeClass,

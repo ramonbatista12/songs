@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -92,6 +93,7 @@ class MainActivity : ComponentActivity() {
 
             val binder = service as ServicMedia.ServicBinder
             conecao.value = ResultadosConecaoServiceMedia.Conectado(binder.getService(),this@MainActivity)
+
             Log.i("sevice", "onServiceConnected ${conecao.value}")
 
 
@@ -304,7 +306,7 @@ class MainActivity : ComponentActivity() {
                                     estadoService = conecao)
 
 
-                                AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter)) {
+                                AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp)) {
                                   if(!bigPlyer.value){  DisposableEffect(Unit) {
                                         scop.launch {
                                              transicaoMiniPlyer.targetState=true
@@ -357,7 +359,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                   
+
 
                     }
                 }

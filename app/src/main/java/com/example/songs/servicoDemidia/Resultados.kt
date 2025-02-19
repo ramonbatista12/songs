@@ -6,6 +6,7 @@ import android.content.Context
 import android.util.Log
 import androidx.media3.session.MediaController
 import androidx.annotation.OptIn
+import androidx.concurrent.futures.await
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
@@ -13,6 +14,8 @@ import androidx.media3.session.legacy.MediaSessionCompat.Token
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 

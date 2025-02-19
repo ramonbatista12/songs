@@ -86,8 +86,10 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.R
+import com.example.songs.componentes.AuxiliarMudancaDeBackGrands
 import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.ItemDaLista
+import com.example.songs.componentes.MedicoesComtrolerPlyerEstendido
 import com.example.songs.componentes.MiniplayerParaTransicao
 import com.example.songs.componentes.getMetaData
 import com.example.songs.repositorio.RepositorioService
@@ -447,27 +449,10 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                             animatedVisibilityScope = this@AnimatedContent
                                            ,onclick = {listaAvberta.value=!listaAvberta.value},
                                             vm=vm,cor=corTexto ,acaoMudarBackgraud = {
-                                                if(it!=null){
-                                                    val palette =Palette.from(it).generate()
-                                                    val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
-                                                    cor.value=Color(int)
-                                                    acaMudarBackgraudScafolld(cor.value)
-                                                    val luminessenciaBackgraud=cor.value.luminance()
-                                                    corTexto.value=when{
-                                                        (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                                                        (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
-                                                        (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
-
-                                                        else -> Color.Unspecified
-                                                    }
-
-                                                }
-                                        else {
-                                            cor.value=backgraudColor
-                                            corTexto.value=textColorSquemas
-                                            acaMudarBackgraudScafolld(cor.value)
-
-                                        }
+                                               AuxiliarMudancaDeBackGrands().mudarBackgrandScaffold(it,
+                                                                                                    backgraudColor=backgraudColor,
+                                                                                                    cor=cor,corTexto=corTexto,
+                                                                                                    textColorSquemas=textColorSquemas, acao = acaMudarBackgraudScafolld)
                                     },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColor)})
 
                             } else {
@@ -481,26 +466,15 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                       MiniplayerParaTransicao(
                                         sharedTransitionScope = this@SharedTransitionLayout,
                                         animatedVisibilityScope = this@AnimatedContent,
-                                        vm = vm, corDotexto = corTexto.value, backgraud = cor.value,
-                                          acaoMudarBackgraud = {if(it!=null){
-                                              val palette =Palette.from(it).generate()
-                                              val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
-                                              cor.value=Color(int)
-                                              val luminessenciaBackgraud=cor.value.luminance()
-                                              corTexto.value=when{
-                                                  (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                                                  (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
-                                                  (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
-
-                                                  else -> Color.Unspecified
-                                              }
-
-                                          }
-                                          else {
-                                              cor.value=backgraudColor
-                                              corTexto.value=textColorSquemas
-
-                                          }
+                                        vm = vm,
+                                        corDotexto = corTexto.value,
+                                        backgraud = cor.value,
+                                        acaoMudarBackgraud = {
+                                            AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(it,
+                                                                                                  backgraudColor=cor,
+                                                                                                  corTexto = corTexto,
+                                                                                                  textColorSquemas = textColorSquemas,
+                                                                                                  backgraudColorSquemas = backgraudColor)
                                           }
                                     )
                                 }
@@ -599,22 +573,13 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                                         windowSizeClass = windowSizeClass,
                                         metadata = metadata,
                                         acaoMudarBackgraud = {
-                                            if(it!=null){
-                                                val palette =Palette.from(it).generate()
-                                                val int=palette.getDarkMutedColor(backgraudColor.value.toInt())
-                                                cor.value=Color(int)
-
-                                                val luminessenciaBackgraud=cor.value.luminance()
-                                                corTexto.value=when{
-                                                    (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                                                    (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
-                                                    (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
-
-                                                    else -> Color.Unspecified
-                                                }
-                                                acaoMudarCorScafollEBArraPermanente(cor.value,corTexto.value)
-
-                                            }},corDotexto = corTexto.value)
+                                          AuxiliarMudancaDeBackGrands().mudaBackgraundScafolldPermanentBar(it,
+                                                                                                           acaoMudarCorScafollEBArraPermanente,
+                                                                                                           corBackGraund = cor,
+                                                                                                           corTexto=corTexto,
+                                                                                                           textColorSquemas = textColorSquemas,
+                                                                                                           backgraudColorSquemas = backgraudColor)},
+        corDotexto = corTexto.value)
            Spacer(Modifier.padding(10.dp))
             Column(
                 Modifier.clip(RoundedCornerShape(15.dp)).background(cor.value),
@@ -663,12 +628,12 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val context= LocalContext.current
     val duracao=vm._duracao.collectAsState()
     val tempoTotal=vm._tempoTotal.collectAsState()
-
     val duracaoString=vm._duracaoString.collectAsState()
     val tempoTotalString=vm._tempoTotalString.collectAsState()
     val modoAleatorio=vm._modoAleatorio.collectAsState()
     val  modoRepeticao=vm._modoRepeticao.collectAsState()
     val  reproduzindo=vm._emreproducao.collectAsState()
+    val medicoes = remember { MedicoesComtrolerPlyerEstendido() }
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -690,8 +655,8 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                            .padding(10.dp)) {
 
         Column(Modifier.align(Alignment.TopCenter)) {
-            val iconeSize =
-                if (windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 90.dp else 400.dp
+            val iconeSize = medicoes.tamanhoDoIcone(windowSizeClass)
+
             if(bitmap.value==null)
                 Icon(
                     painter = painterResource(R.drawable.baseline_music_note_24),
@@ -750,11 +715,11 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                             }
                         },
                         valueRange = 0f..100f,
-                        thumb = {SliderDefaults.Thumb(interactionSource=interactionSource, modifier = Modifier.size(10.dp))},
+                        thumb = {SliderDefaults.Thumb(interactionSource=interactionSource, modifier = Modifier.size(10.dp), colors = SliderDefaults.colors(thumbColor = corDotexto))},
                         track = {SliderDefaults.Track(it,
-                            modifier = Modifier.height(if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 5.dp else 10.dp),
-                            colors =SliderDefaults.colors(corDotexto))},
-                        colors = SliderDefaults.colors(activeTrackColor = corDotexto),
+                                                modifier = Modifier.height(if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 5.dp else 10.dp),
+                                                colors =SliderDefaults.colors(activeTrackColor =  corDotexto))},
+                        
 
                         modifier = Modifier.height(if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 5.dp else 10.dp)
                     )

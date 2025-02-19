@@ -28,6 +28,7 @@ import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.ItemsListaColunas
 import com.example.songs.componentes.LoadingListaMusicas
 import com.example.songs.componentes.LoadingListaMusicasColunas
+import com.example.songs.componentes.MedicoesItemsDeList
 import com.example.songs.servicoDemidia.PlyListStados
 import com.example.songs.viewModels.ListaMusicas
 import com.example.songs.viewModels.ViewModelListas
@@ -42,21 +43,11 @@ fun AlbumId(modifier: Modifier = Modifier,
             acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit,id:Long,
             acaoNavegarOpcoes:(item:MediaItem?)->Unit={} ){
     val lista= viewModelListas.flowAulbumId(id).collectAsState(initial = emptyList())
-
+    val medicoes=remember { MedicoesItemsDeList() }
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
     Box(modifier = modifier.fillMaxSize()){
-        val gradcels:(w: WindowSizeClass)->Int ={ w->
-            if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1
-            else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
-                if(w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
-                else 1
-            else if (windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.EXPANDED)
-                if (w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
-                else 3
-            else   3
-
-        }
-        LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),
+        val gradcels=medicoes.gradCell(windowSizeClass)
+        LazyVerticalGrid(columns = GridCells.Fixed(gradcels),
                          horizontalArrangement = Arrangement.SpaceBetween ,
                          modifier = Modifier.align(
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {

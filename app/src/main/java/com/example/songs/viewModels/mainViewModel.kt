@@ -86,18 +86,18 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
     }
 
    fun mudarCorBackGround(value:Color){
-         scope.launch {
-             corBackGround.emit(value)
-         }
+
+             corBackGround.value=value
+
 
 
    }
 
     fun mudarCorBackGroundEtexto(backGround:Color,textonoAppBar:Color){
-        scope.launch {
-            corBackGround.emit(backGround)
-            corDotextonoAppBar.emit(textonoAppBar)
-        }
+
+            corBackGround.value =backGround
+            corDotextonoAppBar.value=textonoAppBar
+
 
 
     }

@@ -54,17 +54,10 @@ fun PlyList(modifier: Modifier =Modifier,
             acaoNavegarDialoCriarPlaylist:()->Unit={},
             acaoNavegarOpcoes:(id:Long?)->Unit={}){
      val plylist=vm.plylist.collectAsState()
-    val gradcels:(w:WindowSizeClass)->Int ={w->
-        if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1
-        else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
-            if(w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
-            else 1
-        else if (windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.EXPANDED)
-            if (w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
-            else 3
-        else   3}
+    val medicoes=remember { com.example.songs.componentes.MedicoesItemsDeList() }
+    val gradcels=medicoes.gradCell(windowSizeClass)
     Box(modifier = modifier){
-        LazyVerticalGrid(columns = GridCells.Fixed(gradcels(windowSizeClass)),
+        LazyVerticalGrid(columns = GridCells.Fixed(gradcels),
                          modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter)
                                             .padding(bottom = if (transicaoMiniPlyer.targetState) 80.dp else 0.dp,start = 10.dp,end = 10.dp) ) {
 

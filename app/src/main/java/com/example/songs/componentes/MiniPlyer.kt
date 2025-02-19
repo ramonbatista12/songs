@@ -7,38 +7,19 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.AnimationVector
-import androidx.compose.animation.core.EaseInCirc
-import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.InfiniteRepeatableSpec
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.TwoWayConverter
-import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateValue
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -49,13 +30,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -63,9 +39,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.alpha
-import androidx.core.graphics.red
-import androidx.palette.graphics.Palette
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.R
@@ -74,7 +47,6 @@ import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 /*
 * aqui esta  a representacao do Plyer redusido
@@ -96,40 +68,25 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
-    val backgraudColor =MaterialTheme.colorScheme.background.value.toInt()
+    val backgraudColorSquemas =MaterialTheme.colorScheme.background
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
-    val cor = remember { mutableStateOf(Color(backgraudColor)) }
-    val corTexto=remember { mutableStateOf(Color.Black) }
+    val corDoBackgrand = remember { mutableStateOf<Color>(backgraudColorSquemas) }
+    val corTexto=remember { mutableStateOf<Color>(Color.Black) }
     //val cores=remember { mutableStateOf<List<Color>?>(null) }
    // val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
                 bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
-                if(bitmap.value!=null){
-                val palette= Palette.from(bitmap.value!!).generate()
-                val int =palette.getDarkMutedColor(backgraudColor)
-                cor.value=Color(int)
-                val corAux =Color(palette.darkMutedSwatch?.titleTextColor ?: textColorSquemas.value.toInt())
-                val luminessenciaBackgraud=cor.value.luminance()
 
-                corTexto.value=when{
-                    (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                     (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
-                     (luminessenciaBackgraud>=0.1f) ->Color(palette.getVibrantColor(Color.White.value.toInt()) )
-
-                    else -> corAux
-                }
-                    Log.e("cor do texto ",corTexto.value.toString() +",,luminosidade do backgraud ${luminessenciaBackgraud}")
-                }
-                else{
-                    cor.value=Color(backgraudColor)
-                    corTexto.value=textColorSquemas
-                }
             }catch (e:Exception){
                 Log.e("Load tumbmail",e.message.toString())
-                bitmap.value=null
-            }
+                bitmap.value=null}
+            AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap.value,
+                backgraudColor=corDoBackgrand,
+                corTexto  = corTexto,
+                textColorSquemas = textColorSquemas,
+                backgraudColorSquemas = backgraudColorSquemas)
 
             }
 
@@ -150,7 +107,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 
 
-    Row(modifier = modifier.clip(RoundedCornerShape(15.dp)).background(cor.value),verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.clip(RoundedCornerShape(15.dp)).background(corDoBackgrand.value),verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
              contentDescription = null,

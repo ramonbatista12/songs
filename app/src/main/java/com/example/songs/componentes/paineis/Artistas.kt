@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,12 +30,13 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
                     transicaoMiniPlyer: MutableTransitionState<Boolean>,
                     vmodel: ViewModelListas,
                     acaoNavegarPorId:(String)->Unit){
-              val listaDeArtistas=vmodel.artistas.collectAsState()
 
+    val listaDeArtistas=vmodel.artistas.collectAsState()
+    val medicoes =remember { com.example.songs.componentes.MedicoesItemsDeList() }
     Box(modifier = modifier.fillMaxSize()){
 
         LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
-            columns = GridCells.Fixed(if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1 else 3),
+            columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
             horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
             itemsIndexed(items = listaDeArtistas.value){indice,item->
                 if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
