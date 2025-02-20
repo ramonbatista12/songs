@@ -6,6 +6,8 @@ import android.content.Intent.ACTION_SEND
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.activity.BackEventCompat
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -65,6 +67,7 @@ import com.example.songs.viewModels.FabricaViewModelLista
 import com.example.songs.viewModels.FabricaViewModelPlylist
 import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
@@ -172,6 +175,9 @@ NavHost(navController = navController,
 
   //
   composable<DestinosDENavegacao.DestinosDeTela.Player>{
+
+
+
       BigPlayer(windowSizeClass = windowSizeClass,
           modifier = Modifier,
                 paddingValues = paddingValues,

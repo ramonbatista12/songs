@@ -1,5 +1,6 @@
 package com.example.songs.componentes
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 
 import android.os.Build
@@ -25,14 +26,20 @@ class AuxiliarMudancaDeBackGrands{
         if(bitmap!=null){
             val palette = Palette.from(bitmap).generate()
             val int:Int
-            if(palette.darkMutedSwatch!=null)
-                int=palette.getDarkMutedColor(backgraudColor.value.toInt())
-            else if(palette.mutedSwatch!=null)
-                int=palette.getMutedColor(backgraudColor.value.toInt())
-            else if(palette.dominantSwatch!=null)
-                int=palette.getDominantColor(backgraudColor.value.toInt())
+            if(palette.darkMutedSwatch!=null){
+                Log.d("backgrand","${palette.darkMutedSwatch}")
+                int=palette.getDarkMutedColor(backgraudColor.value.toInt())}
+            else if(palette.mutedSwatch!=null){
+                Log.d("backgrand","${palette.mutedSwatch}")
+                int=palette.getMutedColor(backgraudColor.value.toInt())}
+            else if(palette.dominantSwatch!=null){
+                int=palette.getDominantColor(backgraudColor.value.toInt())}
             else
                 int=backgraudColor.value.toInt()
+
+
+
+
             cor.value= Color(int)
 
             val luminessenciaBackgraud=cor.value.luminance()
@@ -51,6 +58,7 @@ class AuxiliarMudancaDeBackGrands{
         }
         acao(cor.value)
     }
+    @SuppressLint("SuspiciousIndentation")
     suspend fun mudarBackgrandMiniPlyer(bitmap: Bitmap?,
                                         corTexto:MutableState<Color>,
                                         backgraudColor:MutableState<Color>,
@@ -136,4 +144,31 @@ class MedicoesItemsDeList(){
         if (w.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2
         else 3
     else   3
+}
+
+class MovimentoRetorno(){
+
+    fun animacao(progreso: Float,
+                 acaoDeVoutar: () -> Unit,
+                 acaoMudarEscala:(x:Float,y:Float)->Unit,
+                 acaoMudarCor: () -> Unit,
+                 acaoReverterCorbackgrand:()->Unit){
+        val x = (1f* progreso)
+        val y = (1f * progreso)
+        //Log.d("progress animacao ","${backEvent.progress} ,x= $x,y=$y")
+        acaoMudarEscala(x,y)
+
+        if(x>=0.3f){
+            acaoDeVoutar()
+        }
+        else if(x>=0.2f){
+            acaoMudarCor()
+
+        }
+        else if(x<=0.1f){
+            acaoReverterCorbackgrand()
+            acaoMudarEscala(0f,0f)
+        }
+
+    }
 }

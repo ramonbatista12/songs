@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.activity.BackEventCompat
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -71,6 +73,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -91,6 +94,7 @@ import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.MedicoesComtrolerPlyerEstendido
 import com.example.songs.componentes.MiniplayerParaTransicao
+import com.example.songs.componentes.MovimentoRetorno
 import com.example.songs.componentes.getMetaData
 import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
@@ -101,8 +105,10 @@ import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 /*
 * BigPlyer representa o player em si aonde se pode ver os dados da musica em reproducao no momento
@@ -133,8 +139,14 @@ fun BigPlayer(modifier: Modifier = Modifier,
             acaoAvisoBigplyer()
         }
     }
+val ecalay=remember{ mutableStateOf(1.0f)}
+val ecalax=remember{ mutableStateOf(1.0f)}
+SelecaoDosPlyer(modifier.graphicsLayer {
+            scaleX=ecalax.value
+            scaleY=ecalay.value
+            alpha=ecalax.value
 
-SelecaoDosPlyer(modifier,
+},
                 windowSizeClass,
                 paddingValues,
                 vm,
@@ -142,7 +154,12 @@ SelecaoDosPlyer(modifier,
                 acaoAvisoBigplyer,
                 acaoDeVoutar=acaoDeVoutar,
                 acaMudarBackgraudScafolld=acaMudarBackgraudScafolld,
-                acaoMudarCorScafollEBArraPermanente=acaoMudarCorScafollEBArraPermanente)
+                acaoMudarCorScafollEBArraPermanente=acaoMudarCorScafollEBArraPermanente,
+                acaoMudarScala={x,y->
+                       ecalax.value=1f-x
+                       ecalay.value=1f-y
+
+                })
 
 
 
@@ -158,19 +175,29 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     acaoAvisoBigplyer:()->Unit,
                     acaoDeVoutar: () -> Unit={},
                     acaMudarBackgraudScafolld: (Color) -> Unit={},
-                    acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->}){
+                    acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
+                    acaoMudarScala:(x:Float,y:Float)->Unit={x,y->}){
     val cor=MaterialTheme.colorScheme.background
     val corbackgrand= remember { mutableStateOf(cor) }
     val int =MaterialTheme.colorScheme.background.value.toInt()
     val coresBackgrad=remember { mutableStateOf<List<Color>?>(null) }
     if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
         PlayerCompat(modifier=modifier,
-            vm = vm, vmlista = vmlista,acaoDeVoutar=acaoDeVoutar, acaMudarBackgraudScafolld = acaMudarBackgraudScafolld)
+                     vm = vm,
+                     vmlista = vmlista,
+                     acaoDeVoutar=acaoDeVoutar,
+                     acaMudarBackgraudScafolld = acaMudarBackgraudScafolld,
+                     acaoMudarEscala = acaoMudarScala )
 
     else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
-        if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)PlayerCompat(modifier, vm = vm,vmlista = vmlista,acaoDeVoutar=acaoDeVoutar, acaMudarBackgraudScafolld = acaMudarBackgraudScafolld)
-        else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente)
-    else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente)
+        if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)
+            PlayerCompat(modifier,
+                         vm = vm,
+                         vmlista = vmlista,
+                         acaoDeVoutar=acaoDeVoutar,
+                         acaMudarBackgraudScafolld = acaMudarBackgraudScafolld, acaoMudarEscala = acaoMudarScala)
+        else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoMudarScala,acaoDeVoutar)
+    else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoMudarScala,acaoDeVoutar)
 }
 
 
@@ -425,14 +452,34 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                  vmlista:ViewModelListas,
                  acaoMudarLista:(p:Palette)->Unit={},
                  acaoDeVoutar:()->Unit={},
-                 acaMudarBackgraudScafolld: (Color) -> Unit={}) {
+                 acaMudarBackgraudScafolld: (Color) -> Unit={},
+                 acaoMudarEscala:(x:Float,y:Float)->Unit={x,y->}) {
     val listaAvberta = remember { mutableStateOf(false) }
     val backgraudColor =MaterialTheme.colorScheme.background
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
     val cor = remember { mutableStateOf(Color(backgraudColor.value.toInt())) }
     val corTexto=remember { mutableStateOf(Color.Black) }
+    val animacaoFuncao=remember { MovimentoRetorno() }
+    PredictiveBackHandler { progress: Flow<BackEventCompat> ->
+        progress.collect { backEvent ->
+            try {
+                animacaoFuncao.animacao(backEvent.progress,
+                                       acaoDeVoutar,
+                                       acaoMudarEscala,
+                                       acaoMudarCor = {acaMudarBackgraudScafolld(backgraudColor)},
+                                       acaoReverterCorbackgrand = {acaMudarBackgraudScafolld(cor.value)})
+             // acaMudarBackgraudScafolld(backgraudColor)
+            } catch (e: CancellationException) {
+                Log.d("progress animacao ","${backEvent.progress} ,camcelado ${e.message}")
+               acaMudarBackgraudScafolld(cor.value)
+                acaoMudarEscala(0f,0f)
+            }
 
-    Box(modifier = Modifier.fillMaxSize().background(cor.value)) {
+
+        }
+    }
+
+        Box(modifier = modifier.fillMaxSize().background(cor.value)) {
       IconButton (onClick =acaoDeVoutar) {
           Icon(painter = painterResource(R.drawable.outline_west_24), contentDescription = null, tint = corTexto.value, modifier = Modifier)
       }
@@ -552,18 +599,41 @@ sealed class LayoutsCompartilhados(val label:String){
 fun PlyerEspandido(modifier: Modifier=Modifier,
                    windowSizeClass: WindowSizeClass,
                    vm:VmodelPlayer,vmlista:ViewModelListas,
-                   cor:MutableState<Color>,acaoMudarCorScafollEBArraPermanente: (backgrand: Color, corBarra: Color) -> Unit={b,c->}) {
+                   cor:MutableState<Color>,
+                   acaoMudarCorScafollEBArraPermanente: (backgrand: Color, corBarra: Color) -> Unit={b,c->},
+                   acaoMudarEscala:(x:Float,y:Float)->Unit={x,y->},
+                   acaoDeVoutar: () -> Unit={}) {
        val metadata=vm._mediaItemAtual.collectAsState()
        val plyListAtual=vmlista.plylist().collectAsState(emptyList())
        val backgraudColor=MaterialTheme.colorScheme.background
        val textColorSquemas=MaterialTheme.colorScheme.onBackground
-
+       val auxiliar= remember { MovimentoRetorno() }
        val corTexto=remember { mutableStateOf(textColorSquemas) }
         DisposableEffect(Unit) {
             onDispose {
                 acaoMudarCorScafollEBArraPermanente(backgraudColor,textColorSquemas)
             }
         }
+        PredictiveBackHandler { progress: Flow<BackEventCompat> ->
+            progress.collect { backEvent ->
+                try {
+                   auxiliar.animacao(backEvent.progress,
+                            acaoDeVoutar,
+                           acaoMudarCor = {acaoMudarCorScafollEBArraPermanente(backgraudColor,textColorSquemas)},
+                           acaoReverterCorbackgrand = {acaoMudarCorScafollEBArraPermanente(cor.value,corTexto.value)},
+                           acaoMudarEscala = acaoMudarEscala
+                   )
+                    // acaMudarBackgraudScafolld(backgraudColor)
+                } catch (e: CancellationException) {
+                    Log.d("progress animacao ","${backEvent.progress} ,camcelado ${e.message}")
+                    acaoMudarCorScafollEBArraPermanente(cor.value,corTexto.value)
+                    acaoMudarEscala(0f,0f)
+                }
+
+
+            }
+        }
+
 
         Row(
             modifier.background(cor.value)
