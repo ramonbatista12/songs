@@ -2,6 +2,7 @@ package com.example.songs
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Binder
@@ -50,6 +51,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.session.MediaController
@@ -129,7 +134,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-     this.enableEdgeToEdge()
+     enableEdgeToEdge()
         observadorDocicloDeVida = HelperLifeciclerObserver(
             acaoDeConectar = {
                 scop.launch(Dispatchers.Main){
@@ -205,6 +210,20 @@ class MainActivity : ComponentActivity() {
                 }
             })
         this.lifecycle.addObserver(observadorDocicloDeVida)
+        val windowInsetsControllerCompat=modoImersivo(this)
+        windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())
+       /* ViewCompat.setOnApplyWindowInsetsListener(window.decorView,OnApplyWindowInsetsListener{
+                v, insets ->
+            if(insets.isVisible(WindowInsetsCompat.Type.statusBars())||insets.isVisible(WindowInsetsCompat.Type.navigationBars())){
+
+
+            }else{
+                windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
+            }
+           ViewCompat.onApplyWindowInsets(v,insets)
+        })*/
+
+
 
 
         setContent {
@@ -214,11 +233,8 @@ class MainActivity : ComponentActivity() {
                 val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
                 val permissaoLeitura =
                     rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {it->
+                       viewmodel.mudancaSolicitarPermicaoLaeitua(it)}
 
-                            viewmodel.mudancaSolicitarPermicaoLaeitua(it)
-
-
-                    }
                 val permicaoNotificacao =
                     rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
                         if(it&&!viewmodel._permicaoNotificacao.value){
@@ -366,14 +382,16 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    fun modoImersivo(context: Context):WindowInsetsControllerCompat{
 
+        val windowInsentsControler= WindowInsetsControllerCompat(window,window.decorView)
+        windowInsentsControler.systemBarsBehavior=WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    return windowInsentsControler
+    }
     fun ComponentActivity.enableEdgeToEdge(//aqui eu manipulo a cor de status bar e navigation bar do sistema android deixei ambos transparentes
     statusBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)
     ,navigationBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)) {
-
-
-
-    }
+}
 
    suspend fun checarPermicaoAudio(viewModel: MainViewModel){
        if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU)

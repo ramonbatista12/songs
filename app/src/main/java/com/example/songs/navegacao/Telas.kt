@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.activity.BackEventCompat
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
@@ -25,6 +26,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
@@ -99,6 +101,8 @@ fun Navgrafic(navController: NavHostController,
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
+    val context= LocalActivity.current
+
 NavHost(navController = navController,
         startDestination = DestinosDENavegacao.DestinosDeTela.Todas,
         modifier=modifier){

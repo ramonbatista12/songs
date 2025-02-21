@@ -50,18 +50,11 @@ class HelperNotification(val notification: Notification,
     val scope= CoroutineScope(Dispatchers.Main+job)
     val metaData= MutableStateFlow<MediaItem?>(null)
     val fabricaDeNotificacoes= FabricaDeNotificacoes(notification,seviceContext,secaoDeMedia)
-    private val receiver=Receiver(this,scope)
+
     init {
         Log.i("service","helper notificacao")
 
-        seviceContext.applicationContext.registerReceiver(receiver, IntentFilter().apply {
-            addAction(MensagemsBroadcast.play.mensagem)
-            addAction(MensagemsBroadcast.pause.mensagem)
-            addAction(MensagemsBroadcast.next.mensagem)
-            addAction(MensagemsBroadcast.preview.mensagem)
 
-
-        },Context.RECEIVER_EXPORTED)
 
 
 
@@ -102,26 +95,11 @@ class HelperNotification(val notification: Notification,
     override fun finalizar() {
         job.cancel()
         metaData.value=null
-        val unregisterReceiver=seviceContext.unregisterReceiver(receiver)
+
         
 
     }
-    fun play(){
-        helperPalyerComandes.prepare()
-        helperPalyerComandes.play()
-    }
-    fun pause(){
-        helperPalyerComandes.pause()
-    }
-    fun next(){
-        helperPalyerComandes.next()
-    }
-    fun preview(){
-        helperPalyerComandes.preview()
-    }
-    fun stop(){
-        helperPalyerComandes.stop()
-    }
+
 }
 
 /*
@@ -131,22 +109,7 @@ class HelperNotification(val notification: Notification,
 * HelperNotification e funciona como um listener para responder as peddings intentes de cada
 * acao nas notificacoes
 * */
-class Receiver(val HelperNotification: HelperNotification,val scope: CoroutineScope): BroadcastReceiver() {
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-      if(intent!=null){
-          when(intent.action){
-              MensagemsBroadcast.play.mensagem->scope.launch {HelperNotification.play() }
-              MensagemsBroadcast.pause.mensagem-> scope.launch { HelperNotification.pause() }
-              MensagemsBroadcast.next.mensagem-> scope.launch { HelperNotification.next() }
-              MensagemsBroadcast.preview.mensagem->scope.launch{ HelperNotification.preview() }
-              MensagemsBroadcast.stop.mensagem->scope.launch{HelperNotification.stop()}
-              else->{}
-          }
-      }
-    }
-
-}
 /*
 * a fabrica de notificacoes tem os metodos nesssesarios para atualizar as notificacoes
 * as notificacoes sao pasadas como referencias e assesadas como um ponteiro
@@ -186,9 +149,11 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         }
 
         else{
-            notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+            notification=NotificationCompat.Builder(contextoDoServico,"1")
+                                                                             .setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                                                                              .setContentText("Pronto para reprodusir")
                                                                              .setContentTitle("servico de media")
+                                                                             .setStyle(NotificationCompat.BigPictureStyle())
                                                                              .build()
 
             NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
@@ -201,6 +166,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         return PendingIntent.getBroadcast(contextoDoServico,1,intent,PendingIntent.FLAG_IMMUTABLE)
     }
 
+    @OptIn(UnstableApi::class)
     fun atualizarNotificacaoComprogresso(reprodusindo:Boolean, metaData:MediaItem?,progresso:Float,secaoDemedia:MediaSession){
         if(reprodusindo){
             val dadosTitulo=metaData?.mediaMetadata?.title
@@ -220,10 +186,10 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
                 .addAction(NotificationCompat.Action.Builder(
                     R.drawable.baseline_skip_next_24
                 ,"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
-                .setProgress(100,progresso,false)
+
                 .setStyle(MediaStyleNotificationHelper.MediaStyle(secaoDemedia))
                .build()
-
+               //.setProgress(100,progresso,false)
 
 
 
@@ -234,10 +200,11 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         }
 
         else{
-            notification=Notification.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+            notification=NotificationCompat.Builder(contextoDoServico,"1")
+                .setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                 .setContentText("Pronto para reprodusir")
                 .setContentTitle("Player de Audio")
-
+                .setStyle(NotificationCompat.BigPictureStyle())
                 .build()
 
             NotificationManagerCompat.from(contextoDoServico).notify(1,notification)

@@ -129,19 +129,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
-suspend  fun getMetaData(uri: Uri, id: Long,context: Context,whidt:Int=400,height:Int=400):Bitmap?{
-    Log.d("Metadata loaad tumb","id de media ${id} , uri ${uri}")
-    try {
-        val resolver = context.contentResolver
-        val tumbmail=resolver.loadThumbnail(uri, Size(whidt,height),null)
-        return tumbmail
-    }catch (e:Exception){
-        Log.d("Metadata loaad tumb","erro ao carregar tumbmail, ${e.message}")
-        return null
-    }
 
-}
 @RequiresApi(Build.VERSION_CODES.Q)
  fun getMetaData2(uri: Uri, id: Long,context: Context,whidt:Int=400,height:Int=400):Bitmap?{
     Log.d("Metadata loaad tumb","id de media ${id} , uri ${uri}")

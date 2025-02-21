@@ -128,23 +128,28 @@ fun BigPlayer(modifier: Modifier = Modifier,
               acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->}){
     val context= LocalView.current
 
-
+   val acaodevoutarPreditivo=remember{ mutableStateOf(false)}
    LaunchedEffect(Unit) {
-
+       acaodevoutarPreditivo.value=false
        acaoAvisoBigplyer()
    }
     DisposableEffect(Unit) {
 
         onDispose {
+            if(!acaodevoutarPreditivo.value)
             acaoAvisoBigplyer()
         }
     }
 val ecalay=remember{ mutableStateOf(1.0f)}
 val ecalax=remember{ mutableStateOf(1.0f)}
+val ofsetx=remember{ mutableStateOf(0f)}
+val offsety=remember{ mutableStateOf(0f)}
 SelecaoDosPlyer(modifier.graphicsLayer {
             scaleX=ecalax.value
             scaleY=ecalay.value
             alpha=ecalax.value
+            translationX=ofsetx.value*100
+            translationY=offsety.value*1000
 
 },
                 windowSizeClass,
@@ -152,12 +157,17 @@ SelecaoDosPlyer(modifier.graphicsLayer {
                 vm,
                 vmlista,
                 acaoAvisoBigplyer,
-                acaoDeVoutar=acaoDeVoutar,
+                acaoDeVoutar={
+                    acaodevoutarPreditivo.value=true
+                    acaoAvisoBigplyer()
+                    acaoDeVoutar()},
                 acaMudarBackgraudScafolld=acaMudarBackgraudScafolld,
                 acaoMudarCorScafollEBArraPermanente=acaoMudarCorScafollEBArraPermanente,
-                acaoMudarScala={x,y->
+                acaoMudarScala={x,y,ofx,ofy->
                        ecalax.value=1f-x
                        ecalay.value=1f-y
+                       offsety.value=ofy
+                       ofsetx.value=ofx
 
                 })
 
@@ -176,7 +186,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     acaoDeVoutar: () -> Unit={},
                     acaMudarBackgraudScafolld: (Color) -> Unit={},
                     acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
-                    acaoMudarScala:(x:Float,y:Float)->Unit={x,y->}){
+                    acaoMudarScala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit={x,y,ofx,ofy->}){
     val cor=MaterialTheme.colorScheme.background
     val corbackgrand= remember { mutableStateOf(cor) }
     val int =MaterialTheme.colorScheme.background.value.toInt()
@@ -453,14 +463,14 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                  acaoMudarLista:(p:Palette)->Unit={},
                  acaoDeVoutar:()->Unit={},
                  acaMudarBackgraudScafolld: (Color) -> Unit={},
-                 acaoMudarEscala:(x:Float,y:Float)->Unit={x,y->}) {
+                 acaoMudarEscala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit={x,y,ofx,ofy->}) {
     val listaAvberta = remember { mutableStateOf(false) }
     val backgraudColor =MaterialTheme.colorScheme.background
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
     val cor = remember { mutableStateOf(Color(backgraudColor.value.toInt())) }
     val corTexto=remember { mutableStateOf(Color.Black) }
     val animacaoFuncao=remember { MovimentoRetorno() }
-    PredictiveBackHandler { progress: Flow<BackEventCompat> ->
+   PredictiveBackHandler { progress: Flow<BackEventCompat> ->
         progress.collect { backEvent ->
             try {
                 animacaoFuncao.animacao(backEvent.progress,
@@ -472,7 +482,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,
             } catch (e: CancellationException) {
                 Log.d("progress animacao ","${backEvent.progress} ,camcelado ${e.message}")
                acaMudarBackgraudScafolld(cor.value)
-                acaoMudarEscala(0f,0f)
+                acaoMudarEscala(0f,0f,0f,0f)
             }
 
 
@@ -601,7 +611,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                    vm:VmodelPlayer,vmlista:ViewModelListas,
                    cor:MutableState<Color>,
                    acaoMudarCorScafollEBArraPermanente: (backgrand: Color, corBarra: Color) -> Unit={b,c->},
-                   acaoMudarEscala:(x:Float,y:Float)->Unit={x,y->},
+                   acaoMudarEscala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit={x,y,ofx,ofy->},
                    acaoDeVoutar: () -> Unit={}) {
        val metadata=vm._mediaItemAtual.collectAsState()
        val plyListAtual=vmlista.plylist().collectAsState(emptyList())
@@ -627,7 +637,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                 } catch (e: CancellationException) {
                     Log.d("progress animacao ","${backEvent.progress} ,camcelado ${e.message}")
                     acaoMudarCorScafollEBArraPermanente(cor.value,corTexto.value)
-                    acaoMudarEscala(0f,0f)
+                    acaoMudarEscala(0f,0f,0f,0f)
                 }
 
 

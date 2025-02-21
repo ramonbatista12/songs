@@ -1,10 +1,13 @@
 package com.example.songs.componentes
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 
 import android.os.Build
 import android.util.Log
+import android.util.Size
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
@@ -150,14 +153,17 @@ class MovimentoRetorno(){
 
     fun animacao(progreso: Float,
                  acaoDeVoutar: () -> Unit,
-                 acaoMudarEscala:(x:Float,y:Float)->Unit,
+                 acaoMudarEscala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit,
                  acaoMudarCor: () -> Unit,
                  acaoReverterCorbackgrand:()->Unit){
         val x = (1f* progreso)
         val y = (1f * progreso)
-        //Log.d("progress animacao ","${backEvent.progress} ,x= $x,y=$y")
-        acaoMudarEscala(x,y)
-
+        Log.d("progress animacao ","${progreso} ,x= $x,y=$y")
+        acaoMudarEscala(x,y,x,y)
+         if(progreso==1.0f) {
+             acaoDeVoutar()
+             return
+         }
         if(x>=0.3f){
             acaoDeVoutar()
         }
@@ -167,8 +173,22 @@ class MovimentoRetorno(){
         }
         else if(x<=0.1f){
             acaoReverterCorbackgrand()
-            acaoMudarEscala(0f,0f)
+            acaoMudarEscala(0f,0f,0f,0f)
         }
 
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+suspend  fun getMetaData(uri: Uri, id: Long, context: Context, whidt:Int=400, height:Int=400):Bitmap?{
+    Log.d("Metadata loaad tumb","id de media ${id} , uri ${uri}")
+    try {
+        val resolver = context.contentResolver
+        val tumbmail=resolver.loadThumbnail(uri, Size(whidt,height),null)
+        return tumbmail
+    }catch (e:Exception){
+        Log.d("Metadata loaad tumb","erro ao carregar tumbmail, ${e.message}")
+        return null
+    }
+
 }
