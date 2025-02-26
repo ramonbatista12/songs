@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -82,8 +83,10 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                           viewModelListas.mudarPlylist(PlyListStados.Todas,)
 
                        }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
+
+
                    }else{
-                       ItemsListaColunas(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarDialogoDeOpcoes = acaoNavegarOpcoes)
+                       ItemDaLista(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarOpcoes = acaoNavegarOpcoes)
                    }
                }
                }

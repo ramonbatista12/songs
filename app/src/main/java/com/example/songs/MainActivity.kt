@@ -211,17 +211,8 @@ class MainActivity : ComponentActivity() {
             })
         this.lifecycle.addObserver(observadorDocicloDeVida)
         val windowInsetsControllerCompat=modoImersivo(this)
-        windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())
-       /* ViewCompat.setOnApplyWindowInsetsListener(window.decorView,OnApplyWindowInsetsListener{
-                v, insets ->
-            if(insets.isVisible(WindowInsetsCompat.Type.statusBars())||insets.isVisible(WindowInsetsCompat.Type.navigationBars())){
 
 
-            }else{
-                windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
-            }
-           ViewCompat.onApplyWindowInsets(v,insets)
-        })*/
 
 
 
@@ -319,7 +310,9 @@ class MainActivity : ComponentActivity() {
                                                Log.i("corbackgraund scafolld",it.toString())
                                                viewmodel.mudarCorBackGround(it)},
                                            acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
-                                    estadoService = conecao)
+                                    estadoService = conecao,
+                                    acaOcultarBaras = {windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())},
+                                    acaOnMostraBaras = {windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())})
 
 
                                 AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp)) {

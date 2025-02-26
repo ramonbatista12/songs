@@ -71,8 +71,8 @@ class HelperNotification(val notification: Notification,
       scope.launch(Dispatchers.Default) {
           helperPalyerEstados._estaReproduzindo.collect{
               Log.i("service","helper notificacao scope esta reproduzindo $it")
-              if(!it) fabricaDeNotificacoes.atualizarNotificacao(false,metaData.value)
-              else fabricaDeNotificacoes.atualizarNotificacao(true,metaData.value)
+              //if(!it) fabricaDeNotificacoes.atualizarNotificacao(false,metaData.value)
+               fabricaDeNotificacoes.atualizarNotificacao(true,metaData.value)
 
           }
            }
@@ -95,6 +95,7 @@ class HelperNotification(val notification: Notification,
     override fun finalizar() {
         job.cancel()
         metaData.value=null
+
 
         
 
@@ -171,7 +172,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         if(reprodusindo){
             val dadosTitulo=metaData?.mediaMetadata?.title
             val progresso=progresso.toInt()
-           notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+           notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.ic_launcher_foreground3)
                 .setContentText("Reproduzindo ${if(metaData!=null)dadosTitulo else "sem titulo" }")
                 .setContentTitle(dadosTitulo)//.createWithResource()
 
@@ -193,7 +194,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
 
 
 
-            NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
+            NotificationManagerCompat.from(contextoDoServico).notify(ObjetoDadosDeNotificao.idNotificao,notification)
 
 
 
@@ -201,13 +202,13 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
 
         else{
             notification=NotificationCompat.Builder(contextoDoServico,"1")
-                .setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+                .setSmallIcon(R.drawable.ic_launcher_foreground3)
                 .setContentText("Pronto para reprodusir")
                 .setContentTitle("Player de Audio")
                 .setStyle(NotificationCompat.BigPictureStyle())
                 .build()
 
-            NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
+            NotificationManagerCompat.from(contextoDoServico).notify(ObjetoDadosDeNotificao.idNotificao,notification)
         }
     }
 }

@@ -151,7 +151,11 @@ init {
                modoRepeticao.value=it
            }
        }
-
+      scope.launch {
+          ponteiro.caregando_.collect{
+              caregando.value=it
+          }
+      }
 
        }
 

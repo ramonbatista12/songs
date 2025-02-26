@@ -99,8 +99,11 @@ class ServicMedia: MediaSessionService() {
 
         startForeground(1,notification,ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         val player = ExoPlayer.Builder(this@ServicMedia).setAudioAttributes(AudioAttributes.DEFAULT,true)
-                                                                .build()
+
+            .build()
+        player.repeatMode = Player.REPEAT_MODE_ALL
         player.addAnalyticsListener(EventLogger())
+
         player.addListener(object :Player.Listener {
 
             override fun onPlayerError(error: PlaybackException) {
@@ -112,6 +115,7 @@ class ServicMedia: MediaSessionService() {
                 Toast.makeText(this@ServicMedia,"Erro ao reprodusir  a faixa $nome",Toast.LENGTH_SHORT).show()
             }
         })
+
 
 
 
@@ -179,11 +183,11 @@ class ServicMedia: MediaSessionService() {
 
 @RequiresApi(Build.VERSION_CODES.O)
 private fun criarNotificacao(){
-    val canal =NotificationChannel("1","serviceMedia",NotificationManager.IMPORTANCE_HIGH).apply {
-        description="notificacao do servico de media"
+    val canal =NotificationChannel(ObjetoDadosDeNotificao.idCanal,ObjetoDadosDeNotificao.nomeCanal,NotificationManager.IMPORTANCE_HIGH).apply {
+        description=ObjetoDadosDeNotificao.descricaoCanal
     }
     val notificationManager=(getSystemService(NotificationManager::class.java) as NotificationManager).createNotificationChannel(canal)
-    notification=NotificationCompat.Builder(this,"1").setContentTitle("servico de media")
+    notification=NotificationCompat.Builder(this,"1").setContentTitle("serviço de media")
                                                                     .setContentText("rodando")
                                                                      .setSmallIcon(R.drawable.baseline_music_note_24_darkpink).build()
 }
@@ -194,12 +198,18 @@ private fun criarNotificacao(){
             Log.d("service","muudarPlyList: $plyListStado")
         }
     }
+ private fun camcelarNotificacao(){
+     val notificationManager=getSystemService(NotificationManager::class.java) as NotificationManager
+        notificationManager.cancel(ObjetoDadosDeNotificao.idNotificao)
+ }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
         Log.i("service","onDestroy")
         if(mediaSession!=null)
         mediaSession.apply {
             this!!.player.release()
+            this!!.release()
           }
         mediaSession=null
         if(helperPalyer!=null){
@@ -214,6 +224,10 @@ private fun criarNotificacao(){
             helperNotificacao!!.finalizar()
             helperNotificacao=null
         }
+
+        camcelarNotificacao()
+
+
 
         job.cancel()
 

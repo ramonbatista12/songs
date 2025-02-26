@@ -98,6 +98,8 @@ fun Navgrafic(navController: NavHostController,
               acaoCaregarPlyer:(List<MediaItem>,indice:Int)->Unit,
               acaoAvisoBigplyer:()->Unit,acaoMudaBackgraundScafolld:(Color)->Unit={},
               acaoMudarcorBackgrandEBarraPermanent:(backgrand:Color,corBarra:Color)->Unit={b,c->},
+               acaOcultarBaras:()->Unit={},
+              acaOnMostraBaras:()->Unit={},
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
@@ -188,7 +190,9 @@ NavHost(navController = navController,
                 vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
           vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)), acaoDeVoutar = {navController.popBackStack()}
            , acaMudarBackgraudScafolld = {acaoMudaBackgraundScafolld(it)},
-          acaoMudarCorScafollEBArraPermanente = acaoMudarcorBackgrandEBarraPermanent)
+          acaoMudarCorScafollEBArraPermanente = acaoMudarcorBackgrandEBarraPermanent,
+          acaoOcultarBaras = acaOcultarBaras,
+          acaoMostraBaras = acaOnMostraBaras)
 
   }
 

@@ -82,6 +82,13 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
                 modoRepeticao.value=it
             }
         }
+
+        scopoCorotina.launch {
+            fluxoCaregando().collect{
+                caregando.value=it
+            }
+        }
+
     }
 
 
@@ -137,6 +144,13 @@ private fun fluxoModoRepeticao()= flow<Int> {
      emit(mediaSession.player.repeatMode)
     delay(1000)}
 
+}
+
+private fun fluxoCaregando()= flow<Boolean> {
+    while (true){
+        emit(mediaSession.player.isLoading)
+        delay(1000)
+    }
 }
 
    override fun finalizar(){
