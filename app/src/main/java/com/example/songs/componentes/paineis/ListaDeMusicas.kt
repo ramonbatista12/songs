@@ -9,6 +9,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -56,6 +58,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /*
 * responsavel pro esibir a lista de musicas em si
 * */
+@OptIn(ExperimentalLayoutApi::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ListaDemusicas(modifier: Modifier = Modifier,
@@ -73,6 +76,14 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
       val gradcels=medicoes.gradCell(windowSizeClass)
       LazyVerticalGrid(columns = GridCells.Fixed(gradcels),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
+
+          item {
+              FlowRow {
+
+              }
+          }
+
+
            when(val r =lista.value){
 
                is ListaMusicas.Lista->{
@@ -99,7 +110,7 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
 
 
                    }else{
-                      LoadingListaMusicasColunas()
+                      LoadingListaMusicas()
                    }
                    }
                }

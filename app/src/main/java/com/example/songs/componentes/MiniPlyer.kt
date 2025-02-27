@@ -9,6 +9,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -106,12 +108,18 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 
 
-
-    Row(modifier = modifier.clip(RoundedCornerShape(15.dp)).background(corDoBackgrand.value),verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.clip(RoundedCornerShape(15.dp))
+                           .border(width = 0.5.dp,
+                                   brush =SolidColor(textColorSquemas) ,
+                                   shape = RoundedCornerShape(15.dp))
+                           .background(corDoBackgrand.value),
+        verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
         Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
              contentDescription = null,
-             modifier=Modifier.size(50.dp))
+             modifier=Modifier.size(50.dp)
+                              .clip(RoundedCornerShape(15.dp))
+                              .border(width = 0.5.dp,brush = SolidColor(corTexto.value),shape = RoundedCornerShape(15.dp)))
        else{
            val _bitMap=bitmap.value!!.asImageBitmap()
            Image(bitmap = _bitMap,
@@ -172,6 +180,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
 
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
+    val texttColorSchemas =MaterialTheme.colorScheme.onBackground
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -192,11 +201,19 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
 
   with(sharedTransitionScope){
 
-    Row(modifier = modifier.clip(RoundedCornerShape(15.dp)).background(backgraud),verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.clip(RoundedCornerShape(15.dp))
+                           .border(width =0.5.dp,
+                                   brush =SolidColor(texttColorSchemas) ,
+                                   shape = RoundedCornerShape(15.dp))
+                           .background(backgraud),
+        verticalAlignment = Alignment.CenterVertically) {
         if (bitmap.value==null)
         Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
               contentDescription = null, tint = corDotexto,
-              modifier=Modifier.size(50.dp).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+              modifier=Modifier.size(50.dp)
+                               .clip(RoundedCornerShape(15.dp))
+                               .border(width = 0.5.dp,brush = SolidColor(corDotexto),shape = RoundedCornerShape(15.dp))
+                               .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
         else{
             val _bitMap=bitmap.value!!.asImageBitmap()
             Image(bitmap= _bitMap,
