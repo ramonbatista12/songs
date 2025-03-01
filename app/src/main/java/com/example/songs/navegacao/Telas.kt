@@ -13,18 +13,29 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.EaseInBack
+import androidx.compose.animation.core.EaseInCubic
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -118,9 +129,11 @@ fun Navgrafic(navController: NavHostController,
 NavHost(navController = navController,
         startDestination = DestinosDENavegacao.DestinosDeTela.Todas,
         modifier=modifier,
-        exitTransition = {
-            fadeOut(animationSpec =  tween(durationMillis = 100))+ slideOutVertically(animationSpec = tween(durationMillis = 100))
-         }){
+        exitTransition = {//EaseOutBack
+            fadeOut(animationSpec = snap(delayMillis = 100)  )/*+ slideOutVertically(animationSpec = tween(durationMillis = 100, delayMillis = 200, easing = EaseOutCubic))*/
+         },
+         enterTransition = {
+              fadeIn(animationSpec = snap(delayMillis = 100)) }){
   composable<DestinosDENavegacao.DestinosDeTela.Todas>{
       val backgrand = MaterialTheme.colorScheme.background
       val corBarra= MaterialTheme.colorScheme.onBackground

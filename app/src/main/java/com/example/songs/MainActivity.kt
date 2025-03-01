@@ -19,9 +19,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -288,7 +294,8 @@ class MainActivity : ComponentActivity() {
                                                                  }
                                                      else{}
                                                                   },//
-                                                 modifier = Modifier.fillMaxSize().padding(paddingValues = it)) {
+                                                 modifier = Modifier.fillMaxSize().padding(paddingValues = if(!bigPlyer.value) it else PaddingValues(0.dp
+                                                 ))) {
                             Box(modifier = Modifier.fillMaxSize()) {
                                 Navgrafic( navController = navController,
                                            windowSizeClass = windowsizeclass,
@@ -315,7 +322,8 @@ class MainActivity : ComponentActivity() {
                                     acaOnMostraBaras = {windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())})
 
 
-                                AnimatedVisibility(visible =emreproducao.value,modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp)) {
+                                AnimatedVisibility(visible =emreproducao.value,
+                                                   modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp),) {
                                   if(!bigPlyer.value){  DisposableEffect(Unit) {
                                         scop.launch {
                                              transicaoMiniPlyer.targetState=true
