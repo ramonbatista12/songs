@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,6 +60,7 @@ import androidx.compose.material3.SliderState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -77,7 +79,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -262,9 +267,15 @@ fun Plyer(modifier: Modifier=Modifier,
             scop.cancel()
         }
     }
-
+val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+val iconsize=if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 0.7f
+             else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.8f
+             else 0.4f
     with(sharedTransitionScope){
-        Column(modifier = modifier
+        Column(modifier = modifier.onSizeChanged {
+
+            Log.e("largura","largura , altura ${it.width} , ${it.height}")
+        }
             .padding(10.dp)
             .background(color =Color.Transparent),
                horizontalAlignment = Alignment.CenterHorizontally) {
@@ -272,8 +283,9 @@ fun Plyer(modifier: Modifier=Modifier,
             Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
                  contentDescription = null,
                  tint = DarkPink,
-                 modifier = Modifier
-                     .size(250.dp)
+                 modifier = Modifier//.size(iconSize.dp)
+                     .fillMaxWidth(iconsize)
+                     .aspectRatio(1f)
                      .clip(RoundedCornerShape(15.dp))
                      .border(width = 0.5.dp, color = cor, shape = RoundedCornerShape(15.dp))
                      .sharedElement(
@@ -283,8 +295,9 @@ fun Plyer(modifier: Modifier=Modifier,
             else{
                 val _bitmap=bitMap.value!!.asImageBitmap()
                 Image(bitmap=_bitmap,contentDescription = null,
-                    modifier = Modifier
-                        .size(250.dp)
+                    modifier = Modifier//.size(250.dp).fillMaxHeight(0.4f) 0.7
+                        .fillMaxWidth(iconsize)
+                        .aspectRatio(1f)
                         .clip(RoundedCornerShape(15.dp))
                         .sharedElement(
                             rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
@@ -306,7 +319,7 @@ fun Plyer(modifier: Modifier=Modifier,
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
 
-                   Box(modifier=Modifier.fillMaxWidth()) {
+                   Box(modifier=Modifier.fillMaxWidth().fillMaxHeight(0.10f)) {
 
                          Text(text = tempoTotalString.value,
                              color = cor, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart) )
@@ -331,10 +344,10 @@ fun Plyer(modifier: Modifier=Modifier,
                         },
                         track = {SliderDefaults.Track(it,modifier=Modifier.height(5.dp),colors = SliderDefaults.colors(activeTrackColor = cor))},
                          valueRange = 0f..100f,
-                         modifier = Modifier)
+                         modifier = Modifier.fillMaxHeight(0.20f))
                     Spacer(Modifier.padding(10.dp))
 
-                    Row (modifier = Modifier.fillMaxWidth(),horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween){
+                    Row (modifier = Modifier.fillMaxWidth().fillMaxHeight(0.40f),horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween){
                     IconButton({scop.launch { vm.preview() }}) {
                         Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = cor)
                     }
@@ -755,6 +768,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     }
     Box(
         modifier = modifier.fillMaxWidth(0.4f)
+                           .fillMaxHeight(1f)
                            .padding(10.dp)) {
         IconButton (onClick ={
             Log.i("teste icom butom","acao de voutar foi clicada")
@@ -764,15 +778,19 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
         }
 
         Column(Modifier.align(Alignment.TopCenter)) {
-            val iconeSize = medicoes.tamanhoDoIcone(windowSizeClass)
+            val iconeSize = if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 0.3f
+                           else 0.6f
+
+                //medicoes.tamanhoDoIcone(windowSizeClass)
 
             if(bitmap.value==null)
                 Icon(
                     painter = painterResource(R.drawable.baseline_music_note_24),
                     contentDescription = null,
 
-                    modifier = Modifier
-                        .size(iconeSize)
+                    modifier = Modifier//.size(iconeSize)
+                        .fillMaxWidth(iconeSize)
+                        .aspectRatio(1f)
                         .clip(
                             RoundedCornerShape(15.dp)
                         )
@@ -787,14 +805,15 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 val _bitmap=bitmap.value!!.asImageBitmap()
                 Image(bitmap = _bitmap,
                     contentDescription = null ,
-                    modifier = Modifier.size(iconeSize)
+                    modifier = Modifier.fillMaxWidth(iconeSize)
+                        .aspectRatio(1f)
                         .clip(
                             RoundedCornerShape(15.dp)
                         )
 
                         .align(Alignment.CenterHorizontally))
             }
-
+           Spacer(Modifier.padding(10.dp))
             Column(modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
 
                 Text(text = if(metadata.value==null)"Nome da Musica" else metadata.value!!.mediaMetadata.title.toString(),
@@ -812,7 +831,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 Spacer(Modifier.padding(0.4.dp))
                 Column {
 
-                    Box(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.2f)) {
                         Text(text =duracaoString.value, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart), color = corDotexto )
                         //Text("/", fontSize = 8.sp )
                         androidx.compose.animation.AnimatedVisibility(visible =!caregando.value,Modifier.align(Alignment.TopEnd)) {
@@ -836,7 +855,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                         valueRange = 0f..100f,
                         thumb = {SliderDefaults.Thumb(interactionSource=interactionSource, modifier = Modifier.size(10.dp), colors = SliderDefaults.colors(thumbColor = corDotexto))},
                         track = {SliderDefaults.Track(it,
-                                                modifier = Modifier.height(if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 5.dp else 10.dp),
+                                                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.2f),
                                                 colors =SliderDefaults.colors(activeTrackColor =  corDotexto))},
                         
 
@@ -844,7 +863,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                     )
                     Spacer(Modifier.padding(3.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.20f),
                         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
                     ) {
                         IconButton({scope.launch { vm.preview() }}) {
@@ -925,20 +944,23 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
 fun PlayerPreview(){
     SongsTheme {
         Surface {
-        Scaffold(topBar = { BarraSuperio(titulo = "Plyer") }, modifier = Modifier
+        Scaffold(topBar = {  }, modifier = Modifier
             .safeDrawingPadding()
             .safeGesturesPadding()
             .safeContentPadding()) {
 
             val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
             val context= LocalContext.current
-           BigPlayer(modifier = Modifier.padding(it),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
-                MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),
-                acaoAvisoBigplyer = {},
-                vmlista = ViewModelListas(repositorio = RepositorioService(context), estado =  MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)),
-                acaoDeVoutar = { })
+            Box(modifier = Modifier.padding(it).fillMaxSize(1.0f)){
+                BigPlayer(modifier = Modifier.align(Alignment.TopCenter),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
+                    MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),
+                    acaoAvisoBigplyer = {},
+                    vmlista = ViewModelListas(repositorio = RepositorioService(context), estado =  MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)),
+                    acaoDeVoutar = { })
 
-        }
+            }
+            }
+
         }
     }
 
