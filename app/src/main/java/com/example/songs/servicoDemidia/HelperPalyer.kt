@@ -37,6 +37,7 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
     private val modoAleatorio = MutableStateFlow(false)
     private val modoRepeticao = MutableStateFlow(0)
     private val emplyer = MutableStateFlow(false)
+    private val indice= MutableStateFlow(0)
     var _tempoTotal = tempoTotal.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), 0L)
     var _tempoDereproducao = tempoDereproducao.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), 0L)
     var _estaReproduzindo = estaReproduzindo.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), false)
@@ -44,6 +45,8 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
     var _metadataAtual = metadataAtual.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), null)
     var _modoAleatorio = modoAleatorio.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), false)
     val _modoRepeticao = modoRepeticao.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), 0)
+    val _emplyer = emplyer.stateIn(scopoCorotina, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), false)
+    val _indice=indice
     init {
         scopoCorotina.launch {
             fluxoTempoDereproducao().collect {
@@ -86,6 +89,12 @@ class HelperPalyerEstados(val mediaSession: MediaSession): AuxilarMediaSecion {
         scopoCorotina.launch {
             fluxoCaregando().collect{
                 caregando.value=it
+            }
+        }
+        scopoCorotina.launch {
+            indixeAtual().collect {
+            indice.value=it
+
             }
         }
 
@@ -152,6 +161,15 @@ private fun fluxoCaregando()= flow<Boolean> {
         delay(1000)
     }
 }
+
+private fun indixeAtual()= flow<Int> {
+    while (true){
+        emit(mediaSession.player.currentMediaItemIndex)
+        delay(1000)
+    }
+    }
+
+
 
    override fun finalizar(){
         job.cancel()

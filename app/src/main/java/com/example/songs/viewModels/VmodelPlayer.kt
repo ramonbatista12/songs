@@ -30,6 +30,7 @@ class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceM
   private val modoAleatorio=MutableStateFlow(false)
   private val tempoTotalString=MutableStateFlow("00:00:00")
   private val modoRepeticao=MutableStateFlow<ModoDerepeticao>(ModoDerepeticao.Desativado)
+  private val indice=MutableStateFlow(0)
   private val scope= viewModelScope
   val _duracao=duracao.asStateFlow()
   val _emreproducao=emreproducao.asStateFlow()
@@ -40,6 +41,7 @@ class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceM
   val _modoRepeticao=modoRepeticao.asStateFlow()
   val _tempoTotalString=tempoTotalString.asStateFlow()
   val _duracaoString=duracaoString.asStateFlow()
+  val _indice=indice.asStateFlow()
   private var job:Job?=null
 
 
@@ -154,6 +156,11 @@ init {
       scope.launch {
           ponteiro.caregando_.collect{
               caregando.value=it
+          }
+      }
+      scope.launch {
+          ponteiro._indice.collect{
+              indice.value=it
           }
       }
 

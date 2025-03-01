@@ -71,20 +71,12 @@ class HelperNotification(val notification: Notification,
       scope.launch(Dispatchers.Default) {
           helperPalyerEstados._estaReproduzindo.collect{
               Log.i("service","helper notificacao scope esta reproduzindo $it")
-              //if(!it) fabricaDeNotificacoes.atualizarNotificacao(false,metaData.value)
-               fabricaDeNotificacoes.atualizarNotificacao(true,metaData.value)
+               fabricaDeNotificacoes.atualizarNotificacao(it,metaData.value)
+
 
           }
            }
-        scope.launch {
-            helperPalyerEstados._tempoDereproducao.map {
-            val f:Float=    (it*100f)/helperPalyerEstados._tempoTotal.value
-                f
-            }.collect{
-                if(helperPalyerEstados._estaReproduzindo.value&&metaData.value!=null)
-                    fabricaDeNotificacoes.atualizarNotificacaoComprogresso(true,metaData.value,it,secaoDeMedia)
-            }
-        }
+
 
 
     }
@@ -128,18 +120,8 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
             notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
                 .setContentText("Reproduzindo ${ if(metaData!=null)dadosTitulo else "sem titulo"}  ")
                 .setContentTitle(dadosTitulo)//.createWithResource()
-
-               .addAction(NotificationCompat.Action.Builder(
-                    R.drawable.baseline_skip_previous_24
-                ,"voltar",criarPeddingIntent(MensagemsBroadcast.preview.mensagem)).build())
-
-                .addAction(NotificationCompat.Action.Builder(
-                    R.drawable.baseline_pause_24
-                ,"parar",criarPeddingIntent(MensagemsBroadcast.pause.mensagem)).build())
-
-                .addAction(NotificationCompat.Action.Builder(
-                    R.drawable.baseline_skip_next_24
-                ,"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
+                .setSilent(true)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setStyle(MediaStyleNotificationHelper.MediaStyle(secaoDemedia))
                 .build()
 
@@ -155,6 +137,8 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
                                                                              .setContentText("Pronto para reprodusir")
                                                                              .setContentTitle("servico de media")
                                                                              .setStyle(NotificationCompat.BigPictureStyle())
+                                                                             .setPriority(NotificationCompat.PRIORITY_MIN)
+                                                                             .setSilent(true)
                                                                              .build()
 
             NotificationManagerCompat.from(contextoDoServico).notify(1,notification)
@@ -167,61 +151,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         return PendingIntent.getBroadcast(contextoDoServico,1,intent,PendingIntent.FLAG_IMMUTABLE)
     }
 
-    @OptIn(UnstableApi::class)
-    fun atualizarNotificacaoComprogresso(reprodusindo:Boolean, metaData:MediaItem?,progresso:Float,secaoDemedia:MediaSession){
-        if(reprodusindo){
-            val dadosTitulo=metaData?.mediaMetadata?.title
-            val progresso=progresso.toInt()
-           notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.ic_launcher_foreground3)
-                .setContentText("Reproduzindo ${if(metaData!=null)dadosTitulo else "sem titulo" }")
-                .setContentTitle(dadosTitulo)//.createWithResource()
 
-                .addAction(NotificationCompat.Action.Builder(
-                    R.drawable.baseline_skip_previous_24
-                 ,"voltar",criarPeddingIntent(MensagemsBroadcast.preview.mensagem)).build())
-
-                .addAction(NotificationCompat.Action.Builder(
-                    R.drawable.baseline_pause_24
-                ,"parar",criarPeddingIntent(MensagemsBroadcast.pause.mensagem)).build())
-
-                .addAction(NotificationCompat.Action.Builder(
-                    R.drawable.baseline_skip_next_24
-                ,"proxima",criarPeddingIntent(MensagemsBroadcast.next.mensagem)).build())
-
-                .setStyle(MediaStyleNotificationHelper.MediaStyle(secaoDemedia))
-               .build()
-               //.setProgress(100,progresso,false)
-
-
-
-            NotificationManagerCompat.from(contextoDoServico).notify(ObjetoDadosDeNotificao.idNotificao,notification)
-
-
-
-        }
-
-        else{
-            notification=NotificationCompat.Builder(contextoDoServico,"1")
-                .setSmallIcon(R.drawable.ic_launcher_foreground3)
-                .setContentText("Pronto para reprodusir")
-                .setContentTitle("Player de Audio")
-                .setStyle(NotificationCompat.BigPictureStyle())
-                .build()
-
-            NotificationManagerCompat.from(contextoDoServico).notify(ObjetoDadosDeNotificao.idNotificao,notification)
-        }
-    }
-}
-/*
-* MensagemsBroadcasts definen o tipo de acao  que cada intent pode posuir
-* pois e nessesario que o sistema de notificacoes identifique qual acao foi pedida
-* e as acoes deven ser padronizadas
-* */
-sealed class MensagemsBroadcast(val mensagem:String){
-    object play: MensagemsBroadcast("play")
-    object pause: MensagemsBroadcast("pause")
-    object next: MensagemsBroadcast("next")
-    object preview: MensagemsBroadcast("preview")
-    object stop: MensagemsBroadcast("stop")
 
 }
+

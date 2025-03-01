@@ -77,11 +77,7 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
       LazyVerticalGrid(columns = GridCells.Fixed(gradcels),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
 
-          item {
-              FlowRow {
 
-              }
-          }
 
 
            when(val r =lista.value){

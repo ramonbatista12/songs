@@ -44,7 +44,7 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
                         acaoNavegarPorId("${item.idDoArtista}")
                     },item)
                 else
-                    ItemsArtistasColuna(modifier= Modifier.clickable {
+                    ItemsArtistas(modifier= Modifier.clickable {
                         acaoNavegarPorId("${item.idDoArtista}")
                     },item)
 

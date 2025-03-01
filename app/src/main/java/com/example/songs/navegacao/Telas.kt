@@ -14,6 +14,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,9 +43,12 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.componentes.ItemDaLista
 import com.example.songs.componentes.ItemsListaColunas
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
@@ -104,10 +113,14 @@ fun Navgrafic(navController: NavHostController,
     val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
     val scope=rememberCoroutineScope()
     val context= LocalActivity.current
+    val altura= LocalConfiguration.current.screenHeightDp
 
 NavHost(navController = navController,
         startDestination = DestinosDENavegacao.DestinosDeTela.Todas,
-        modifier=modifier){
+        modifier=modifier,
+        exitTransition = {
+            fadeOut(animationSpec =  tween(durationMillis = 100))+ slideOutVertically(animationSpec = tween(durationMillis = 100))
+         }){
   composable<DestinosDENavegacao.DestinosDeTela.Todas>{
       val backgrand = MaterialTheme.colorScheme.background
       val corBarra= MaterialTheme.colorScheme.onBackground

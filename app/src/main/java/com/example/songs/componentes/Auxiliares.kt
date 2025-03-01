@@ -13,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.palette.graphics.Palette
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
@@ -134,9 +135,7 @@ class AuxiliarMudancaDeBackGrands{
 
 }
 
-class MedicoesComtrolerPlyerEstendido(){
-    fun tamanhoDoIcone(windowSizeClass: WindowSizeClass) = if (windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 90.dp else 400.dp
-}
+
 
 class MedicoesItemsDeList(){
     fun gradCell(w: WindowSizeClass):Int =     if(w.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 1
@@ -177,6 +176,32 @@ class MovimentoRetorno(){
         }
 
     }
+}
+
+class MedicoesPlyer(){
+    fun larguraImagemPlyerCompoat(windowSizeClass: WindowSizeClass) =
+         if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.6f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+    else 0.4f
+    fun larguraImagemPlyerEspandido(windowSizeClass: WindowSizeClass) =
+         if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.3f
+    else 0.6f
+ /**
+  * valores usados no pLyer estendido
+  * */
+    fun spasamentoImagemTituloPlyerEstendido(windowSizeClass: WindowSizeClass)=
+       if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 2.dp
+    else 10.dp
+
+    fun maxLineTextos(windowSizeClass: WindowSizeClass)=
+        if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 1
+       else 2
+    fun funTSizeTitulo(windowSizeClass: WindowSizeClass)=
+        if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 10.sp
+        else 18.sp
+    fun funTSizeSubtitulo()=14.sp
+
+
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)

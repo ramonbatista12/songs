@@ -57,7 +57,7 @@ fun PlayListId(modifier: Modifier = Modifier,
 
                     }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
                 }else{
-                    ItemsListaColunas(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), item = item)
+                    ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), item = item)
                 }
             }
 

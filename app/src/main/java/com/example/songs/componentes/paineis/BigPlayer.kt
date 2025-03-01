@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -100,7 +101,8 @@ import com.example.songs.R
 import com.example.songs.componentes.AuxiliarMudancaDeBackGrands
 import com.example.songs.componentes.BarraSuperio
 import com.example.songs.componentes.ItemDaLista
-import com.example.songs.componentes.MedicoesComtrolerPlyerEstendido
+
+import com.example.songs.componentes.MedicoesPlyer
 import com.example.songs.componentes.MiniplayerParaTransicao
 import com.example.songs.componentes.MovimentoRetorno
 import com.example.songs.componentes.getMetaData
@@ -113,6 +115,7 @@ import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -247,7 +250,7 @@ fun Plyer(modifier: Modifier=Modifier,
     val context= LocalContext.current
     val scop=rememberCoroutineScope()
     val caregando =vm._caregando.collectAsState()
-    val sliderState= SliderState(value = duracao.value, valueRange = 0f..100f, onValueChangeFinished = {})
+    val medicoes=remember { MedicoesPlyer() }
     LaunchedEffect(mediaItem.value){
         scop.launch(Dispatchers.IO) {
             try {
@@ -268,9 +271,7 @@ fun Plyer(modifier: Modifier=Modifier,
         }
     }
 val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-val iconsize=if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 0.7f
-             else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.8f
-             else 0.4f
+val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
     with(sharedTransitionScope){
         Column(modifier = modifier.onSizeChanged {
 
@@ -575,12 +576,15 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                         Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = DarkPink,modifier=Modifier.size(50.dp))
                                     } }
                                     val  metadata=vm._mediaItemAtual.collectAsState()
-                                    LazyColumn(modifier=Modifier.background(color = backgraudColor).fillMaxWidth().fillMaxHeight()) {
+                                    val indice=vm._indice.collectAsState()
+                                    val listState= rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
+
+                                    LazyColumn(state =  listState,modifier=Modifier.background(color = backgraudColor).fillMaxWidth().fillMaxHeight()) {
 
                                         itemsIndexed(items = lista.value) {indice,item->
                                            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
                                                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                                                   Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = corTexto.value)
+                                                   Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, )
                                                    ItemDaLista(Modifier.clickable {
                                                        vm.seekToItem(indice)
 
@@ -651,6 +655,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
        val textColorSquemas=MaterialTheme.colorScheme.onBackground
        val auxiliar= remember { MovimentoRetorno() }
        val corTexto=remember { mutableStateOf(textColorSquemas) }
+       val indice =vm._indice.collectAsState()
         DisposableEffect(Unit) {
             onDispose {
                 acaoMudarCorScafollEBArraPermanente(backgraudColor,textColorSquemas)
@@ -701,9 +706,12 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
             ) {
                 Text("Playlist", fontFamily = FontFamily.Monospace, color = corTexto.value)
                 Box {
-                    LazyColumn(
-                        Modifier
+                    val listState = rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
+
+                    LazyColumn(state = listState,
+                       modifier =  Modifier
                             .align(Alignment.TopCenter)
+
                             ) {
                         itemsIndexed(items = plyListAtual.value) {indice,item->
                             if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
@@ -730,6 +738,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
 
 
 
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
@@ -749,7 +758,8 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val  modoRepeticao=vm._modoRepeticao.collectAsState()
     val  reproduzindo=vm._emreproducao.collectAsState()
     val  caregando =vm._caregando.collectAsState(false)
-    val medicoes = remember { MedicoesComtrolerPlyerEstendido() }
+    val medicoes =remember { MedicoesPlyer() }
+
     LaunchedEffect(metadata.value) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -778,8 +788,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
         }
 
         Column(Modifier.align(Alignment.TopCenter)) {
-            val iconeSize = if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 0.3f
-                           else 0.6f
+            val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
 
                 //medicoes.tamanhoDoIcone(windowSizeClass)
 
@@ -813,19 +822,20 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
 
                         .align(Alignment.CenterHorizontally))
             }
-           Spacer(Modifier.padding(10.dp))
+           Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
             Column(modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
 
                 Text(text = if(metadata.value==null)"Nome da Musica" else metadata.value!!.mediaMetadata.title.toString(),
                     fontFamily = FontFamily.Monospace,
-                    fontSize = if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 10.sp else 18.sp,
-                    maxLines = if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 1 else 2,
+                    fontSize = medicoes.funTSizeTitulo(windowSizeClass),
+                    maxLines =medicoes.maxLineTextos(windowSizeClass),
                     color = corDotexto,
                     textAlign = TextAlign.Justify)
                 Spacer(Modifier.padding(0.4.dp))
+                if(windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT)
                 Text(text =if (metadata.value==null) "Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
-                    maxLines =if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 1 else 2,
-                    fontSize = if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT)8.sp else 14.sp,
+                    maxLines=medicoes.maxLineTextos(windowSizeClass),
+                    fontSize = medicoes.funTSizeSubtitulo(),
                     color = corDotexto,
                     textAlign = TextAlign.Justify)
                 Spacer(Modifier.padding(0.4.dp))
