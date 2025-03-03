@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -126,7 +127,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                 contentDescription = null,
                modifier=Modifier.size(50.dp).clip(
                RoundedCornerShape(10.dp)
-           ))
+           ), contentScale = ContentScale.FillBounds)
        }
         Spacer(Modifier.padding(3.dp))
         Column {
@@ -220,7 +221,8 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                  contentDescription = null,
                  modifier=Modifier.size(50.dp)
                                   .clip(RoundedCornerShape(10.dp))
-                                  .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+                                  .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope),
+                 contentScale = ContentScale.FillBounds)
 
         }
         Spacer(Modifier.padding(2.dp))

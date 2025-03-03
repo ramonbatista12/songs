@@ -52,6 +52,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -111,7 +113,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
-            RoundedCornerShape(10.dp)).size(80.dp))
+            RoundedCornerShape(10.dp)).size(80.dp), contentScale = ContentScale.FillBounds)
         }
 
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)) {
@@ -153,7 +155,7 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null,acaoNaveg
     LaunchedEffect(Unit){
         scop.launch(Dispatchers.IO) {
             try {
-                val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
+                val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context, height = 900, whidt = 900)
                 imagem.value=bitmap
             }catch (e:Exception){
                 imagem.value=null
@@ -175,7 +177,7 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null,acaoNaveg
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
-                RoundedCornerShape(10.dp)).size(80.dp))
+                RoundedCornerShape(10.dp)).size(80.dp), contentScale = FixedScale(2.0f))
         }
 
         Spacer(Modifier.padding(8.dp))
@@ -215,14 +217,14 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         if (imagem.value==null)
-        Image(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
+        Icon(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
         ).size(80.dp))
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
                 RoundedCornerShape(15.dp)
-            ).size(80.dp))}
+            ).size(80.dp), contentScale = ContentScale.FillBounds)}
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)){
             Spacer(Modifier.padding(8.dp))
             Text(item.nome, maxLines = 2,fontSize = 18.sp, fontFamily = FontFamily.Monospace)
@@ -337,13 +339,17 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,
                           remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando)  } ,
                           remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) },
                           remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) } )
+     val sizes= mutableListOf<Float>()
     LaunchedEffect(Unit) {
         scop.launch(Dispatchers.IO) {
             Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmails ${item?.nome } ${item?.id}")
-          val vms=vm.getTumbmail(item!!.id)
-            if(vms.isEmpty()) PlylistVasia.value=true
+            val listaTumbs=vm.getTumbmail(item!!.id)
+            if(listaTumbs.isEmpty()) {
+                PlylistVasia.value=true
+                return@launch
+            }
             var indice=0
-          vms.forEachIndexed { index, i ->
+          listaTumbs.forEachIndexed { index, i ->
               indice=index
               scop.launch {
               try {
@@ -394,7 +400,7 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,
                         Image(
                             bitmap = _bitmap!!,
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(40.dp), contentScale = ContentScale.FillBounds
                         )
                     }
 

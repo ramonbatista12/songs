@@ -85,6 +85,7 @@ import com.example.songs.viewModels.MainViewModel
 import com.example.songs.viewModels.VmodelPlayer
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
@@ -334,8 +335,18 @@ class MainActivity : ComponentActivity() {
                                     }
                                     Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
                                         scopMain.launch {
-                                            transicaoMiniPlyer.targetState=false
-                                        navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)}
+                                            scopMain.launch {
+                                                val comclusao= scopMain.async {
+
+                                                    viewmodel.mudarBigPlyer()
+                                                    transicaoMiniPlyer.targetState=false
+                                                    windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())
+                                                    delay(200)
+                                                }
+                                                comclusao.await()
+                                                navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)}
+                                            }
+
                                     },
                                     vm = vieModelPlyers,
                                     windoSizeClass = windowsizeclass)

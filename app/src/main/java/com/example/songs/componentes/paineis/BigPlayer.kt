@@ -73,6 +73,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,6 +81,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -140,49 +142,59 @@ fun BigPlayer(modifier: Modifier = Modifier,
               acaoOcultarBaras:()->Unit={},
               acaoMostraBaras:()->Unit={}){
     val context= LocalView.current
+  val scop = rememberCoroutineScope()
+   val acaodevoutar= remember{ mutableStateOf(false)}
+   val decompostomposto= rememberSaveable { mutableStateOf(false) }
 
-   val acaodevoutarPreditivo=remember{ mutableStateOf(false)}
    LaunchedEffect(Unit) {
-       acaoOcultarBaras()
-       acaodevoutarPreditivo.value=false
-       acaoAvisoBigplyer()
+       //acaoOcultarBaras()
+       acaodevoutar.value=false
+       if(decompostomposto.value){
+        acaoAvisoBigplyer()
+       decompostomposto.value=false
+       }
    }
     DisposableEffect(Unit) {
 
         onDispose {
-            acaoMostraBaras()
-            if(!acaodevoutarPreditivo.value)
-            acaoAvisoBigplyer()
+            if(!acaodevoutar.value) {
+               // acaoMostraBaras()
+                acaoAvisoBigplyer()
+                decompostomposto.value=true
+
+            }
+
+
+
+
         }
     }
-val ecalay=remember{ mutableStateOf(1.0f)}
-val ecalax=remember{ mutableStateOf(1.0f)}
-val ofsetx=remember{ mutableStateOf(0f)}
-val offsety=remember{ mutableStateOf(0f)}
-SelecaoDosPlyer(modifier.graphicsLayer {
-            scaleX=ecalax.value
-            scaleY=ecalay.value
-            alpha=ecalax.value
-            translationX=ofsetx.value*100
-            translationY=offsety.value*1000
 
-},
+SelecaoDosPlyer(modifier,
                 windowSizeClass,
                 paddingValues,
                 vm,
                 vmlista,
                 acaoAvisoBigplyer,
                 acaoDeVoutar={
-                    acaodevoutarPreditivo.value=true
-                    acaoAvisoBigplyer()
-                    acaoDeVoutar()},
+                    acaodevoutar.value=true
+                    scop.launch {
+                        acaoMostraBaras()
+                        delay(100)
+                        acaMudarBackgraudScafolld(Color.Unspecified)
+                        delay(100)
+                        acaoAvisoBigplyer()
+                        delay(100)
+                        acaoDeVoutar()
+
+
+                    }
+                  //  acaodevoutarPreditivo.value=trueacaoDeVoutar()
+
+                    },
                 acaMudarBackgraudScafolld=acaMudarBackgraudScafolld,
                 acaoMudarCorScafollEBArraPermanente=acaoMudarCorScafollEBArraPermanente,
                 acaoMudarScala={x,y,ofx,ofy->
-                       ecalax.value=1f-x
-                       ecalay.value=1f-y
-                       offsety.value=ofy
-                       ofsetx.value=ofx
 
                 })
 
@@ -251,6 +263,7 @@ fun Plyer(modifier: Modifier=Modifier,
     val scop=rememberCoroutineScope()
     val caregando =vm._caregando.collectAsState()
     val medicoes=remember { MedicoesPlyer() }
+
     LaunchedEffect(mediaItem.value){
         scop.launch(Dispatchers.IO) {
             try {
@@ -303,7 +316,7 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
                         .sharedElement(
                             rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
                             animatedVisibilityScope
-                        ),)
+                        ), contentScale = ContentScale.FillBounds)
             }
 
             Spacer(Modifier.padding(10.dp))
@@ -820,7 +833,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                             RoundedCornerShape(15.dp)
                         )
 
-                        .align(Alignment.CenterHorizontally))
+                        .align(Alignment.CenterHorizontally), contentScale = ContentScale.FillBounds)
             }
            Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
             Column(modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
@@ -841,7 +854,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 Spacer(Modifier.padding(0.4.dp))
                 Column {
 
-                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.2f)) {
+                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.1f)) {
                         Text(text =duracaoString.value, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart), color = corDotexto )
                         //Text("/", fontSize = 8.sp )
                         androidx.compose.animation.AnimatedVisibility(visible =!caregando.value,Modifier.align(Alignment.TopEnd)) {

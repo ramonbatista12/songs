@@ -130,10 +130,10 @@ NavHost(navController = navController,
         startDestination = DestinosDENavegacao.DestinosDeTela.Todas,
         modifier=modifier,
         exitTransition = {//EaseOutBack
-            fadeOut(animationSpec = snap(delayMillis = 100)  )/*+ slideOutVertically(animationSpec = tween(durationMillis = 100, delayMillis = 200, easing = EaseOutCubic))*/
+            fadeOut(animationSpec = snap()  )/*+ slideOutVertically(animationSpec = tween(durationMillis = 100, delayMillis = 200, easing = EaseOutCubic))*/
          },
          enterTransition = {
-              fadeIn(animationSpec = snap(delayMillis = 100)) }){
+              fadeIn(animationSpec = snap()) }){
   composable<DestinosDENavegacao.DestinosDeTela.Todas>{
       val backgrand = MaterialTheme.colorScheme.background
       val corBarra= MaterialTheme.colorScheme.onBackground
