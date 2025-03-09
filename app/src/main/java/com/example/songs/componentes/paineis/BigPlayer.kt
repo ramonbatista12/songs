@@ -112,6 +112,7 @@ import com.example.songs.repositorio.RepositorioService
 import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.example.songs.ui.theme.DarkPink
 import com.example.songs.ui.theme.SongsTheme
+import com.example.songs.viewModels.ImagemPlyer
 import com.example.songs.viewModels.ModoDerepeticao
 import com.example.songs.viewModels.ViewModelListas
 import com.example.songs.viewModels.VmodelPlayer
@@ -250,7 +251,7 @@ fun Plyer(modifier: Modifier=Modifier,
           cor:Color=MaterialTheme.colorScheme.onBackground,
           acaoDesaidaDoplyer:()->Unit={}){
 
-    val bitMap =remember{ mutableStateOf<Bitmap?>(null)}
+
     val mediaItem=vm._mediaItemAtual.collectAsState()
     val tempoTotal=vm._tempoTotal.collectAsState()
     val reproduzindo=vm._emreproducao .collectAsState()
@@ -259,27 +260,33 @@ fun Plyer(modifier: Modifier=Modifier,
     val duracao=vm._duracao.collectAsState()
     val duracaoString=vm._tempoTotalString.collectAsState()
     val tempoTotalString=vm._duracaoString.collectAsState()
+    val imagem =vm._imagemPlyer.collectAsState()
     val context= LocalContext.current
     val scop=rememberCoroutineScope()
     val caregando =vm._caregando.collectAsState()
     val medicoes=remember { MedicoesPlyer() }
 
     LaunchedEffect(mediaItem.value){
-        scop.launch(Dispatchers.IO) {
+
+        vm.caregarImagePlyer({ uri,id->
             try {
-               bitMap.value= getMetaData(context = context,uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())
-               acaoMudarBackgraud(bitMap.value)
+               val bitMap:Bitmap?= getMetaData(context = context, uri = uri, id = id)
+                acaoMudarBackgraud(bitMap)
+                bitMap
             }catch (e:Exception){
-                bitMap.value=null
+                null
             }
 
-        }
+        },uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())
+
+
+
 
     }
     DisposableEffect(Unit){
         onDispose {
             acaoDesaidaDoplyer()
-            bitMap.value=null
+
             scop.cancel()
         }
     }
@@ -293,31 +300,32 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
             .padding(10.dp)
             .background(color =Color.Transparent),
                horizontalAlignment = Alignment.CenterHorizontally) {
-            if(bitMap.value==null)
-            Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
-                 contentDescription = null,
-                 tint = DarkPink,
-                 modifier = Modifier//.size(iconSize.dp)
-                     .fillMaxWidth(iconsize)
-                     .aspectRatio(1f)
-                     .clip(RoundedCornerShape(15.dp))
-                     .border(width = 0.5.dp, color = cor, shape = RoundedCornerShape(15.dp))
-                     .sharedElement(
-                         rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
-                         animatedVisibilityScope
-                     ),)
-            else{
-                val _bitmap=bitMap.value!!.asImageBitmap()
-                Image(bitmap=_bitmap,contentDescription = null,
-                    modifier = Modifier//.size(250.dp).fillMaxHeight(0.4f) 0.7
-                        .fillMaxWidth(iconsize)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(15.dp))
-                        .sharedElement(
-                            rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
-                            animatedVisibilityScope
-                        ), contentScale = ContentScale.FillBounds)
-            }
+           when(val r=imagem.value){
+               is ImagemPlyer.Vazia->Icon(painter = painterResource(id =r.icone),
+                                          contentDescription = null,
+                                          tint = DarkPink,
+                                          modifier = Modifier//.size(iconSize.dp)
+                                                             .fillMaxWidth(iconsize)
+                                                             .aspectRatio(1f)
+                                                             .clip(RoundedCornerShape(15.dp))
+                                                             .border(width = 0.5.dp, color = cor, shape = RoundedCornerShape(15.dp))
+                                                             .sharedElement(
+                                                                          rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
+                                                                                                     animatedVisibilityScope),)
+               is ImagemPlyer.Imagem->{
+                   val _bitmap=r.imagem.asImageBitmap()
+                   Image(bitmap=_bitmap,
+                         contentDescription = null,
+                         modifier = Modifier//.size(250.dp).fillMaxHeight(0.4f) 0.7
+                                           .fillMaxWidth(iconsize)
+                                           .aspectRatio(1f)
+                                           .clip(RoundedCornerShape(15.dp))
+                                           .sharedElement( rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
+                                                           animatedVisibilityScope),
+                         contentScale = ContentScale.FillBounds)}
+           }
+
+
 
             Spacer(Modifier.padding(10.dp))
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -336,13 +344,13 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
                    Box(modifier=Modifier.fillMaxWidth().fillMaxHeight(0.10f)) {
 
                          Text(text = tempoTotalString.value,
-                             color = cor, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart) )
+                             color = cor, fontSize = 8.sp, modifier = Modifier.align(Alignment.BottomStart) )
                         // Text("/", fontSize = 8.sp, color = cor )
-                       androidx.compose.animation.AnimatedVisibility(visible = !caregando.value,modifier = Modifier.align(Alignment.TopEnd)){
-                           Text(text =duracaoString.value, fontSize = 8.sp, color = cor, modifier = Modifier.align(Alignment.TopEnd)  )
+                       androidx.compose.animation.AnimatedVisibility(visible = !caregando.value,modifier = Modifier.align(Alignment.BottomEnd)){
+                           Text(text =duracaoString.value, fontSize = 8.sp, color = cor, modifier = Modifier.align(Alignment.BottomEnd)  )
                        }
-                        androidx.compose.animation.AnimatedVisibility(visible = caregando.value,modifier = Modifier.align(Alignment.TopEnd)) {
-                            CircularProgressIndicator(modifier = Modifier.size(10.dp).align(Alignment.TopEnd),color = cor)
+                        androidx.compose.animation.AnimatedVisibility(visible = caregando.value,modifier = Modifier.align(Alignment.BottomEnd)) {
+                            CircularProgressIndicator(modifier = Modifier.size(10.dp).align(Alignment.BottomEnd),color = cor)
                         }
                         }
 
@@ -760,7 +768,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                                  acaoMudarBackgraud:suspend (bitmap:Bitmap?)->Unit={},
                                  acaoDeVoutar: () -> Unit={},
                                  corDotexto:Color=MaterialTheme.colorScheme.onBackground){
-    val bitmap= remember { mutableStateOf<Bitmap?>(null) }
+
     val scope= rememberCoroutineScope()
     val context= LocalContext.current
     val duracao=vm._duracao.collectAsState()
@@ -771,21 +779,25 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val  modoRepeticao=vm._modoRepeticao.collectAsState()
     val  reproduzindo=vm._emreproducao.collectAsState()
     val  caregando =vm._caregando.collectAsState(false)
+    val imagem=vm._imagemPlyer.collectAsState()
     val medicoes =remember { MedicoesPlyer() }
 
     LaunchedEffect(metadata.value) {
-        scope.launch(Dispatchers.IO) {
+        vm.caregarImagePlyer({uri, id ->
             try {
-                bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
-                acaoMudarBackgraud(bitmap.value)
+                val  bitmap = getMetaData(context = context, uri = uri, id = id)
+                acaoMudarBackgraud(bitmap)
+                bitmap
             }catch (e:Exception){
-                bitmap.value=null}
-        }
+                null}
+
+        },uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+
 
     }
     DisposableEffect(Unit) {
         onDispose {
-            bitmap.value=null
+
             scope.cancel()
         }
     }
@@ -804,9 +816,8 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
             val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
 
                 //medicoes.tamanhoDoIcone(windowSizeClass)
-
-            if(bitmap.value==null)
-                Icon(
+            when(val r =imagem.value){
+                is ImagemPlyer.Vazia->Icon(
                     painter = painterResource(R.drawable.baseline_music_note_24),
                     contentDescription = null,
 
@@ -823,18 +834,18 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                         )
                         .align(Alignment.CenterHorizontally), tint = DarkPink
                 )
-            else{
-                val _bitmap=bitmap.value!!.asImageBitmap()
-                Image(bitmap = _bitmap,
-                    contentDescription = null ,
-                    modifier = Modifier.fillMaxWidth(iconeSize)
-                        .aspectRatio(1f)
-                        .clip(
-                            RoundedCornerShape(15.dp)
-                        )
+                is ImagemPlyer.Imagem->{ val _bitmap=r.imagem.asImageBitmap()
+                    Image(bitmap = _bitmap,
+                        contentDescription = null ,
+                        modifier = Modifier.fillMaxWidth(iconeSize)
+                            .aspectRatio(1f)
+                            .clip(
+                                RoundedCornerShape(15.dp)
+                            )
 
-                        .align(Alignment.CenterHorizontally), contentScale = ContentScale.FillBounds)
+                            .align(Alignment.CenterHorizontally), contentScale = ContentScale.FillBounds)}
             }
+
            Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
             Column(modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
 

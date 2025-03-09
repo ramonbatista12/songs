@@ -197,6 +197,7 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null,acaoNaveg
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
@@ -219,7 +220,7 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
         if (imagem.value==null)
         Icon(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
-        ).size(80.dp))
+        ).size(80.dp), tint = DarkPink)
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(

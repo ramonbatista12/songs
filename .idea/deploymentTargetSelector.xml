@@ -3,8 +3,8 @@
   <component name="deploymentTargetSelector">
     <selectionStates>
       <SelectionState runConfigName="app">
-        <option name="selectionMode" value="DIALOG" />
-        <DropdownSelection timestamp="2025-03-01T14:03:50.942668700Z">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-03-07T15:35:52.947678Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=8DNNVSHUDE55QO85" />
@@ -29,9 +29,6 @@
       <SelectionState runConfigName="previaLoadingListaMusicas">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="previaLoadingPlylists">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="previaLoadingArtistas">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -47,6 +44,9 @@
         <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="previaDosBottoes">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="ComfigurracoesPreview">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

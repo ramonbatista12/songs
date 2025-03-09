@@ -1,7 +1,9 @@
 package com.example.songs.viewModels
 
+import android.graphics.Bitmap
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.example.songs.R
 import com.example.songs.repositorio.Album
 import com.example.songs.repositorio.Artista
 
@@ -55,4 +57,12 @@ sealed class ModoDerepeticao(val valor:Int){
         }
 
     }
+}
+
+sealed class ImagemPlyer{
+
+    data class Vazia(val icone:Int= R.drawable.baseline_music_note_24_darkpink):ImagemPlyer()
+    data class Imagem(val imagem:Bitmap):ImagemPlyer()
+
+
 }

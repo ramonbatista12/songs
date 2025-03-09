@@ -180,8 +180,8 @@ class MovimentoRetorno(){
 
 class MedicoesPlyer(){
     fun larguraImagemPlyerCompoat(windowSizeClass: WindowSizeClass) =
-         if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.6f
-    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+         if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.7f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.6f
     else 0.4f
     fun larguraImagemPlyerEspandido(windowSizeClass: WindowSizeClass) =
          if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.3f

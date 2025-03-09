@@ -46,6 +46,8 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.songs.R
 import com.example.songs.componentes.paineis.ComponetesCompartilhados
+import com.example.songs.ui.theme.DarkPink
+import com.example.songs.viewModels.ImagemPlyer
 import com.example.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -67,7 +69,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                 else 0.6f
 
     val metadata =vm._mediaItemAtual.collectAsState()
-    val bitmap= remember { mutableStateOf<android.graphics.Bitmap?>(null)  }
+
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val reprodusind=vm._emreproducao.collectAsState()
@@ -75,21 +77,34 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
     val corDoBackgrand = remember { mutableStateOf<Color>(backgraudColorSquemas) }
     val corTexto=remember { mutableStateOf<Color>(Color.Black) }
+    val imagem=vm._imagemPlyer.collectAsState()
     //val cores=remember { mutableStateOf<List<Color>?>(null) }
    // val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
-        scope.launch(Dispatchers.IO) {
+        vm.caregarImagePlyer({uri,id->
             try {
-                bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+               val bitmap= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+                AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap,
+                    backgraudColor=corDoBackgrand,
+                    corTexto  = corTexto,
+                    textColorSquemas = textColorSquemas,
+                    backgraudColorSquemas = backgraudColorSquemas)
+                bitmap
 
             }catch (e:Exception){
                 Log.e("Load tumbmail",e.message.toString())
-                bitmap.value=null}
-            AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap.value,
-                backgraudColor=corDoBackgrand,
-                corTexto  = corTexto,
-                textColorSquemas = textColorSquemas,
-                backgraudColorSquemas = backgraudColorSquemas)
+                AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(null,
+                    backgraudColor=corDoBackgrand,
+                    corTexto  = corTexto,
+                    textColorSquemas = textColorSquemas,
+                    backgraudColorSquemas = backgraudColorSquemas)
+                null
+            }
+
+        },uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+
+        scope.launch(Dispatchers.IO) {
+
 
             }
 
@@ -100,7 +115,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
     DisposableEffect(Unit){
         onDispose {
-            bitmap.value=null
+
             scope.cancel()
         }
     }
@@ -115,20 +130,25 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                                    shape = RoundedCornerShape(15.dp))
                            .background(corDoBackgrand.value),
         verticalAlignment = Alignment.CenterVertically) {
-        if (bitmap.value==null)
-        Image(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
-             contentDescription = null,
-             modifier=Modifier.size(50.dp)
-                              .clip(RoundedCornerShape(15.dp))
-                              .border(width = 0.5.dp,brush = SolidColor(corTexto.value),shape = RoundedCornerShape(15.dp)))
-       else{
-           val _bitMap=bitmap.value!!.asImageBitmap()
-           Image(bitmap = _bitMap,
-                contentDescription = null,
-               modifier=Modifier.size(50.dp).clip(
-               RoundedCornerShape(10.dp)
-           ), contentScale = ContentScale.FillBounds)
-       }
+        when(val r =imagem.value){
+            is ImagemPlyer.Vazia-> Icon(painter = painterResource(id = r.icone),
+                                         contentDescription = null,
+                                          modifier=Modifier.size(50.dp)
+                                                           .clip(RoundedCornerShape(15.dp))
+                                                           .border(width = 0.5.dp,
+                                                                   brush = SolidColor(corTexto.value),
+                                                                   shape = RoundedCornerShape(15.dp)),tint = DarkPink)
+            is ImagemPlyer.Imagem->{
+                val _bitMap=r.imagem.asImageBitmap()
+                Image(bitmap = _bitMap,
+                    contentDescription = null,
+                    modifier=Modifier.size(50.dp).clip(
+                        RoundedCornerShape(10.dp)
+                    ), contentScale = ContentScale.FillBounds)}
+        }
+
+
+
         Spacer(Modifier.padding(3.dp))
         Column {
    Text(text = if(metadata.value==null) text else metadata.value!!.mediaMetadata.title.toString(),
@@ -165,6 +185,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 }
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
@@ -175,27 +196,30 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                             backgraud:Color=MaterialTheme.colorScheme.background ){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
-    val bitmap= remember { mutableStateOf<android.graphics.Bitmap?>(null)  }
+
     val  metadata= vm._mediaItemAtual.collectAsState()
     val reproduzindo=vm._emreproducao.collectAsState()
-
+    val imagem=vm._imagemPlyer.collectAsState()
     val context= LocalContext.current
     val scope= rememberCoroutineScope()
     val texttColorSchemas =MaterialTheme.colorScheme.onBackground
     LaunchedEffect(metadata.value) {
-        scope.launch(Dispatchers.IO) {
+        vm.caregarImagePlyer({uri,id->
             try {
-                bitmap.value= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
-                acaoMudarBackgraud(bitmap.value)
+               val  bitmap= getMetaData(context = context, uri = uri, id = id)
+                acaoMudarBackgraud(bitmap)
+                bitmap
             }catch (e:Exception){
-                bitmap.value=null
+                null
             }
+        },uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
 
-        }
+
+
     }
     DisposableEffect(Unit) {
         onDispose {
-            bitmap.value=null
+
             scope.cancel()
         }
     }
@@ -208,23 +232,24 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                                    shape = RoundedCornerShape(15.dp))
                            .background(backgraud),
         verticalAlignment = Alignment.CenterVertically) {
-        if (bitmap.value==null)
-        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
-              contentDescription = null, tint = corDotexto,
-              modifier=Modifier.size(50.dp)
-                               .clip(RoundedCornerShape(15.dp))
-                               .border(width = 0.5.dp,brush = SolidColor(corDotexto),shape = RoundedCornerShape(15.dp))
-                               .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
-        else{
-            val _bitMap=bitmap.value!!.asImageBitmap()
-            Image(bitmap= _bitMap,
-                 contentDescription = null,
-                 modifier=Modifier.size(50.dp)
-                                  .clip(RoundedCornerShape(10.dp))
-                                  .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope),
-                 contentScale = ContentScale.FillBounds)
-
+        when(val r =imagem.value){
+            is ImagemPlyer.Vazia->Icon(painter = painterResource(id = r.icone),
+                contentDescription = null, tint = DarkPink,
+                modifier=Modifier.size(50.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .border(width = 0.5.dp,brush = SolidColor(corDotexto),shape = RoundedCornerShape(15.dp))
+                    .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
+            is ImagemPlyer.Imagem->{
+                val _bitMap=r.imagem.asImageBitmap()
+                Image(bitmap= _bitMap,
+                    contentDescription = null,
+                    modifier=Modifier.size(50.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope),
+                    contentScale = ContentScale.FillBounds)
+            }
         }
+
         Spacer(Modifier.padding(2.dp))
         Column {
 

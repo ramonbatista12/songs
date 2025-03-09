@@ -1,5 +1,7 @@
 package com.example.songs.viewModels
 
+import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,6 +13,7 @@ import com.example.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -31,6 +34,7 @@ class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceM
   private val tempoTotalString=MutableStateFlow("00:00:00")
   private val modoRepeticao=MutableStateFlow<ModoDerepeticao>(ModoDerepeticao.Desativado)
   private val indice=MutableStateFlow(0)
+  private val imagemPlyer=MutableStateFlow<ImagemPlyer>(ImagemPlyer.Vazia())
   private val scope= viewModelScope
   val _duracao=duracao.asStateFlow()
   val _emreproducao=emreproducao.asStateFlow()
@@ -42,6 +46,7 @@ class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceM
   val _tempoTotalString=tempoTotalString.asStateFlow()
   val _duracaoString=duracaoString.asStateFlow()
   val _indice=indice.asStateFlow()
+  val _imagemPlyer=imagemPlyer.asStateFlow()
   private var job:Job?=null
 
 
@@ -169,12 +174,12 @@ init {
 
    }
 
-  override fun onCleared() {
+   override fun onCleared() {
      if(job!=null) job!!.cancel()
       super.onCleared()
   }
 
-    override fun prepare() {
+   override fun prepare() {
         scope.launch {
             when(val r =estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -191,7 +196,7 @@ init {
         }
     }
 
-    override fun play() {
+   override fun play() {
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -208,7 +213,7 @@ init {
 
     }
 
-    override fun pause() {
+   override fun pause() {
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -224,7 +229,7 @@ init {
 
     }
 
-    override fun stop() {
+   override fun stop() {
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -240,7 +245,7 @@ init {
 
     }
 
-    override fun seekTo(position: Long) {
+   override fun seekTo(position: Long) {
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -256,7 +261,7 @@ init {
 
     }
 
-    override fun seekToItem(position: Int) {
+   override fun seekToItem(position: Int) {
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -268,7 +273,7 @@ init {
         }
     }
 
-    override fun setLista(lista: List<MediaItem>) {
+   override fun setLista(lista: List<MediaItem>) {
         scope.launch {when(val r=estadoService.value){
             is ResultadosConecaoServiceMedia.Conectado->{
                 try {
@@ -282,7 +287,7 @@ init {
 
     }
 
-    override fun setMediaItem(mediaItem: MediaItem) {
+   override fun setMediaItem(mediaItem: MediaItem) {
         scope.launch {
         when(val r=estadoService.value){
             is ResultadosConecaoServiceMedia.Conectado->{
@@ -296,7 +301,7 @@ init {
         }}
     }
 
-    override fun setModoRepeticao(modo: Int) {
+   override fun setModoRepeticao(modo: Int) {
         Log.i("setmod","entrou modo de repeticao pro int $modo")
         scope.launch {
             when(val r=estadoService.value){
@@ -322,7 +327,7 @@ init {
        }
    }
 
-    override fun setModoAleatorio(shuffleModeEnabled: Boolean) {
+   override fun setModoAleatorio(shuffleModeEnabled: Boolean) {
       scope.launch {
           when(val r =estadoService.value) {
               is ResultadosConecaoServiceMedia.Conectado -> {
@@ -337,7 +342,7 @@ init {
       }
     }
 
-    override fun next() {
+   override fun next() {
         scope.launch {
             when(val r= estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -353,7 +358,7 @@ init {
 
     }
 
-    override fun preview() {
+   override fun preview() {
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -369,13 +374,29 @@ init {
 
     }
 
-    fun carregarLista(lista:List<MediaItem>,id:Int){
+   fun carregarLista(lista:List<MediaItem>,id:Int){
         setLista(lista)
 
         seekToItem(id)
         prepare()
 
     }
+
+   fun caregarImagePlyer(funcaodecarregarImagem:suspend (Uri,Long)->Bitmap?,uri: Uri,id:Long){
+       scope.launch(Dispatchers.IO) {
+       val deferred=    scope.async {
+               funcaodecarregarImagem(uri,id)
+           }
+
+      val bitmap = deferred.await()
+       if(bitmap!=null)
+       imagemPlyer.emit(ImagemPlyer.Imagem(bitmap))
+       else
+       imagemPlyer.emit(ImagemPlyer.Vazia())
+       }
+
+   }
+
 
 }
 

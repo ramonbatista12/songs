@@ -77,6 +77,7 @@ class ServicMedia: MediaSessionService() {
     val plyListStados= MutableStateFlow<PlyListStados>(PlyListStados.Todas)
     lateinit var notification: Notification
     val binder=ServicBinder()
+    var equalizador:Equalizador?=null
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         Log.i("service","onGetSession")
         return this.mediaSession
@@ -160,6 +161,7 @@ class ServicMedia: MediaSessionService() {
                                             secaoDeMedia = mediaSession!!)
        val powerManager=getSystemService(POWER_SERVICE) as PowerManager
        val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
+      // equalizador=Equalizador(0,player.audioSessionId)
        wakeLock.acquire()
             serviceIniciado.emit(true)
         }
@@ -226,7 +228,8 @@ private fun criarNotificacao(){
         }
 
         camcelarNotificacao()
-
+     if (equalizador!=null)
+           equalizador!!.finalizar()
 
 
         job.cancel()
