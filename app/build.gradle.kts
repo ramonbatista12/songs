@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.songs"
+    namespace = "com.songsSongs.songs"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.songs"
+        applicationId = "com.songsSongs.songs"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
