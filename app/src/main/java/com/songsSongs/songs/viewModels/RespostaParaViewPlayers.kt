@@ -60,7 +60,7 @@ sealed class ModoDerepeticao(val valor:Int){
 
 sealed class ImagemPlyer{
 
-    data class Vazia(val icone:Int= R.drawable.baseline_music_note_24_darkpink):ImagemPlyer()
+    data class Vazia(val icone:Int= R.drawable.inomeado):ImagemPlyer()
     data class Imagem(val imagem:Bitmap):ImagemPlyer()
 
 

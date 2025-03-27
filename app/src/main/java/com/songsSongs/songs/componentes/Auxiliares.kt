@@ -202,6 +202,8 @@ class MedicoesPlyer(){
     fun funTSizeSubtitulo()=14.sp
 
 
+
+
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)

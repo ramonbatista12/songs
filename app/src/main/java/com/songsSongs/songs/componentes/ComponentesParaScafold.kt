@@ -33,7 +33,8 @@ import com.songsSongs.songs.navegacao.DestinosDENavegacao
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarraSuperio(modifier: Modifier=Modifier,titulo: String){
-    TopAppBar(title = { Text(text = titulo) },modifier = modifier, navigationIcon = { Icon(painter = painterResource(id = R.drawable.baseline_music_note_24), contentDescription = null) })
+    TopAppBar(title = { Text(text = titulo) },modifier = modifier, navigationIcon = {
+        Icon(painter = painterResource(id = R.drawable.inomeado), contentDescription = null) })
 
 }
 

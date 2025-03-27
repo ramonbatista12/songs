@@ -289,7 +289,7 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
                                                              .fillMaxWidth(iconsize)
                                                              .aspectRatio(1f)
                                                              .clip(RoundedCornerShape(15.dp))
-                                                             .border(width = 0.5.dp, color = cor, shape = RoundedCornerShape(15.dp))
+                                                             .border(width = 1.5.dp, color = cor, shape = RoundedCornerShape(15.dp))
                                                              .sharedElement(
                                                                           rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
                                                                                                      animatedVisibilityScope),)
@@ -799,7 +799,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 //medicoes.tamanhoDoIcone(windowSizeClass)
             when(val r =imagem.value){
                 is ImagemPlyer.Vazia->Icon(
-                    painter = painterResource(R.drawable.baseline_music_note_24),
+                    painter = painterResource(r.icone),
                     contentDescription = null,
 
                     modifier = Modifier//.size(iconeSize)
@@ -809,7 +809,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                             RoundedCornerShape(15.dp)
                         )
                         .border(
-                            width = 0.5.dp,
+                            width = 1.5.dp,
                             color = corDotexto,
                             shape = RoundedCornerShape(15.dp)
                         )
@@ -843,8 +843,8 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                     fontSize = medicoes.funTSizeSubtitulo(),
                     color = corDotexto,
                     textAlign = TextAlign.Justify)
-                Spacer(Modifier.padding(0.4.dp))
-                Column {
+                Spacer(Modifier.padding(3.dp))
+                Column(modifier=Modifier.fillMaxHeight()) {
 
                     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.1f)) {
                         Text(text =duracaoString.value, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart), color = corDotexto )

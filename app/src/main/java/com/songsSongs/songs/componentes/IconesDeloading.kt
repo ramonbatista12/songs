@@ -62,7 +62,7 @@ fun LoadingListaMusicas(modifier: Modifier = Modifier){
         end = Offset(cor.value,cor.value)
     )
 
-    Row(modifier = modifier.wrapContentWidth()) {
+    Row(modifier = modifier,verticalAlignment = Alignment.CenterVertically) {
         /*  Box(
               modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp).drawBehind {
                   drawCircle(brush = brushAnimado)
@@ -76,11 +76,11 @@ fun LoadingListaMusicas(modifier: Modifier = Modifier){
         Spacer(Modifier.padding(8.dp))
         Row {
             Column{
-                Box(modifier.width(190.dp).height(20.dp).drawBehind {
+                Box(modifier.width(190.dp).height(10.dp).drawBehind {
                     drawRoundRect(brush = brushAnimado,cornerRadius = CornerRadius(10f,10f))
                 })
                 Spacer(Modifier.padding(8.dp))
-                Box(modifier.width(100.dp).height(20.dp).drawBehind {
+                Box(modifier.width(100.dp).height(10.dp).drawBehind {
                     drawRoundRect( brush = brushAnimado, cornerRadius = CornerRadius(10f,10f))
                 })
             }

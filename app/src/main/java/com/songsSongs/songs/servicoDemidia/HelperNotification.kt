@@ -105,7 +105,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
         if(reprodusindo){
             val dadosTitulo=metaData?.mediaMetadata?.title ?: "sem titulo"
             val a=MediaStyleNotificationHelper.MediaStyle(secaoDemedia).build()
-            notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+            notification=NotificationCompat.Builder(contextoDoServico,"1").setSmallIcon(R.drawable.inomeado)
                 .setContentText("Reproduzindo ${ if(metaData!=null)dadosTitulo else "sem titulo"}  ")
                 .setContentTitle(dadosTitulo)//.createWithResource()
                 .setSilent(true)
@@ -121,7 +121,7 @@ class FabricaDeNotificacoes(var notification: Notification, val contextoDoServic
 
         else{
             notification=NotificationCompat.Builder(contextoDoServico,"1")
-                                                                             .setSmallIcon(R.drawable.baseline_music_note_24_darkpink)
+                                                                             .setSmallIcon(R.drawable.inomeado)
                                                                              .setContentText("Pronto para reprodusir")
                                                                              .setContentTitle("servico de media")
                                                                              .setStyle(NotificationCompat.BigPictureStyle())

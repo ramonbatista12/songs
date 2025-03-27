@@ -9,6 +9,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -125,7 +126,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 
 
     Row(modifier = modifier.clip(RoundedCornerShape(15.dp))
-                           .border(width = 0.5.dp,
+                           .border(width = 1.5.dp,
                                    brush =SolidColor(textColorSquemas) ,
                                    shape = RoundedCornerShape(15.dp))
                            .background(corDoBackgrand.value),
@@ -135,7 +136,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                                          contentDescription = null,
                                           modifier=Modifier.size(50.dp)
                                                            .clip(RoundedCornerShape(15.dp))
-                                                           .border(width = 0.5.dp,
+                                                           .border(width = 1.5.dp,
                                                                    brush = SolidColor(corTexto.value),
                                                                    shape = RoundedCornerShape(15.dp)),tint = DarkPink)
             is ImagemPlyer.Imagem->{
@@ -155,7 +156,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
                  maxLines = 1,
                  color = corTexto.value,
                  fontFamily = FontFamily.Monospace,
-                 modifier = Modifier.fillMaxWidth(largura))
+                 modifier = Modifier.fillMaxWidth(largura).basicMarquee(iterations = 10, initialDelayMillis = 1000, repeatDelayMillis = 1000))
         Text(text = if (metadata.value==null)"Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
                  fontSize = 10.sp,
                  color = corTexto.value,
@@ -227,7 +228,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
   with(sharedTransitionScope){
 
     Row(modifier = modifier.clip(RoundedCornerShape(15.dp))
-                           .border(width =0.5.dp,
+                           .border(width =1.5.dp,
                                    brush =SolidColor(texttColorSchemas) ,
                                    shape = RoundedCornerShape(15.dp))
                            .background(backgraud),
@@ -237,7 +238,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                 contentDescription = null, tint = DarkPink,
                 modifier=Modifier.size(50.dp)
                     .clip(RoundedCornerShape(15.dp))
-                    .border(width = 0.5.dp,brush = SolidColor(corDotexto),shape = RoundedCornerShape(15.dp))
+                    .border(width = 1.5.dp,brush = SolidColor(corDotexto),shape = RoundedCornerShape(15.dp))
                     .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),animatedVisibilityScope))
             is ImagemPlyer.Imagem->{
                 val _bitMap=r.imagem.asImageBitmap()
@@ -257,8 +258,10 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                 maxLines = 1,color = corDotexto,
                 overflow = TextOverflow.Ellipsis,
                 fontFamily = FontFamily.Monospace,
-                modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope)
-                                   .fillMaxWidth(0.5f))
+                modifier = Modifier.fillMaxWidth(0.5f)
+                                   .basicMarquee(iterations = 10, initialDelayMillis = 1000, repeatDelayMillis = 1000)
+                                   .sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope)
+                                   )
             Text(text = if (metadata.value==null) "Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
                 fontSize = 10.sp, color = corDotexto,
                 maxLines = 1,

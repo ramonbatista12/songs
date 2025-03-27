@@ -10,6 +10,7 @@ import android.util.Size
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -104,9 +105,9 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
          verticalAlignment = Alignment.CenterVertically,
          modifier = modifier.padding(10.dp)){
         if(imagem.value==null){
-        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink), contentDescription = null,modifier = Modifier.clip(
+        Icon(painter = painterResource(id = R.drawable.inomeado), contentDescription = null,modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
-        ).size(80.dp), tint = DarkPink)}
+        ).size(80.dp).border(width = 1.5.dp, shape = RoundedCornerShape(15.dp), color = cor), tint = DarkPink)}
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(

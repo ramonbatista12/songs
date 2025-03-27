@@ -33,9 +33,11 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
             estateService.collect{
                 when(it){
                     is ResultadosConecaoServiceMedia.Conectado->{
-                        snackbarHostState.showSnackbar(it.toString())}
+                      //  snackbarHostState.showSnackbar(it.toString())
+                          }
                     is ResultadosConecaoServiceMedia.Desconectado->{
-                        snackbarHostState.showSnackbar(it.toString())}
+                        //snackbarHostState.showSnackbar(it.toString())
+                         }
                     is ResultadosConecaoServiceMedia.Erro->{
                         snackbarHostState.showSnackbar(it.toString())}
 

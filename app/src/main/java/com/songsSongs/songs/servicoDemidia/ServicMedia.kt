@@ -121,7 +121,7 @@ class ServicMedia: MediaSessionService() {
                                             val arrayStrings = uri.toString().split("/")
                                             val id = arrayStrings[arrayStrings.size-1].split(".")[0]
                                             val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,200,200)
-                                            bitmap ?: this@ServicMedia.getDrawable(R.drawable.baseline_music_note_24_darkpink)?.toBitmap(200,200,null)
+                                            bitmap ?: this@ServicMedia.getDrawable(R.drawable.inomeado)?.toBitmap(200,200,null)
                                          })
                                         return future
                                       }
