@@ -89,6 +89,8 @@ android {
     implementation("androidx.room:room-runtime:$room")
     implementation("androidx.room:room-ktx:$room")
     ksp("androidx.room:room-compiler:2.6.1")
+    //ads
+    implementation("com.google.android.gms:play-services-ads:24.1.0")
     //teste
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

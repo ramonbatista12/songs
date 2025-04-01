@@ -84,7 +84,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     LaunchedEffect(metadata.value) {
         vm.caregarImagePlyer({uri,id->
             try {
-               val bitmap= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+               val bitmap= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong(), height = 400, whidt = 400)
                 AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap,
                     backgraudColor=corDoBackgrand,
                     corTexto  = corTexto,
@@ -207,7 +207,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
     LaunchedEffect(metadata.value) {
         vm.caregarImagePlyer({uri,id->
             try {
-               val  bitmap= getMetaData(context = context, uri = uri, id = id)
+               val  bitmap= getMetaData(context = context, uri = uri, id = id, height = 400, whidt = 400)
                 acaoMudarBackgraud(bitmap)
                 bitmap
             }catch (e:Exception){

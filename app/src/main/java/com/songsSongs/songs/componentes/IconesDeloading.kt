@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,10 +69,10 @@ fun LoadingListaMusicas(modifier: Modifier = Modifier){
                   drawCircle(brush = brushAnimado)
 
               })*/
-        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
+        Icon(painter = painterResource(id = R.drawable.inomeado),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp),
-            tint = DarkPink
+             tint = DarkPink
         )
         Spacer(Modifier.padding(8.dp))
         Row {
@@ -110,7 +111,7 @@ fun LoadingListaMusicasColunas(modifier: Modifier=Modifier){
         end =Offset(cor.value,cor.value)
     )
     Column(modifier = modifier.wrapContentWidth()) {
-        Icon(painter = painterResource(id = R.drawable.baseline_music_note_24),
+        Icon(painter = painterResource(id = R.drawable.inomeado),
             contentDescription = null,
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).size(80.dp), tint = DarkPink)
 

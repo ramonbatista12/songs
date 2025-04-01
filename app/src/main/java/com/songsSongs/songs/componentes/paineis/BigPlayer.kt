@@ -251,7 +251,7 @@ fun Plyer(modifier: Modifier=Modifier,
 
         vm.caregarImagePlyer({ uri,id->
             try {
-               val bitMap:Bitmap?= getMetaData(context = context, uri = uri, id = id)
+               val bitMap:Bitmap?= getMetaData(context = context, uri = uri, id = id, height = 400, whidt =  400)
                 acaoMudarBackgraud(bitMap)
                 bitMap
             }catch (e:Exception){
@@ -766,7 +766,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     LaunchedEffect(metadata.value) {
         vm.caregarImagePlyer({uri, id ->
             try {
-                val  bitmap = getMetaData(context = context, uri = uri, id = id)
+                val  bitmap = getMetaData(context = context, uri = uri, id = id, whidt = 400, height = 400)
                 acaoMudarBackgraud(bitmap)
                 bitmap
             }catch (e:Exception){

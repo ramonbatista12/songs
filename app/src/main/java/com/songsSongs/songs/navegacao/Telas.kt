@@ -166,10 +166,11 @@ NavHost(navController = navController,
 
       BigPlayer(windowSizeClass = windowSizeClass,
           modifier = Modifier,
-                paddingValues = paddingValues,
-                vm = vm,acaoAvisoBigplyer = acaoAvisoBigplyer,
-          vmlista =viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)), acaoDeVoutar = {navController.popBackStack()}
-           , acaMudarBackgraudScafolld = {acaoMudaBackgraundScafolld(it)},
+          paddingValues = paddingValues,
+          vm = vm,
+          acaoAvisoBigplyer = acaoAvisoBigplyer,
+          vmlista =vmLista, acaoDeVoutar = {navController.popBackStack()},
+          acaMudarBackgraudScafolld = {acaoMudaBackgraundScafolld(it)},
           acaoMudarCorScafollEBArraPermanente = acaoMudarcorBackgrandEBarraPermanent,
           acaoOcultarBaras = acaOcultarBaras,
           acaoMostraBaras = acaOnMostraBaras)

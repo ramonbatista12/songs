@@ -97,7 +97,6 @@ init {
                duracaoString.value=it
            }
        }
-
        scope.launch {
                val combine= combine(ponteiro._estaReproduzindo,ponteiro.caregando_){caregando,reproduzindo->
                     when{
@@ -155,12 +154,12 @@ init {
                modoRepeticao.value=it
            }
        }
-      scope.launch {
+       scope.launch {
           ponteiro.caregando_.collect{
               caregando.value=it
           }
       }
-      scope.launch {
+       scope.launch {
           ponteiro._indice.collect{
               indice.value=it
           }

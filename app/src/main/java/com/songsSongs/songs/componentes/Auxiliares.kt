@@ -207,7 +207,7 @@ class MedicoesPlyer(){
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend  fun getMetaData(uri: Uri, id: Long, context: Context, whidt:Int=400, height:Int=400):Bitmap?{
+suspend  fun getMetaData(uri: Uri, id: Long, context: Context, whidt:Int=100, height:Int=100):Bitmap?{
     Log.d("Metadata loaad tumb","id de media ${id} , uri ${uri}")
     try {
         val resolver = context.contentResolver

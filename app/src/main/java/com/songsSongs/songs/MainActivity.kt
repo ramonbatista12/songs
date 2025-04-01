@@ -55,6 +55,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.google.android.gms.ads.MobileAds
 import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.Miniplayer
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
     var conecao =
         MutableStateFlow<ResultadosConecaoServiceMedia>(ResultadosConecaoServiceMedia.Desconectado)
     val scop = lifecycleScope
+
     val serviceConection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             Log.i("service", "onServiceConnected")
@@ -127,6 +129,9 @@ class MainActivity : ComponentActivity() {
      enableEdgeToEdge()
         observadorDocicloDeVida = HelperLifeciclerObserver(
             acaoDeConectar = {
+                scop.launch(Dispatchers.IO) {
+                MobileAds.initialize(this@MainActivity)
+            }
                 scop.launch(Dispatchers.Main){
                 when(conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{}
@@ -156,6 +161,7 @@ class MainActivity : ComponentActivity() {
 
             }
                 }
+
                              },
             acaoDeDesconectar = { when(val r =conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{

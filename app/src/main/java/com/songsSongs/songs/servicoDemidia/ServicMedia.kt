@@ -82,6 +82,7 @@ class ServicMedia: MediaSessionService() {
             .build()
         player.repeatMode = Player.REPEAT_MODE_ALL
         player.addAnalyticsListener(EventLogger())
+        player.setHandleAudioBecomingNoisy(true)
 
         player.addListener(object :Player.Listener {
 

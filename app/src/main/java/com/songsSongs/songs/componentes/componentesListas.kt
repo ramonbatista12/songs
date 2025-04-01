@@ -89,7 +89,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
         scop.launch(Dispatchers.IO) {
             Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item?.mediaMetadata?.title } ${item?.mediaId}")
             try {
-                val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
+              val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
                 imagem.value=bitmap
             }catch (e:Exception){
                 imagem.value=null
@@ -100,7 +100,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
     DisposableEffect(Unit) {
         onDispose {
             imagem.value=null
-             scop.cancel()} }
+             } }
     Row (horizontalArrangement = Arrangement.SpaceBetween ,
          verticalAlignment = Alignment.CenterVertically,
          modifier = modifier.padding(10.dp)){
@@ -216,9 +216,11 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         if (imagem.value==null)
-        Icon(painter = painterResource(id = R.drawable.baseline_album_24), contentDescription = null,modifier = Modifier.clip(
+        Icon(painter = painterResource(id = R.drawable.baseline_album_24),
+             contentDescription = null,
+            modifier = Modifier.clip(
             RoundedCornerShape(15.dp)
-        ).size(80.dp), tint = DarkPink)
+        ).border(width = 1.5.dp, color = MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(15.dp)).size(80.dp), tint = DarkPink)
         else{
             val bitmap=imagem!!.value!!.asImageBitmap()
             Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
@@ -353,7 +355,8 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,
               scop.launch {
               try {
                   delay(1000)
-                  val bitmap=getMetaData(uri = i.uri.toUri(),id = i.idMedia.toLong(),context = context)
+                  val bitmap=getMetaData(uri = i.uri.toUri(),id = i.idMedia.toLong(),context = context, whidt = 25, height = 25
+                  )
                   bitmaps[index].value= if(bitmap==null) EstadosDeCarregamento.okVasio else EstadosDeCarregamento.ok(bitmap)
               }catch (e:Exception){
                   Log.d("corotinas load metadatas plylist","erro ao carregar tumbmail ${e.message}")

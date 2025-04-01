@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -35,6 +37,7 @@ import androidx.media3.common.MediaItem
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.application.AplicationCuston
+import com.songsSongs.songs.componentes.Anuncio
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.ItemDaLista
 import com.songsSongs.songs.componentes.LoadingListaMusicas
@@ -68,7 +71,10 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
             Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
 
 
+          item{
 
+          //   Anuncio(modifier = Modifier, corDoTexto = MaterialTheme.colorScheme.onBackground)
+          }
 
            when(val r =lista.value){
 
@@ -85,6 +91,7 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                    }else{
                        ItemDaLista(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarOpcoes = acaoNavegarOpcoes)
                    }
+
                }
                }
                is ListaMusicas.Vasia->{}
@@ -124,6 +131,8 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
 
 
 }
+
+
 
 
 @RequiresApi(Build.VERSION_CODES.Q)
