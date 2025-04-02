@@ -7,8 +7,11 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -17,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -27,6 +31,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.VideoOptions
 import com.google.android.gms.ads.nativead.AdChoicesView
@@ -51,6 +56,7 @@ fun Anuncio(modifier: Modifier=Modifier.height(100.dp),corDoTexto:Color=Material
     val  larguraColunalogAdmob= with(LocalDensity.current){
         100.dp.toPx()
     }
+    var adnative:NativeAdView? =null
     LaunchedEffect(estadoNativeAd.value) {
      scope.launch(Dispatchers.IO) {
          adRequest= AdRequest.Builder().build()
@@ -81,13 +87,21 @@ fun Anuncio(modifier: Modifier=Modifier.height(100.dp),corDoTexto:Color=Material
      estadoNativeAd.value?.destroy()
 
      }
+     if(adnative!=null){
 
+         adnative!!.destroy()
+     }
+     adnative=null
+     estadoNativeAd.value=null
+     adLoader=null
+     adRequest=null
         }
     }
 
     if(estadoNativeAd.value!=null){
      AndroidView(modifier = modifier.wrapContentSize(),factory = {context->
-      NativeAdView(context).apply {
+
+          adnative=    NativeAdView(context).apply {
      val auxiliarCriarcomponente = AuxiliarCriarcomponente(context,corDoTexto)
      val auxiliarCriarLayouts = AuxiliArCriarLayouts(context)
      auxiliarCriarLayouts.adicionarALinhaPrincipal(auxiliarCriarcomponente.icone)
@@ -115,6 +129,7 @@ fun Anuncio(modifier: Modifier=Modifier.height(100.dp),corDoTexto:Color=Material
 
 
       }
+    adnative!!
      })
     }
 
@@ -235,3 +250,19 @@ class AuxiliArCriarLayouts(context: Context){
 
 @Composable
 fun rememberAdLoader()= remember { mutableStateOf<NativeAd?>(null) }
+
+@Composable
+fun Banner(modifier: Modifier=Modifier){
+
+ AndroidView(modifier=Modifier.clip(RoundedCornerShape(15.dp)).border(1.dp,MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(15.dp)),factory = {
+     AdView(it).apply {
+         this.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
+         this.adUnitId=IdAdmob.BannerId.idTest
+         loadAd(AdRequest.Builder().build())
+     }
+ })
+}
+
+sealed class IdAdmob(val id:String,val idTest:String="ca-app-pub-3940256099942544/6300978111"){
+    object BannerId:IdAdmob( id="ca-app-pub-1950503385379483~1429830843")
+}

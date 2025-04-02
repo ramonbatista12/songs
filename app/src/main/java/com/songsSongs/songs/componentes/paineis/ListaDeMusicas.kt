@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
@@ -38,6 +40,7 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.application.AplicationCuston
 import com.songsSongs.songs.componentes.Anuncio
+import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.ItemDaLista
 import com.songsSongs.songs.componentes.LoadingListaMusicas
@@ -68,13 +71,10 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
     Box(modifier = modifier.fillMaxSize()){
       val gradcels=medicoes.gradCell(windowSizeClass)
       LazyVerticalGrid(columns = GridCells.Fixed(gradcels),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
-            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 20.dp ).wrapContentSize()) {
+            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 40.dp ).wrapContentSize()) {
 
 
-          item{
 
-          //   Anuncio(modifier = Modifier, corDoTexto = MaterialTheme.colorScheme.onBackground)
-          }
 
            when(val r =lista.value){
 
@@ -120,9 +120,10 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
 
 
 
-
-
-
+     // Anuncio(Modifier.align(Alignment.BottomCenter))
+    if(!transicaoMiniPlyer.targetState)
+    Row (modifier = Modifier.align(Alignment.BottomCenter)){
+    Banner() }
     }
 
 

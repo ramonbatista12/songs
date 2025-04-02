@@ -86,6 +86,7 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.R
 import com.songsSongs.songs.componentes.AuxiliarMudancaDeBackGrands
+import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.ItemDaLista
 
 import com.songsSongs.songs.componentes.MedicoesPlyer
@@ -570,7 +571,9 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                           }
                                     )
                                 }
-                                    Spacer(Modifier.padding(0.4.dp))
+                                    Spacer(Modifier.padding(4.dp))
+                                    Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+                                        Banner() }
                                     Row(Modifier.fillMaxWidth(),horizontalArrangement =Arrangement.Center){
                                         IconButton(onClick = {
                                         listaAvberta.value=!listaAvberta.value
@@ -707,6 +710,8 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Playlist", fontFamily = FontFamily.Monospace, color = corTexto.value)
+                Spacer(Modifier.padding(3.dp))
+                Banner()
                 Box {
                     val listState = rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
 
@@ -715,6 +720,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                             .align(Alignment.TopCenter)
 
                             ) {
+
                         itemsIndexed(items = plyListAtual.value) {indice,item->
                             if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
                                 Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){

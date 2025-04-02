@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flow
 class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
     @OptIn(UnstableApi::class)
     override fun getMusics(): Flow<List<MediaItem>> = flow<List<MediaItem>>{
-        if(checarCorotina()) Log.d("TAG", "getMusics: corrotina dentro do contexto IO")
+
         val contentResolver=context.contentResolver
 
         val projeca= arrayOf<String>(
@@ -199,7 +199,7 @@ class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
     }
 
     override fun getMusicasPorAlbum(id: Long): Flow<List<MediaItem>> = flow<List<MediaItem>>{
-        Log.d("TAG", "getMusicasPorAlbum: $id")
+
         val contentResolver=context.contentResolver
         val projecao=  arrayOf<String>(
             MediaStore.Audio.Media.TITLE,

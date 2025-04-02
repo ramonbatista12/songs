@@ -73,7 +73,7 @@ init {
    suspend private fun coleta(ponteiro:HelperPalyerEstados){
        if(job!=null) job!!.cancel()
        job=scope.launch(Dispatchers.Default) {
-        Log.i("corotinas","entrou thread da coleta ${Thread.currentThread().name}")
+
        scope.launch(Dispatchers.Default)  {    ponteiro._tempoTotal.collect{
              tempoTotal.value=it
          } }
@@ -93,7 +93,7 @@ init {
                val  s="${if(horas<10) "0$horas" else horas}:${if(minutos<10) "0$minutos" else minutos}:${if(segundos<10) "0$segundos" else segundos}"
                s
            }.collect{
-               Log.i("coleta","entrou thread do tempo de reproducao ${Thread.currentThread().name}")
+
                duracaoString.value=it
            }
        }
@@ -117,7 +117,7 @@ init {
        scope.launch(Dispatchers.Default) {
 
                ponteiro._metadataAtual.collect{
-                   Log.i("coleta","entrou thread da coleta de metadatas ${Thread.currentThread().name}")
+
                    mediaItemAtual.emit(it)
                }
            }
@@ -298,14 +298,14 @@ init {
     }
 
    override fun setModoRepeticao(modo: Int) {
-        Log.i("setmod","entrou modo de repeticao pro int $modo")
+
         scope.launch {
             when(val r=estadoService.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
                     try {
                         r.setvice.helperPalyerComandes?.setModoRepeticao(modo)
                     }catch (e:Exception){
-                        Log.e("setmod",e.message.toString())
+
                     }}
                 else->{}
             }

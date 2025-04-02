@@ -4,6 +4,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.ItemsArtistas
 import com.songsSongs.songs.viewModels.ViewModelListas
 
@@ -31,7 +33,7 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
     val medicoes =remember { com.songsSongs.songs.componentes.MedicoesItemsDeList() }
     Box(modifier = modifier.fillMaxSize()){
 
-        LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
+        LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 45.dp),
             columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
             horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
             itemsIndexed(items = listaDeArtistas.value){indice,item->
@@ -48,6 +50,10 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
 
         }
 
+         if(!transicaoMiniPlyer.targetState)
+        Row(Modifier.align(Alignment.BottomCenter)) {
+            Banner()
+        }
 
     }
 }

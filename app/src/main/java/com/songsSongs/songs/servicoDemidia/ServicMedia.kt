@@ -32,6 +32,7 @@ import androidx.media3.session.MediaSessionService
 import com.songsSongs.songs.R
 import com.songsSongs.songs.componentes.getMetaData2
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +55,7 @@ class ServicMedia: MediaSessionService() {
     var _serviceIniciado=serviceIniciado.asStateFlow()
     val plyListStados= MutableStateFlow<PlyListStados>(PlyListStados.Todas)
     lateinit var notification: Notification
+    var exeuctor:ListeningExecutorService? = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
     val binder=ServicBinder()
     var equalizador:Equalizador?=null
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -108,21 +110,20 @@ class ServicMedia: MediaSessionService() {
                                       }
 
                                       override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> {
-                                          val exeuctor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
-                                          val future=exeuctor.submit(Callable{
+
+                                          val future=exeuctor?.submit(Callable{
                                               BitmapFactory.decodeByteArray(data,0,data.size)
                                           })
-                                          return future
+                                          return future!!
 
                                       }
 
                                       override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> {
-                                         val service=MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
-                                         val future:ListenableFuture<Bitmap> = service.submit ( Callable{
+                                         val future:ListenableFuture<Bitmap> = exeuctor!!.submit ( Callable{
                                             val arrayStrings = uri.toString().split("/")
                                             val id = arrayStrings[arrayStrings.size-1].split(".")[0]
-                                            val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,200,200)
-                                            bitmap ?: this@ServicMedia.getDrawable(R.drawable.inomeado)?.toBitmap(200,200,null)
+                                            val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,100,100)
+                                            bitmap ?: this@ServicMedia.getDrawable(R.drawable.inomeado)?.toBitmap(100,100,null)
                                          })
                                         return future
                                       }
@@ -174,9 +175,9 @@ private fun criarNotificacao(){
 }
     fun muudarPlyList(plyListStado: PlyListStados){
         scope.launch {
-           Log.d("estado","estado ${plyListStado.toString()}")
+
            plyListStados.emit(plyListStado)
-            Log.d("service","muudarPlyList: $plyListStado")
+
         }
     }
  private fun camcelarNotificacao(){
@@ -210,7 +211,9 @@ private fun criarNotificacao(){
      if (equalizador!=null)
            equalizador!!.finalizar()
 
-
+     if(exeuctor!=null)
+          exeuctor?.shutdown()
+     exeuctor=null
         job.cancel()
 
         super.onDestroy()

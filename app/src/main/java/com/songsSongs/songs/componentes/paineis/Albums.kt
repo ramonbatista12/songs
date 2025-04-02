@@ -5,6 +5,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.ItemsAlbums
 import com.songsSongs.songs.componentes.LoadingAlbumsColuna
 import com.songsSongs.songs.componentes.LoadingListaAlbums
@@ -37,7 +39,7 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
   val listaAlbun =vm.albums.collectAsState(initial = ListaAlbums.caregando)
   Box(modifier = modifier.fillMaxSize()){
       val medicoes=remember { MedicoesItemsDeList() }
-      LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 20.dp),
+      LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 45.dp),
                        columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
                        horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
           when(val a=listaAlbun.value){
@@ -72,7 +74,9 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
       }
 
       }
-
+if(!transicaoMiniPlyer.targetState)
+    Row (modifier = Modifier.align(Alignment.BottomCenter)){
+        Banner() }
 
   }
 }

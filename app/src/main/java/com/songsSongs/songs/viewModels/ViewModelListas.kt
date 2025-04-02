@@ -37,14 +37,14 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
 
        delay(2000)
        if(it.isEmpty()){
-           Log.d("TAG vm", "listas: ${it.size}")
+
            ListaMusicas.Vasia}
        else if(it.isNotEmpty()){
-           Log.d("TAG vm", "listas: ${it.size}")
+
            ListaMusicas.Lista(it)
        }
 
-       else {Log.d("TAG vm", "caregando")
+       else {
 
            ListaMusicas.caregando}
 
@@ -91,7 +91,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
                     job=scope.launch {
                         scope.launch {
                             r.setvice.plyListStados.collect{
-                                Log.d("estado","${it.toString()}")
+
                                 estadoPlylist.value=it
                             }
                         }
@@ -118,7 +118,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
     fun flowArtistaId(id:Long)=repositorio.getMusicasPorArtista(id).flowOn(Dispatchers.IO)
     fun flowPlaylistId(id:Long)=repositorio.mediaItemsDaPlylist(id).flowOn(Dispatchers.IO).map {
         it.map {
-            Log.d("media item map ","${it.idMedia},${it.uri},${it.artista}")
+
             MediaItem.Builder().setMediaId(it.idMedia)
                                .setUri(it.uri).setMediaMetadata(MediaMetadata.Builder().setArtworkUri(Uri.parse(it.uri))
                                                                                        .setTitle(it.titulo)
@@ -145,7 +145,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
            when(val e=estado.value){
 
                is ResultadosConecaoServiceMedia.Conectado->{
-                   Log.d("vmLista","mudarPlylist: $plyListStado")
+
                    e.setvice.muudarPlyList(plyListStado)
                }
                else->{}
@@ -167,7 +167,7 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
 
     fun adicionarMusicaNaPlyList(m: MediaItem,idPlylist:Long,acaoDecomclusao: () -> Unit={}){
         scope.launch(Dispatchers.IO) {
-            Log.d("mediaItem","${m.mediaMetadata.title.toString()}")
+
             repositorio.adicionarAplyList(idPlylist,m)
         }.invokeOnCompletion {
             scope.launch(Dispatchers.Main) {

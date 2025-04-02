@@ -64,11 +64,11 @@ class ViewModelPlyList(val estado: MutableStateFlow<ResultadosConecaoServiceMedi
                             }
                         }
                         is PlyListStados.Playlist-> {
-                            Log.d("ViewModelPlyList", "ViewModelPlyList: ${it.playlistId}")
+
                             if(job!=null) job?.cancel()
                             job=scop.launch {
                                 repositorio.mediaItemsDaPlylist(it.playlistId).catch {
-                                    Log.d("ViewModelPlyList", "ViewModelPlyList: ${it.message}")
+
                                 }.collect{
                                     val lista=it.map {
                                         MediaItem.Builder().setMediaId(it.idMedia)

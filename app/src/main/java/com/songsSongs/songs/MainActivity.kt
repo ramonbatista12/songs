@@ -52,10 +52,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.Miniplayer
@@ -130,7 +132,8 @@ class MainActivity : ComponentActivity() {
         observadorDocicloDeVida = HelperLifeciclerObserver(
             acaoDeConectar = {
                 scop.launch(Dispatchers.IO) {
-                MobileAds.initialize(this@MainActivity)
+              MobileAds.initialize(this@MainActivity)
+
             }
                 scop.launch(Dispatchers.Main){
                 when(conecao.value){
@@ -163,7 +166,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                              },
-            acaoDeDesconectar = { when(val r =conecao.value){
+            acaoDeDesconectar ={
+
+                when(val r =conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
                     try {
 
@@ -250,16 +255,24 @@ class MainActivity : ComponentActivity() {
                     Scaffold(topBar = { AnimatedVisibility(visible = !bigPlyer.value){BarraSuperio(titulo = "Songs") } },
                              bottomBar = {
                                  if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                                   AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} })}
+                                   AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {
+                                      // navController.popBackStack()
+                                       navController.navigate(route = it){
+                                       launchSingleTop=true
+                                   }
+                                   })}
 
                             else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
                                      if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
-                                         AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} }) }
+                                         AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {
+                                           //  navController.popBackStack()
+                                             navController.navigate(it){launchSingleTop=true} }) }
 
 
                     },
                         modifier = Modifier
-                            .fillMaxSize().background( corBackGround.value)
+                            .fillMaxSize()
+                            .background(corBackGround.value)
                             .safeDrawingPadding()
                             .safeGesturesPadding()
                             .safeContentPadding()
@@ -284,8 +297,13 @@ class MainActivity : ComponentActivity() {
                                                                  }
                                                      else{}
                                                                   },//
-                                                 modifier = Modifier.fillMaxSize().padding(paddingValues = if(!bigPlyer.value) it else PaddingValues(0.dp
-                                                 ))) {
+                                                 modifier = Modifier
+                                                     .fillMaxSize()
+                                                     .padding(
+                                                         paddingValues = if (!bigPlyer.value) it else PaddingValues(
+                                                             0.dp
+                                                         )
+                                                     )) {
                             Box(modifier = Modifier.fillMaxSize()) {
                                 Navgrafic( navController = navController,
                                            windowSizeClass = windowsizeclass,
@@ -313,7 +331,9 @@ class MainActivity : ComponentActivity() {
 
 
                                 AnimatedVisibility(visible =emreproducao.value,
-                                                   modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp),) {
+                                                   modifier = Modifier
+                                                       .align(Alignment.BottomCenter)
+                                                       .padding(10.dp),) {
                                   if(!bigPlyer.value){  DisposableEffect(Unit) {
                                         scop.launch {
                                              transicaoMiniPlyer.targetState=true
@@ -322,24 +342,30 @@ class MainActivity : ComponentActivity() {
                                             transicaoMiniPlyer.targetState=false
                                         }
                                     }
-                                    Miniplayer(modifier = Modifier.align(Alignment.BottomCenter).clickable {
-                                        scopMain.launch {
+                                    Miniplayer(modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .clickable {
                                             scopMain.launch {
-                                                val comclusao= scopMain.async {
+                                                scopMain.launch {
+                                                    val comclusao = scopMain.async {
 
-                                                    viewmodel.mudarBigPlyer()
-                                                    transicaoMiniPlyer.targetState=false
-                                                    windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())
-                                                    delay(200)
+                                                        viewmodel.mudarBigPlyer()
+                                                        transicaoMiniPlyer.targetState = false
+                                                        windowInsetsControllerCompat.hide(
+                                                            WindowInsetsCompat.Type.systemBars()
+                                                        )
+                                                        delay(200)
+                                                    }
+                                                    comclusao.await()
+                                                    navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)
                                                 }
-                                                comclusao.await()
-                                                navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)}
                                             }
 
-                                    },
+                                        },
                                     vm = vieModelPlyers,
                                     windoSizeClass = windowsizeclass)
                                   }
+
                                 }
                                 val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
                                 if (dialigoLeitura.value) {

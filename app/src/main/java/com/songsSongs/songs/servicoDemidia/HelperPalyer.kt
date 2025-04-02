@@ -229,7 +229,7 @@ class HelperPalyerComandes(val mediaSession: MediaSession): ComandosDemedia,Auxi
 
     override fun setModoRepeticao(modo: Int) {
         scopoCorotina.launch {
-            Log.i("setmod","set mod helpercomandes modo $modo")
+
             mediaSession.player.repeatMode = modo
         }
     }
