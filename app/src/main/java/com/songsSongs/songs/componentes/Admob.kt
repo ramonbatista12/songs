@@ -264,5 +264,6 @@ fun Banner(modifier: Modifier=Modifier){
 }
 
 sealed class IdAdmob(val id:String,val idTest:String="ca-app-pub-3940256099942544/6300978111"){
-    object BannerId:IdAdmob( id="ca-app-pub-1950503385379483~1429830843")
+    object BannerId:IdAdmob( id="ca-app-pub-1950503385379483/4621080322")
+
 }

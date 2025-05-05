@@ -5,7 +5,13 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.songsSongs.songs.repositorio.RepositorioService
+
+
+
 
 class AplicationCuston(): Application(){
 
@@ -14,14 +20,13 @@ class AplicationCuston(): Application(){
    companion object conteiner {
         lateinit var context: Context
         val repositorio by lazy { RepositorioService(context = context) }
+        val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
     }
+
     override fun onCreate() {
         super.onCreate()
-        conteiner.context=applicationContext
-
-
-    }
+        context =applicationContext}
    override fun onTerminate() {
        super.onTerminate()
    }

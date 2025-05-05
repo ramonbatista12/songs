@@ -34,9 +34,11 @@ import com.songsSongs.songs.componentes.getMetaData2
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import com.songsSongs.songs.application.AplicationCuston.conteiner.dataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -141,10 +143,30 @@ class ServicMedia: MediaSessionService() {
                                             secaoDeMedia = mediaSession!!)
        val powerManager=getSystemService(POWER_SERVICE) as PowerManager
        val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
-      // equalizador=Equalizador(0,player.audioSessionId)
+       equalizador=Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId)
+
        wakeLock.acquire()
             serviceIniciado.emit(true)
+
         }
+
+       /* scope.launch(Dispatchers.Default) {
+            val arrsText= arrayOf<Array<Short>>(
+                arrayOf(1000,-1500,-1500),
+                arrayOf(-1500,1000,-1500),
+                arrayOf(0,0,0),
+                arrayOf(1000,100,0)
+                ,arrayOf(-200,0,-200)
+            )
+            var i=1
+            while (true){
+                Log.i("equalizador","equalizando ${arrsText[i].contentToString()} posicao ${i}")
+                equalizador?.equalizar("", arrsText[i])
+                if(i==4)i=0
+                else i++
+                delay(60000)
+            }
+        }*/
 
 
     }

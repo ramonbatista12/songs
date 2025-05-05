@@ -206,6 +206,20 @@ class MedicoesPlyer(){
 
 }
 
+class MedicoesBotoesAuxiliare{
+    fun fracaoDosBotoes(windowSizeClass: WindowSizeClass)=
+         if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 0.35f
+         else 0.3f
+}
+
+class MedicoesPaddingsListasEmPlylists{
+    fun paddings(windowSizeClass: WindowSizeClass)=
+        if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 45.dp
+        else 65.dp
+
+}
+
+
 @RequiresApi(Build.VERSION_CODES.Q)
 suspend  fun getMetaData(uri: Uri, id: Long, context: Context, whidt:Int=100, height:Int=100):Bitmap?{
     Log.d("Metadata loaad tumb","id de media ${id} , uri ${uri}")

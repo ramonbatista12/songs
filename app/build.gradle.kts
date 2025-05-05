@@ -13,10 +13,10 @@ android {
 
     defaultConfig {
         applicationId = "com.songsSongs.songs"
-        minSdk = 24
+        minSdk = 29
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -91,6 +91,8 @@ android {
     ksp("androidx.room:room-compiler:2.6.1")
     //ads
     implementation("com.google.android.gms:play-services-ads:24.1.0")
+    //dataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.4")
     //teste
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

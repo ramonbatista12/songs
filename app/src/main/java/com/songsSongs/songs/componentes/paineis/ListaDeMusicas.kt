@@ -121,9 +121,7 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
 
 
      // Anuncio(Modifier.align(Alignment.BottomCenter))
-    if(!transicaoMiniPlyer.targetState)
-    Row (modifier = Modifier.align(Alignment.BottomCenter)){
-    Banner() }
+
     }
 
 

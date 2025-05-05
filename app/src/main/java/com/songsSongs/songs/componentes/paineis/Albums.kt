@@ -37,7 +37,9 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
                   transicaoMiniPlyer:MutableTransitionState<Boolean>,
                   vm:ViewModelListas,acaoNavegarPorId:(s:String)->Unit){
   val listaAlbun =vm.albums.collectAsState(initial = ListaAlbums.caregando)
-  Box(modifier = modifier.fillMaxSize()){
+  Box(modifier = modifier.fillMaxSize()
+                         .padding(top = if(windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 55.dp
+                                        else 65.dp)){
       val medicoes=remember { MedicoesItemsDeList() }
       LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 45.dp),
                        columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
@@ -74,9 +76,7 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
       }
 
       }
-if(!transicaoMiniPlyer.targetState)
-    Row (modifier = Modifier.align(Alignment.BottomCenter)){
-        Banner() }
+
 
   }
 }

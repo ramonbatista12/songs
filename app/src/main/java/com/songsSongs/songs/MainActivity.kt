@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -58,6 +59,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.Miniplayer
@@ -334,7 +336,9 @@ class MainActivity : ComponentActivity() {
                                                    modifier = Modifier
                                                        .align(Alignment.BottomCenter)
                                                        .padding(10.dp),) {
-                                  if(!bigPlyer.value){  DisposableEffect(Unit) {
+                                  if(!bigPlyer.value)
+                                  {
+                                      DisposableEffect(Unit) {
                                         scop.launch {
                                              transicaoMiniPlyer.targetState=true
                                         }
@@ -366,6 +370,16 @@ class MainActivity : ComponentActivity() {
                                     windoSizeClass = windowsizeclass)
                                   }
 
+
+                                }
+                                AnimatedVisibility(visible = !emreproducao.value,
+                                                   modifier = Modifier.align(Alignment.BottomCenter)
+                                                                      .padding(10.dp
+                                                                      )) {
+                                    if(!transicaoMiniPlyer.targetState)
+                                        Row(Modifier.align(Alignment.BottomCenter)) {
+                                            Banner()
+                                        }
                                 }
                                 val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
                                 if (dialigoLeitura.value) {

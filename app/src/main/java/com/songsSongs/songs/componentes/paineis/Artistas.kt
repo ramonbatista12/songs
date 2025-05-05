@@ -31,7 +31,9 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
 
     val listaDeArtistas=vmodel.artistas.collectAsState()
     val medicoes =remember { com.songsSongs.songs.componentes.MedicoesItemsDeList() }
-    Box(modifier = modifier.fillMaxSize()){
+    Box(modifier = modifier.fillMaxSize()
+                           .padding(top =  if(windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 55.dp
+                                           else 65.dp)){
 
         LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 45.dp),
             columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
@@ -50,10 +52,7 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
 
         }
 
-         if(!transicaoMiniPlyer.targetState)
-        Row(Modifier.align(Alignment.BottomCenter)) {
-            Banner()
-        }
+
 
     }
 }

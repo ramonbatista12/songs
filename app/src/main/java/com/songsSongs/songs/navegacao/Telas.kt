@@ -136,7 +136,16 @@ NavHost(navController = navController,
                     navController.navigate(DestinosDENavegacao.DestinosDeTela.PlyListId(id=id))
                 }
             },
-            acaoNavegarOpcoes = {scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeDialogo.OpcoesPlaylist(id=it ?:0)) }})
+            acaoNavegarOpcoes = {scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeDialogo.OpcoesPlaylist(id=it ?:0)) }},
+            acaoNavegarIdAlbum = {s->
+                Log.d("id artista", "Navgrafic: $s")
+                scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeTela.AlbumId(s.toLong()))}
+            },
+            acaoNavegarIdArtista = {s->
+                Log.d("id artista", "Navgrafic: $s")
+                scope.launch { navController.navigate(DestinosDENavegacao.DestinosDeTela.ArtistaId(s.toLong()))
+                }
+            })
        }}
 
 
