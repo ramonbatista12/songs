@@ -35,6 +35,10 @@ sealed class DestinosDeTela:DestinosDENavegacao(){
 
       @Serializable
       object Configuracoes:DestinosDENavegacao()
+      @Serializable
+      object Equalizador:DestinosDENavegacao()
+      @Serializable
+      object ConfiguracaoDaLista:DestinosDENavegacao()
   }
 
     sealed class DestinosDeDialogo:DestinosDENavegacao(){

@@ -120,6 +120,84 @@ class Equalizador(val prioridade:PrioridadesDaEqualizacao,val idDaSesaoDaMedia:I
         }
     }
 
+
+    fun equalizarGraver(ganhos:Short){
+        scope.launch(Dispatchers.IO) {
+           dataStore?.edit { preferences ->
+               preferences[arrayDeChaves[0]]=ganhos.toString()
+               preferences[arrayDeChaves[1]]=ganhos.toString()
+           }
+            scope.launch {
+                for (i in 0 .. equalizer.numberOfBands-1) {
+
+                    val frequenciaDaBanda = equalizer.getCenterFreq(i.toShort())
+                    if (frequenciaDaBanda <= 230_000) {
+                        Log.i(TAG, "frequencia da banda Media $frequenciaDaBanda")
+                        equalizer.setBandLevel(i.toShort(), (ganhos*1000).toShort())
+                        Log.i(
+                            TAG,
+                            "frequencia da banda Media ${equalizer.getBandLevel(i.toShort())}"
+                        )
+                    } else return@launch
+
+
+                }
+
+            }
+        }
+    }
+    fun equalizarMedios(ganhos:Short){
+        scope.launch(Dispatchers.IO) {
+            dataStore?.edit { preferences ->
+                preferences[arrayDeChaves[0]]=ganhos.toString()
+                preferences[arrayDeChaves[2]]=ganhos.toString()
+            }
+            scope.launch {
+                for (i in 0 .. equalizer.numberOfBands-1) {
+
+                    val frequenciaDaBanda = equalizer.getCenterFreq(i.toShort())
+                    if (frequenciaDaBanda > 230_000&&frequenciaDaBanda<3_600_000) {
+                        Log.i(TAG, "frequencia da banda grave $frequenciaDaBanda")
+                        equalizer.setBandLevel(i.toShort(), (ganhos*1000).toShort())
+                        Log.i(
+                            TAG,
+                            "frequencia da banda grave ${equalizer.getBandLevel(i.toShort())}"
+                        )
+                    } else return@launch
+
+
+                }
+
+            }
+        }
+    }
+
+    fun equalizarAgudos(ganhos:Short){
+        scope.launch(Dispatchers.IO) {
+            dataStore?.edit { preferences ->
+                preferences[arrayDeChaves[0]]=ganhos.toString()
+                preferences[arrayDeChaves[3]]=ganhos.toString()
+            }
+            scope.launch {
+                for (i in 0 .. equalizer.numberOfBands-1) {
+
+                    val frequenciaDaBanda = equalizer.getCenterFreq(i.toShort())
+                    if (frequenciaDaBanda>=3_600_000) {
+                        Log.i(TAG, "frequencia da banda Aguda $frequenciaDaBanda")
+                        equalizer.setBandLevel(i.toShort(), (ganhos*1000).toShort())
+                        Log.i(
+                            TAG,
+                            "frequencia da banda Aguda ${equalizer.getBandLevel(i.toShort())}"
+                        )
+                    } else return@launch
+
+
+                }
+
+            }
+        }
+    }
+
     fun fluxoPresents()= flow<Equalizacao> {
          when (stringTipopresent.value){
              ""->emit(Equalizacao("",graves.value,medios.value,agudos.value))

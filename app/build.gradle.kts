@@ -67,6 +67,7 @@ android {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     //implementacao adptative
+   // implementation("androidx.compose.material3:material3:1.4.0-alpha13")
     implementation("androidx.compose.material3.adaptive:adaptive:1.0.0")
     implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0")
     implementation("androidx.compose.material3.adaptive:adaptive-navigation-android:1.0.0")

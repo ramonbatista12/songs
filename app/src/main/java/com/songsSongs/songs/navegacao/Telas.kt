@@ -38,11 +38,14 @@ import com.songsSongs.songs.componentes.dialog.DialogoOpcoesPlalystOpcoes
 import com.songsSongs.songs.componentes.paineis.AlbumId
 import com.songsSongs.songs.componentes.paineis.ArtistaId
 import com.songsSongs.songs.componentes.paineis.BigPlayer
+import com.songsSongs.songs.componentes.paineis.Comfigurracoes
+import com.songsSongs.songs.componentes.paineis.Equalizador
 import com.songsSongs.songs.componentes.paineis.ListaDeAlbums
 import com.songsSongs.songs.componentes.paineis.ListaDeArtistas
 import com.songsSongs.songs.componentes.paineis.ListaDemusicas
 import com.songsSongs.songs.componentes.paineis.PlayListId
 import com.songsSongs.songs.componentes.paineis.PlyList
+import com.songsSongs.songs.servicoDemidia.Equalizador
 import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.songsSongs.songs.viewModels.FabricaViewModelLista
 import com.songsSongs.songs.viewModels.ViewModelListas
@@ -166,7 +169,9 @@ NavHost(navController = navController,
          }}
 
 
-  composable<DestinosDENavegacao.DestinosDeTela.Configuracoes>{}
+  composable<DestinosDENavegacao.DestinosDeTela.Configuracoes>{
+      Equalizador(m = Modifier)
+  }
 
   //
   composable<DestinosDENavegacao.DestinosDeTela.Player>{
