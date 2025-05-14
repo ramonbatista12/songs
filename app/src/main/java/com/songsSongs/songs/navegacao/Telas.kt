@@ -50,6 +50,7 @@ import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.songsSongs.songs.viewModels.FabricaViewModelLista
 import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
+import com.songsSongs.songs.viewModels.fabricaViewModelComfiguracoes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -170,7 +171,7 @@ NavHost(navController = navController,
 
 
   composable<DestinosDENavegacao.DestinosDeTela.Configuracoes>{
-      Equalizador(m = Modifier)
+      Equalizador(m = Modifier,vm= viewModel(factory = fabricaViewModelComfiguracoes().fabricar(conecao = estadoService)),windowSizeClass)
   }
 
   //

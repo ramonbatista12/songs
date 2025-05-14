@@ -65,3 +65,9 @@ sealed class ImagemPlyer{
 
 
 }
+
+sealed class BandasDeAudio{
+    object caregando:BandasDeAudio()
+    object Vasia:BandasDeAudio()
+    class Lista(val lista:List<String>):BandasDeAudio()
+}

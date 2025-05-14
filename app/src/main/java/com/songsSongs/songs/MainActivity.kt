@@ -372,7 +372,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 }
-                                AnimatedVisibility(visible = !emreproducao.value,
+                                AnimatedVisibility(visible = (!emreproducao.value&&!bigPlyer.value),
                                                    modifier = Modifier.align(Alignment.BottomCenter)
                                                                       .padding(10.dp
                                                                       )) {
@@ -411,8 +411,9 @@ class MainActivity : ComponentActivity() {
                                                     permicaoNotificacao.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                                                 },
                                                 content = { Text("ok") })
-                                        }, dismissButton = {TextButton(onClick = {}, content = { Text(text = "Nao permitir") }) })
+                                        }, dismissButton = {TextButton(onClick = {viewmodel.mudancaSolicitarPermicaoNotificao(false)}, content = { Text(text = "Nao permitir") }) })
                                 }
+
                             }
                         }
 
@@ -423,6 +424,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     fun modoImersivo(context: Context):WindowInsetsControllerCompat{
 
         val windowInsentsControler= WindowInsetsControllerCompat(window,window.decorView)
@@ -476,15 +478,16 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onResume() {
         super.onResume()
-
-
-
-    }
+}
 
     override fun onPause() {
        super.onPause()
     }
 
+    override fun onDestroy() {
+
+        super.onDestroy()
+    }
 }
 
 @Composable

@@ -21,6 +21,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.BitmapLoader
@@ -47,19 +48,19 @@ import java.util.concurrent.Executors
 
 class ServicMedia: MediaSessionService() {
 
-    val job= Job()
-    val scope= CoroutineScope(Dispatchers.Main+job)
-    var mediaSession: MediaSession? = null
+    private val job= Job()
+    private val scope= CoroutineScope(Dispatchers.Main+job)
+    private var mediaSession: MediaSession? = null
     var helperPalyer: HelperPalyerEstados? = null
     var helperPalyerComandes: HelperPalyerComandes? = null
     var helperNotificacao: HelperNotification? = null
     val serviceIniciado= MutableStateFlow(false)
     var _serviceIniciado=serviceIniciado.asStateFlow()
     val plyListStados= MutableStateFlow<PlyListStados>(PlyListStados.Todas)
-    lateinit var notification: Notification
-    var exeuctor:ListeningExecutorService? = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
+    private lateinit var notification: Notification
+    private var exeuctor:ListeningExecutorService? = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
     val binder=ServicBinder()
-    var equalizador:Equalizador?=null
+     var equalizador:Equalizador?=null
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         Log.i("service","onGetSession")
         return this.mediaSession
@@ -143,39 +144,29 @@ class ServicMedia: MediaSessionService() {
                                             secaoDeMedia = mediaSession!!)
        val powerManager=getSystemService(POWER_SERVICE) as PowerManager
        val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
-       equalizador=Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId)
+            val id =player.audioSessionId
+            Log.i("service","audioSessionId $id")
+       equalizador=Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId,this@ServicMedia)
+       player.setAuxEffectInfo(AuxEffectInfo(equalizador!!.equalizer.id,1f))
+      equalizador!!.ativar()
+
+
+       Log.i("Equalizacao","id do equalizador ${equalizador!!.idDoEfeirto()}\n dados do plyer id do plyer ${player.audioSessionId}\n ${mediaSession!!.player.audioAttributes.audioAttributesV21.audioAttributes}\n${ mediaSession!!.player.trackSelectionParameters.maxAudioChannelCount }")
 
        wakeLock.acquire()
             serviceIniciado.emit(true)
 
         }
 
-       /* scope.launch(Dispatchers.Default) {
-            val arrsText= arrayOf<Array<Short>>(
-                arrayOf(1000,-1500,-1500),
-                arrayOf(-1500,1000,-1500),
-                arrayOf(0,0,0),
-                arrayOf(1000,100,0)
-                ,arrayOf(-200,0,-200)
-            )
-            var i=1
-            while (true){
-                Log.i("equalizador","equalizando ${arrsText[i].contentToString()} posicao ${i}")
-                equalizador?.equalizar("", arrsText[i])
-                if(i==4)i=0
-                else i++
-                delay(60000)
-            }
-        }*/
+
 
 
     }
 
     override fun onBind(intent: Intent?): IBinder? {
         super.onBind(intent)
+        return binder}
 
-        return binder
-    }
     inner  class ServicBinder:Binder(){
          fun getService(): ServicMedia {
             return this@ServicMedia
@@ -212,6 +203,7 @@ private fun criarNotificacao(){
         Log.i("service","onDestroy")
         if(mediaSession!=null)
         mediaSession.apply {
+
             this!!.player.release()
             this!!.release()
           }
