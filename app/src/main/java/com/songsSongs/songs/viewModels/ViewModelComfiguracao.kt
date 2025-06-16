@@ -1,10 +1,9 @@
 package com.songsSongs.songs.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.songsSongs.songs.servicoDemidia.Equalizador
+import com.songsSongs.songs.servicoDemidia.Equalizacao.Equalizador
 import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 
 import kotlinx.coroutines.Job
@@ -40,7 +39,7 @@ class ViewModelComfiguracao(val conecao:MutableStateFlow<ResultadosConecaoServic
         }
     }
 
-    suspend fun coletaDosFluxo(ponteiroParaEqualizador:Equalizador?){
+    suspend fun coletaDosFluxo(ponteiroParaEqualizador: Equalizador?){
         job=scop.launch {
              scop.launch {
                 ponteiroParaEqualizador?.bandasDeAudio?.collect{

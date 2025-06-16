@@ -14,6 +14,7 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -46,6 +47,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -69,6 +71,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -275,12 +278,7 @@ fun Plyer(modifier: Modifier=Modifier,
 val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
     with(sharedTransitionScope){
-        Column(modifier = modifier.onSizeChanged {
-
-            Log.e("largura","largura , altura ${it.width} , ${it.height}")
-        }
-            .padding(10.dp)
-            .background(color =Color.Transparent),
+        Column(modifier = modifier.background(color =Color.Transparent).padding(start = 3.dp, end = 3.dp),
                horizontalAlignment = Alignment.CenterHorizontally) {
            when(val r=imagem.value){
                is ImagemPlyer.Vazia->Icon(painter = painterResource(id =r.icone),
@@ -310,16 +308,16 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
 
 
             Spacer(Modifier.padding(10.dp))
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
                 Text(text =if(mediaItem.value==null) "Nome da Musica" else mediaItem.value!!.mediaMetadata.title.toString(),
-                     modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope),
-                    color = cor,
-                      maxLines = 2,
+                     modifier = Modifier.basicMarquee(iterations = 10, initialDelayMillis = 1000, repeatDelayMillis = 1000).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope),
+                     color = cor,
+                      maxLines = 1,
                      fontFamily = FontFamily.Monospace)
                 Spacer(Modifier.padding( 3.dp))
                 Text(text = if (mediaItem.value==null) "Nome do Artista" else mediaItem.value!!.mediaMetadata.artist.toString(), color = cor,
-                     modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
+                     modifier = Modifier.basicMarquee(iterations = 10, initialDelayMillis = 1000, repeatDelayMillis = 1000).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
 
@@ -459,10 +457,10 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier,
               IconButton (onClick ={
               Log.i("teste icom butom","acao de voutar foi clicada")
               acaoDeVoutar()
-          },modifier = Modifier.size(50.dp)) {
+          },modifier = Modifier.size(50.dp).align(Alignment.TopStart)) {
               Icon(painter = painterResource(R.drawable.outline_west_24), contentDescription = null, tint = cor.value, modifier = Modifier)
           }
-              Plyer(Modifier.align( Alignment.TopCenter).background(Color.Transparent),
+              Plyer(Modifier.align( Alignment.TopCenter).background(Color.Transparent).padding(top=10.dp),
                     animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope,
                     vm=vm, acaoMudarBackgraud = acaoMudarBackgraud,cor = cor.value, acaoDesaidaDoplyer = acoDesaidaDoPlyer)
 
@@ -508,26 +506,9 @@ fun PlayerCompat(modifier: Modifier=Modifier,
     val cor = remember { mutableStateOf(Color(backgraudColor.value.toInt())) }
     val corTexto=remember { mutableStateOf(Color.Black) }
     val animacaoFuncao=remember { MovimentoRetorno() }
-    /* PredictiveBackHandler { progress: Flow<BackEventCompat> ->
-        progress.collect { backEvent ->
-            try {
-                animacaoFuncao.animacao(backEvent.progress,
-                                       acaoDeVoutar,
-                                       acaoMudarEscala,
-                                       acaoMudarCor = {acaMudarBackgraudScafolld(backgraudColor)},
-                                       acaoReverterCorbackgrand = {acaMudarBackgraudScafolld(cor.value)})
-             // acaMudarBackgraudScafolld(backgraudColor)
-            } catch (e: CancellationException) {
-                Log.d("progress animacao ","${backEvent.progress} ,camcelado ${e.message}")
-               acaMudarBackgraudScafolld(cor.value)
-                acaoMudarEscala(0f,0f,0f,0f)
-            }
 
 
-        }
-    }*/
-
-        Box(modifier = modifier.fillMaxSize().background(cor.value)) {
+   Box(modifier = modifier.fillMaxSize().background(cor.value)) {
 
         SharedTransitionLayout {
             AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
@@ -536,6 +517,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                     .fillMaxSize()
                     .imePadding()) {
                     SharedTransitionLayout {
+
                         AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
                             if (!targetState) {
                                 ComtroladorPlyer(modifier = Modifier.align(Alignment.TopCenter).background(Color.Transparent),sharedTransitionScope = this@SharedTransitionLayout,
@@ -799,7 +781,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
             Icon(painter = painterResource(R.drawable.outline_west_24), contentDescription = null, tint = corDotexto, modifier = Modifier)
         }
 
-        Column(Modifier.align(Alignment.TopCenter)) {
+        Column(Modifier.align(Alignment.TopCenter).fillMaxHeight()) {
             val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
 
                 //medicoes.tamanhoDoIcone(windowSizeClass)
@@ -834,7 +816,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
             }
 
            Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
-            Column(modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(),horizontalAlignment = Alignment.CenterHorizontally) {
 
                 Text(text = if(metadata.value==null)"Nome da Musica" else metadata.value!!.mediaMetadata.title.toString(),
                     fontFamily = FontFamily.Monospace,
@@ -852,7 +834,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 Spacer(Modifier.padding(3.dp))
                 Column(modifier=Modifier.fillMaxHeight()) {
 
-                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.1f)) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
                         Text(text =duracaoString.value, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart), color = corDotexto )
                         //Text("/", fontSize = 8.sp )
                         androidx.compose.animation.AnimatedVisibility(visible =!caregando.value,Modifier.align(Alignment.TopEnd)) {
@@ -865,6 +847,8 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
 
                     }
                     val interactionSource = remember { MutableInteractionSource() }
+                    Spacer(Modifier.padding(5.dp))
+
                     Slider(
                         value = duracao.value,
                         onValueChange = {
@@ -874,7 +858,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                             }
                         },
                         valueRange = 0f..100f,
-                        thumb = {SliderDefaults.Thumb(interactionSource=interactionSource, modifier = Modifier.size(10.dp), colors = SliderDefaults.colors(thumbColor = corDotexto))},
+                        thumb = {SliderDefaults.Thumb(interactionSource=interactionSource, modifier = Modifier.size(medicoes.tumblesize(windowSizeClass)), colors = SliderDefaults.colors(thumbColor = corDotexto))},
                         track = {SliderDefaults.Track(it,
                                                 modifier = Modifier.fillMaxWidth().fillMaxHeight(0.2f),
                                                 colors =SliderDefaults.colors(activeTrackColor =  corDotexto))},

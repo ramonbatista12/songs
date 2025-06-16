@@ -35,11 +35,11 @@ import com.songsSongs.songs.componentes.getMetaData2
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
-import com.songsSongs.songs.application.AplicationCuston.conteiner.dataStore
+import com.songsSongs.songs.servicoDemidia.Equalizacao.Equalizador
+import com.songsSongs.songs.servicoDemidia.Equalizacao.PrioridadesDaEqualizacao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -60,7 +60,7 @@ class ServicMedia: MediaSessionService() {
     private lateinit var notification: Notification
     private var exeuctor:ListeningExecutorService? = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
     val binder=ServicBinder()
-     var equalizador:Equalizador?=null
+     var equalizador: Equalizador?=null
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         Log.i("service","onGetSession")
         return this.mediaSession
@@ -146,12 +146,12 @@ class ServicMedia: MediaSessionService() {
        val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
             val id =player.audioSessionId
             Log.i("service","audioSessionId $id")
-       equalizador=Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId,this@ServicMedia)
+       equalizador= Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId,this@ServicMedia)
        player.setAuxEffectInfo(AuxEffectInfo(equalizador!!.equalizer.id,1f))
       equalizador!!.ativar()
 
 
-       Log.i("Equalizacao","id do equalizador ${equalizador!!.idDoEfeirto()}\n dados do plyer id do plyer ${player.audioSessionId}\n ${mediaSession!!.player.audioAttributes.audioAttributesV21.audioAttributes}\n${ mediaSession!!.player.trackSelectionParameters.maxAudioChannelCount }")
+       Log.i("Equalizacao","id do equalizador ${equalizador!!.getIdDoEfeirto()}\n dados do plyer id do plyer ${player.audioSessionId}\n ${mediaSession!!.player.audioAttributes.audioAttributesV21.audioAttributes}\n${ mediaSession!!.player.trackSelectionParameters.maxAudioChannelCount }")
 
        wakeLock.acquire()
             serviceIniciado.emit(true)

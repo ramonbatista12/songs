@@ -40,6 +40,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,12 +54,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
 import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
@@ -133,7 +132,7 @@ class MainActivity : ComponentActivity() {
      enableEdgeToEdge()
         observadorDocicloDeVida = HelperLifeciclerObserver(
             acaoDeConectar = {
-                scop.launch(Dispatchers.IO) {
+               scop.launch(Dispatchers.IO) {
               MobileAds.initialize(this@MainActivity)
 
             }
@@ -227,6 +226,7 @@ class MainActivity : ComponentActivity() {
                 val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
                 val permissaoLeitura =
                     rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {it->
+                        Log.i("permissao", "permicao de leitura ${it.toString()}")
                        viewmodel.mudancaSolicitarPermicaoLaeitua(it)}
 
                 val permicaoNotificacao =
@@ -247,65 +247,44 @@ class MainActivity : ComponentActivity() {
                 val emreproducao =vieModelPlyers._emreproducao.collectAsState()
                 val bigPlyer =viewmodel._bigPlyer.collectAsState()
                 val corBackGround =viewmodel._corBackGround.collectAsState()
-
+                val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
+                val dialigoNotificacao =viewmodel.dialoNotificacao.collectAsState(false)
                 Surface(modifier = Modifier) {
-                    LaunchedEffect(Unit) {
-                        scopMain.launch {
-                         checarPermicaoAudio(viewmodel)
-                        checarPermicaoNotificacao(viewmodel)}}
+                    LaunchedEffect(Unit) {scopMain.launch {
+                                          checarPermicaoAudio(viewmodel)
+                                          checarPermicaoNotificacao(viewmodel)}}
 
                     Scaffold(topBar = { AnimatedVisibility(visible = !bigPlyer.value){BarraSuperio(titulo = "Songs") } },
-                             bottomBar = {
-                                 if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                                   AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {
-                                      // navController.popBackStack()
-                                       navController.navigate(route = it){
-                                       launchSingleTop=true
-                                   }
-                                   })}
-
-                            else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
-                                     if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
-                                         AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {
-                                           //  navController.popBackStack()
-                                             navController.navigate(it){launchSingleTop=true} }) }
-
-
-                    },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(corBackGround.value)
-                            .safeDrawingPadding()
-                            .safeGesturesPadding()
-                            .safeContentPadding()
-                            .imePadding(),//PermanenteNavigationDrawer(acaoNavegacao = {navController.navigate(it)})
+                             bottomBar = { if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
+                                              AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(route = it){launchSingleTop=true}})}
+                                      else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
+                                           if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
+                                              AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} }) }},
+                        modifier = Modifier.fillMaxSize()
+                                           .background(corBackGround.value)
+                                           .safeDrawingPadding()
+                                           .safeGesturesPadding()
+                                           .safeContentPadding()
+                                           .imePadding(),
                         containerColor = MaterialTheme.colorScheme.background,
                         snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
 
-                        PermanentNavigationDrawer(drawerContent = {
-                            val cor =viewmodel._corDotextonoAppBar.collectAsState()
+                        PermanentNavigationDrawer(drawerContent = {val cor =viewmodel._corDotextonoAppBar.collectAsState()
                                                              if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
-
-                                                                 PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
-                                                                                            acaoNavegacao = {navController.navigate(it){
-                                                                     launchSingleTop=true
-                                                                 } },cor = cor.value,corBackgrand = corBackGround.value)
+                                                                   PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
+                                                                                              acaoNavegacao = {navController.navigate(it){launchSingleTop=true} },
+                                                                                              cor = cor.value,
+                                                                                              corBackgrand = corBackGround.value)
                                                      else   if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                                                                  if(windowsizeclass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
                                                                      PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
-                                                                                               acaoNavegacao = {navController.navigate(it){
-                                                                         launchSingleTop=true
-                                                                     } },cor = cor.value,corBackgrand = corBackGround.value)
-                                                                 }
-                                                     else{}
-                                                                  },//
-                                                 modifier = Modifier
-                                                     .fillMaxSize()
-                                                     .padding(
-                                                         paddingValues = if (!bigPlyer.value) it else PaddingValues(
-                                                             0.dp
-                                                         )
-                                                     )) {
+                                                                                                acaoNavegacao = {navController.navigate(it){ launchSingleTop=true } },
+                                                                                                cor = cor.value,
+                                                                                                corBackgrand = corBackGround.value)}},//
+                                                  modifier = Modifier.fillMaxSize()
+                                                                    .padding(paddingValues = if (!bigPlyer.value) it else PaddingValues(0.dp))) {
+
+
                             Box(modifier = Modifier.fillMaxSize()) {
                                 Navgrafic( navController = navController,
                                            windowSizeClass = windowsizeclass,
@@ -316,26 +295,19 @@ class MainActivity : ComponentActivity() {
                                            acaoCaregarPlyer = {l,id->
                                                scop.launch {
                                                    vieModelPlyers.carregarLista(l,id)
-
-                                                   vieModelPlyers.play()
-
-                                               }
-                                           }, acaoAvisoBigplyer = {
-                                               viewmodel.mudarCorBackGround(Color.Unspecified)
-                                               viewmodel.mudarBigPlyer()
-                                                              },acaoMudaBackgraundScafolld = {
-                                               Log.i("corbackgraund scafolld",it.toString())
-                                               viewmodel.mudarCorBackGround(it)},
-                                           acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
-                                    estadoService = conecao,
-                                    acaOcultarBaras = {windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())},
-                                    acaOnMostraBaras = {windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())})
+                                                   vieModelPlyers.play()}},
+                                          acaoAvisoBigplyer = {viewmodel.mudarCorBackGround(Color.Unspecified)
+                                                               viewmodel.mudarBigPlyer()},
+                                          acaoMudaBackgraundScafolld = {viewmodel.mudarCorBackGround(it)},
+                                          acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
+                                          estadoService = conecao,
+                                          acaOcultarBaras = {windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())},
+                                          acaOnMostraBaras = {windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())})
 
 
                                 AnimatedVisibility(visible =emreproducao.value,
-                                                   modifier = Modifier
-                                                       .align(Alignment.BottomCenter)
-                                                       .padding(10.dp),) {
+                                                   modifier = Modifier.align(Alignment.BottomCenter)
+                                                                      .padding(10.dp),) {
                                   if(!bigPlyer.value)
                                   {
                                       DisposableEffect(Unit) {
@@ -374,66 +346,68 @@ class MainActivity : ComponentActivity() {
                                 }
                                 AnimatedVisibility(visible = (!emreproducao.value&&!bigPlyer.value),
                                                    modifier = Modifier.align(Alignment.BottomCenter)
-                                                                      .padding(10.dp
-                                                                      )) {
-                                    if(!transicaoMiniPlyer.targetState)
-                                        Row(Modifier.align(Alignment.BottomCenter)) {
-                                            Banner()
-                                        }
-                                }
-                                val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
-                                if (dialigoLeitura.value) {
-                                    AlertDialog(onDismissRequest = { scop.launch {} },
-                                                title = { Text(text="Permicao para ler Dados do Dispositivo") },
-                                                text = { Text(text = "A permicao e nessesaria para poder ler as musicas presentes no dispositivo ") },
-                                                confirmButton = {
-                                                         TextButton(onClick = {
-                                                                 scop.launch {
-                                                                     if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU)
-                                                                         permissaoLeitura.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                                                                     else permissaoLeitura.launch(android.Manifest.permission.READ_MEDIA_AUDIO)
-                                                                 }
-                                                         }, content = { Text(text = "Ok") })
-                                                }, dismissButton = {
-                                                    TextButton(onClick = {scop.launch { viewmodel.mudancaSolicitarPermicaoLaeitua(false) }}, content = { Text(text = "Nao permitir") })
-                                                       }
-                                    )
-                                }
-                                val dialigoNotificacao =
-                                    viewmodel.dialoNotificacao.collectAsState(false)
-                                if (dialigoNotificacao.value) {
-                                    AlertDialog(onDismissRequest = { scop.launch {} },
-                                        title = { Text("permmicao de notificacao") },
-                                        text = { Text(text = "A permicao e nessesaria para poder emitir o player de notificacao que permite controlar a musica em segundo plano") },
-                                        confirmButton = {
-                                            TextButton(
-                                                onClick = {
-                                                    permicaoNotificacao.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                                                },
-                                                content = { Text("ok") })
-                                        }, dismissButton = {TextButton(onClick = {viewmodel.mudancaSolicitarPermicaoNotificao(false)}, content = { Text(text = "Nao permitir") }) })
-                                }
+                                                                      .padding(10.dp)) {
+                                                    if(!transicaoMiniPlyer.targetState)
+                                                        Row(Modifier.align(Alignment.BottomCenter)) {Banner()}}
+
+
+                               DialogoPermicaoLeituraDasMusicas(dialogoDeLeitura =dialigoLeitura,
+                                                    viewmodel = viewmodel,
+                                                    acaoPermicaoNotificacaoSDKInferiorATiramisu = {permissaoLeitura.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)},
+                                                    acaoPermicaoNotificacaoSDKTiramisuESuperiores =  {permissaoLeitura.launch(android.Manifest.permission.READ_MEDIA_AUDIO)})
+
+                                DialogoNotificacoes(dialigoNotificacao = dialigoNotificacao,
+                                                   acaoPermicaoNotificacao = {permicaoNotificacao.launch(android.Manifest.permission.POST_NOTIFICATIONS)},
+                                                   viewmodel = viewmodel)
 
                             }
-                        }
-
-
-
-                    }
+                        }}
                 }
             }
         }
     }
 
-    fun modoImersivo(context: Context):WindowInsetsControllerCompat{
 
+    @Composable
+    fun DialogoPermicaoLeituraDasMusicas(dialogoDeLeitura: State<Boolean>,
+                                         viewmodel: MainViewModel,
+                                         acaoPermicaoNotificacaoSDKInferiorATiramisu:()->Unit,
+                                         acaoPermicaoNotificacaoSDKTiramisuESuperiores:()->Unit){
+        if (dialogoDeLeitura.value) {
+            AlertDialog(onDismissRequest = { scop.launch {} },
+                title = { Text(text="Permicao para ler Dados do Dispositivo") },
+                text = { Text(text = "A permicao e nessesaria para poder ler as musicas presentes no dispositivo ") },
+                confirmButton = {
+                    TextButton(onClick = {scop.launch {if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU) acaoPermicaoNotificacaoSDKInferiorATiramisu()
+                                                      else acaoPermicaoNotificacaoSDKTiramisuESuperiores()}},
+                              content = { Text(text = "Ok") })},
+                dismissButton = {TextButton(onClick = {scop.launch { viewmodel.mudancaSolicitarPermicaoLaeitua(false) }},
+                                            content = { Text(text = "Nao permitir") })})
+        }
+    }
+
+    @Composable
+    fun DialogoNotificacoes(dialigoNotificacao: State<Boolean>,acaoPermicaoNotificacao:()->Unit,viewmodel: MainViewModel){
+        if (dialigoNotificacao.value) {
+            AlertDialog(onDismissRequest = { scop.launch {} },
+                        title = { Text("permmicao de notificacao") },
+                        text = { Text(text = "A permicao e nessesaria para poder emitir o player de notificacao que permite controlar a musica em segundo plano") },
+                        confirmButton = {TextButton(onClick = {acaoPermicaoNotificacao()},
+                                                    content = { Text("ok") })},
+                        dismissButton = {TextButton(onClick = {viewmodel.mudancaSolicitarPermicaoNotificao(false)},
+                                                    content = { Text(text = "Nao permitir") }) })
+        }
+    }
+
+    fun modoImersivo(context: Context):WindowInsetsControllerCompat{
         val windowInsentsControler= WindowInsetsControllerCompat(window,window.decorView)
         windowInsentsControler.systemBarsBehavior=WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     return windowInsentsControler
     }
-    fun ComponentActivity.enableEdgeToEdge(//aqui eu manipulo a cor de status bar e navigation bar do sistema android deixei ambos transparentes
-    statusBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)
-    ,navigationBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)) {
+    //aqui eu manipulo a cor de status bar e navigation bar do sistema android deixei ambos transparentes
+    fun ComponentActivity.enableEdgeToEdge(
+      statusBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT),
+      navigationBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)) {
 }
 
    suspend fun checarPermicaoAudio(viewModel: MainViewModel){
@@ -443,65 +417,33 @@ class MainActivity : ComponentActivity() {
    }
 
    suspend fun cehcarReadPermicion(viewModel: MainViewModel){
-     if (ContextCompat.checkSelfPermission(
-           this@MainActivity,
-           android.Manifest.permission.READ_EXTERNAL_STORAGE
-       ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-               )
+     if (ContextCompat.checkSelfPermission(this@MainActivity,android.Manifest.permission.READ_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED)
        viewModel.mudarPermicaoLeitura(false)
-       else viewModel.mudarPermicaoLeitura(true)
+     else viewModel.mudarPermicaoLeitura(true)
    }
 
    suspend fun checarReadMediaAudio(viewModel: MainViewModel){
-       if (ContextCompat.checkSelfPermission(
-               this@MainActivity,
-               android.Manifest.permission.READ_MEDIA_AUDIO
-           ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-       )viewModel.mudarPermicaoLeitura(false)
-       else viewModel.mudarPermicaoLeitura(true)
+       if (ContextCompat.checkSelfPermission(this@MainActivity,android.Manifest.permission.READ_MEDIA_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED){
+            viewModel.mudarPermicaoLeitura(false)
+            return }
+       viewModel.mudarPermicaoLeitura(true)
    }
 
    suspend fun checarPermicaoNotificacao(viewModel: MainViewModel){
-       if (ContextCompat.checkSelfPermission(
-               this@MainActivity,
-               android.Manifest.permission.POST_NOTIFICATIONS
-           ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-       )
+       if (ContextCompat.checkSelfPermission(this@MainActivity,android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED){
            viewModel.mudarPermicaoNotificacao(false)
-       else viewModel.mudarPermicaoNotificacao(value = true)
+       return }
+       viewModel.mudarPermicaoNotificacao(value = true)
    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStart() {
         super.onStart()}
 
-    @SuppressLint("NewApi")
-    override fun onResume() {
-        super.onResume()
+
+
+
+
+
 }
 
-    override fun onPause() {
-       super.onPause()
-    }
-
-    override fun onDestroy() {
-
-        super.onDestroy()
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SongsTheme {
-        Greeting("Android")
-    }
-}

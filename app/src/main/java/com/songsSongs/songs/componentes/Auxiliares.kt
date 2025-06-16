@@ -200,7 +200,9 @@ class MedicoesPlyer(){
         if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 10.sp
         else 18.sp
     fun funTSizeSubtitulo()=14.sp
-
+    fun tumblesize(windowSizeClass: WindowSizeClass) =
+        if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 6.dp
+        else 10.dp
 
 
 
