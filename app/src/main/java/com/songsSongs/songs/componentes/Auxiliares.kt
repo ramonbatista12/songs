@@ -20,6 +20,7 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 
 class AuxiliarMudancaDeBackGrands{
+    final val Tag ="Mudanca de cores"
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun mudarBackgrandScaffold(bitmap: Bitmap?,
                                acao:(backgraudColor:androidx.compose.ui.graphics.Color)->Unit,
@@ -29,38 +30,39 @@ class AuxiliarMudancaDeBackGrands{
 
         if(bitmap!=null){
             val palette = Palette.from(bitmap).generate()
-            val int:Int
-            if(palette.darkMutedSwatch!=null){
-                Log.d("backgrand","${palette.darkMutedSwatch}")
-                int=palette.getDarkMutedColor(backgraudColor.value.toInt())}
-            else if(palette.mutedSwatch!=null){
-                Log.d("backgrand","${palette.mutedSwatch}")
-                int=palette.getMutedColor(backgraudColor.value.toInt())}
-            else if(palette.dominantSwatch!=null){
-                int=palette.getDominantColor(backgraudColor.value.toInt())}
-            else
-                int=backgraudColor.value.toInt()
-
-
-
-
+            val int = obterInteiroQuerepresenraCor(palette,backgraudColor.value.toInt())
             cor.value= Color(int)
-
             val luminessenciaBackgraud=cor.value.luminance()
             Log.d("Luminecencia","${luminessenciaBackgraud}")
-            corTexto.value=when{
-                (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) -> androidx.compose.ui.graphics.Color.White
-                (luminessenciaBackgraud>=0.1f) -> androidx.compose.ui.graphics.Color.Black
-
-                else -> androidx.compose.ui.graphics.Color.Unspecified
-            }
+            corTexto.value=obterCorDotextoOnBackGrand(luminessenciaBackgraud,textColorSquemas)
 
     }else{
         cor.value=backgraudColor
         corTexto.value=textColorSquemas
         }
         acao(cor.value)
+    }
+
+    private suspend fun obterInteiroQuerepresenraCor(palette: Palette,intBAckgraud:Int):Int{
+        if(palette.dominantSwatch!=null){
+            Log.e(Tag,"dominantSwatch ${palette.dominantSwatch}")
+            return palette.getDominantColor(intBAckgraud)}
+        else if(palette.mutedSwatch!=null){
+            Log.e(Tag,"mutadeSwatch ${palette.mutedSwatch}")
+            return palette.getMutedColor(intBAckgraud)}
+        else if(palette.darkMutedSwatch!=null){
+            Log.e(Tag," darkmutedSwatch ${palette.darkMutedSwatch}")
+            return palette.getDarkMutedColor(intBAckgraud)}
+        else
+            return  intBAckgraud
+    }
+
+    private suspend fun obterCorDotextoOnBackGrand(luminessenciaBackgraud:Float,textColorSquemas: Color):Color=when{
+        (luminessenciaBackgraud == 0.0f)-> textColorSquemas
+        (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) -> androidx.compose.ui.graphics.Color.White
+        (luminessenciaBackgraud>=0.1f) -> androidx.compose.ui.graphics.Color.Black
+
+        else -> androidx.compose.ui.graphics.Color.Unspecified
     }
     @SuppressLint("SuspiciousIndentation")
     suspend fun mudarBackgrandMiniPlyer(bitmap: Bitmap?,
@@ -71,32 +73,13 @@ class AuxiliarMudancaDeBackGrands{
         if(bitmap!=null){
             Log.d("bitmap mini plyer","${bitmap}")
             val palette =Palette.from(bitmap).generate()
-
-            val int:Int
-            if(palette.darkMutedSwatch!=null)
-                int=palette.getDarkMutedColor(backgraudColorSquemas.value.toInt())
-            else if(palette.mutedSwatch!=null)
-                int=palette.getMutedColor(backgraudColorSquemas.value.toInt())
-            else if(palette.dominantSwatch!=null)
-                int=palette.getDominantColor(backgraudColorSquemas.value.toInt())
-            else
-                int=backgraudColor.value.value.toInt()
-                backgraudColor.value=Color(int)
+            val int=obterInteiroQuerepresenraCor(palette,backgraudColor.value.value.toInt())
+            backgraudColor.value=Color(int)
             val luminessenciaBackgraud=backgraudColor.value.luminance()
-            corTexto.value=when{
-                (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
-                (luminessenciaBackgraud>=0.1f) ->Color.Black
-
-                else -> Color.Unspecified
-            }
-
-        }
+            corTexto.value=obterCorDotextoOnBackGrand(luminessenciaBackgraud,textColorSquemas)}
         else {
             backgraudColor.value=backgraudColorSquemas
-            corTexto.value=textColorSquemas
-
-        }
+            corTexto.value=textColorSquemas}
 
     }
     suspend fun mudaBackgraundScafolldPermanentBar(bitmap: Bitmap?,
@@ -105,30 +88,13 @@ class AuxiliarMudancaDeBackGrands{
                                                    corTexto:MutableState<Color>,textColorSquemas: Color,backgraudColorSquemas:Color){
         if(bitmap!=null){
             val palette =Palette.from(bitmap).generate()
-            val int:Int
-            if(palette.darkMutedSwatch!=null)
-                int=palette.getDarkMutedColor(backgraudColorSquemas.value.toInt())
-            else if(palette.mutedSwatch!=null)
-                int=palette.getMutedColor(backgraudColorSquemas.value.toInt())
-            else if(palette.dominantSwatch!=null)
-                int=palette.getDominantColor(backgraudColorSquemas.value.toInt())
-            else
-                int=backgraudColorSquemas.value.toInt()
+            val int=obterInteiroQuerepresenraCor(palette,backgraudColorSquemas.value.toInt())
             corBackGraund.value=Color(int)
-
             val luminessenciaBackgraud=corBackGraund.value.luminance()
-            corTexto.value=when{
-                (luminessenciaBackgraud == 0.0f)-> textColorSquemas
-                (luminessenciaBackgraud>0.0f&&luminessenciaBackgraud<0.1f) ->Color.White
-                (luminessenciaBackgraud>=0.1f) ->Color.Black
-
-                else -> Color.Unspecified
-            }}
+            corTexto.value=obterCorDotextoOnBackGrand(luminessenciaBackgraud,textColorSquemas)}
             else{
                 corBackGraund.value=backgraudColorSquemas
-                corTexto.value=textColorSquemas
-
-            }
+                corTexto.value=textColorSquemas}
             acaoMudarCorScafollEBArraPermanente(corBackGraund.value,corTexto.value)
 
         }

@@ -20,6 +20,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,8 +55,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.android.gms.ads.MobileAds
 import com.songsSongs.songs.componentes.Banner
@@ -63,6 +66,8 @@ import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.Miniplayer
 import com.songsSongs.songs.componentes.PermanenteNavigationDrawer
+import com.songsSongs.songs.componentes.dialog.DialogoNotificacoes
+import com.songsSongs.songs.componentes.dialog.DialogoPermicaoLeituraDasMusicas
 import com.songsSongs.songs.navegacao.DestinosDENavegacao
 import com.songsSongs.songs.navegacao.Navgrafic
 
@@ -74,10 +79,12 @@ import com.songsSongs.songs.viewModels.FabricaViewmodelPlyer
 import com.songsSongs.songs.viewModels.HelperLifeciclerObserver
 import com.songsSongs.songs.viewModels.MainViewModel
 import com.songsSongs.songs.viewModels.VmodelPlayer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -130,8 +137,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
      enableEdgeToEdge()
-        observadorDocicloDeVida = HelperLifeciclerObserver(
-            acaoDeConectar = {
+        observadorDocicloDeVida = HelperLifeciclerObserver(acaoDeConectar = {
                scop.launch(Dispatchers.IO) {
               MobileAds.initialize(this@MainActivity)
 
@@ -167,7 +173,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                              },
-            acaoDeDesconectar ={
+                                                           acaoDeDesconectar ={
 
                 when(val r =conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
@@ -182,7 +188,7 @@ class MainActivity : ComponentActivity() {
                 }
                 else->{}
             }},
-            acaoChecagemConecao ={
+                                                           acaoChecagemConecao ={
                 when(conecao.value){
                     is ResultadosConecaoServiceMedia.Conectado->{}
                     is ResultadosConecaoServiceMedia.Desconectado->{
@@ -224,21 +230,11 @@ class MainActivity : ComponentActivity() {
                 val viewmodel: MainViewModel =
                     viewModel(factory = FabricaMainViewmodel().factory(conecao))
                 val windowsizeclass = currentWindowAdaptiveInfo().windowSizeClass
-                val permissaoLeitura =
-                    rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {it->
-                        Log.i("permissao", "permicao de leitura ${it.toString()}")
-                       viewmodel.mudancaSolicitarPermicaoLaeitua(it)}
+                val permissaoLeitura = remenberRequisicaoLeitura(viewmodel)
 
-                val permicaoNotificacao =
-                    rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-                        if(it&&!viewmodel._permicaoNotificacao.value){
-                            val i = Intent(this@MainActivity, ServicMedia::class.java)
-                            startForegroundService(i)
-                            val i1 = Intent(this@MainActivity, ServicMedia::class.java)
-                            bindService(i1,serviceConection,BIND_IMPORTANT)
-                        }
-                       viewmodel.mudancaSolicitarPermicaoNotificao(it)
-                    }
+
+                val permicaoNotificacao = remenberRequisicaoNotificacao(viewmodel)
+
 
                 val navController = rememberNavController()
                 val scopMain = rememberCoroutineScope()
@@ -254,35 +250,20 @@ class MainActivity : ComponentActivity() {
                                           checarPermicaoAudio(viewmodel)
                                           checarPermicaoNotificacao(viewmodel)}}
 
-                    Scaffold(topBar = { AnimatedVisibility(visible = !bigPlyer.value){BarraSuperio(titulo = "Songs") } },
-                             bottomBar = { if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                                              AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(route = it){launchSingleTop=true}})}
-                                      else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
-                                           if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
-                                              AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} }) }},
-                        modifier = Modifier.fillMaxSize()
-                                           .background(corBackGround.value)
-                                           .safeDrawingPadding()
-                                           .safeGesturesPadding()
-                                           .safeContentPadding()
-                                           .imePadding(),
+                    Scaffold(topBar = {TopBarMAin(bigPlyer) },
+                             bottomBar = { BottonBarMain(windowsizeclass,bigPlyer,navController) },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(corBackGround.value)
+                            .safeDrawingPadding()
+                            .safeGesturesPadding()
+                            .safeContentPadding()
+                            .imePadding(),
                         containerColor = MaterialTheme.colorScheme.background,
                         snackbarHost = { SnackbarHost(hostState = viewmodel.snackbarHostState) }) {
 
-                        PermanentNavigationDrawer(drawerContent = {val cor =viewmodel._corDotextonoAppBar.collectAsState()
-                                                             if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
-                                                                   PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
-                                                                                              acaoNavegacao = {navController.navigate(it){launchSingleTop=true} },
-                                                                                              cor = cor.value,
-                                                                                              corBackgrand = corBackGround.value)
-                                                     else   if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
-                                                                 if(windowsizeclass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
-                                                                     PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
-                                                                                                acaoNavegacao = {navController.navigate(it){ launchSingleTop=true } },
-                                                                                                cor = cor.value,
-                                                                                                corBackgrand = corBackGround.value)}},//
-                                                  modifier = Modifier.fillMaxSize()
-                                                                    .padding(paddingValues = if (!bigPlyer.value) it else PaddingValues(0.dp))) {
+                        PermanentNavigationDrawer(drawerContent = {COnteudoDrawer(viewmodel,windowsizeclass,navController,corBackGround)},//
+                                                  modifier = Modifier.fillMaxSize().padding(paddingValues = if (!bigPlyer.value) it else PaddingValues(0.dp))) {
 
 
                             Box(modifier = Modifier.fillMaxSize()) {
@@ -296,69 +277,41 @@ class MainActivity : ComponentActivity() {
                                                scop.launch {
                                                    vieModelPlyers.carregarLista(l,id)
                                                    vieModelPlyers.play()}},
-                                          acaoAvisoBigplyer = {viewmodel.mudarCorBackGround(Color.Unspecified)
-                                                               viewmodel.mudarBigPlyer()},
+                                          acaoAvisoBigplyer = {
+                                              scopMain.launch {
+                                                  delay(1000)
+                                                  viewmodel.mudarCorBackGround(Color.Unspecified)
+                                                  viewmodel.mudarBigPlyer()}
+                                              },
                                           acaoMudaBackgraundScafolld = {viewmodel.mudarCorBackGround(it)},
                                           acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
                                           estadoService = conecao,
                                           acaOcultarBaras = {windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())},
-                                          acaOnMostraBaras = {windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())})
+                                          acaOnMostraBaras = {
+                                              scopMain.launch {
+                                                  delay(500)
+                                              windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
+                                              }
+                                          })
 
-
-                                AnimatedVisibility(visible =emreproducao.value,
-                                                   modifier = Modifier.align(Alignment.BottomCenter)
-                                                                      .padding(10.dp),) {
-                                  if(!bigPlyer.value)
-                                  {
-                                      DisposableEffect(Unit) {
-                                        scop.launch {
-                                             transicaoMiniPlyer.targetState=true
-                                        }
-                                        onDispose {
-                                            transicaoMiniPlyer.targetState=false
-                                        }
-                                    }
-                                    Miniplayer(modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .clickable {
-                                            scopMain.launch {
-                                                scopMain.launch {
-                                                    val comclusao = scopMain.async {
-
-                                                        viewmodel.mudarBigPlyer()
-                                                        transicaoMiniPlyer.targetState = false
-                                                        windowInsetsControllerCompat.hide(
-                                                            WindowInsetsCompat.Type.systemBars()
-                                                        )
-                                                        delay(200)
-                                                    }
-                                                    comclusao.await()
-                                                    navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)
-                                                }
-                                            }
-
-                                        },
-                                    vm = vieModelPlyers,
-                                    windoSizeClass = windowsizeclass)
-                                  }
-
-
-                                }
-                                AnimatedVisibility(visible = (!emreproducao.value&&!bigPlyer.value),
-                                                   modifier = Modifier.align(Alignment.BottomCenter)
-                                                                      .padding(10.dp)) {
-                                                    if(!transicaoMiniPlyer.targetState)
-                                                        Row(Modifier.align(Alignment.BottomCenter)) {Banner()}}
-
-
+                                MiniPlyerMain(boxScope = this,
+                                              emreproducao=emreproducao,
+                                              bigPlyer=bigPlyer,
+                                              transicaoMiniPlyer=transicaoMiniPlyer,
+                                              scopMain=scopMain, viewmodel = viewmodel, vieModelPlyers = vieModelPlyers,
+                                              windowSizeClass = windowsizeclass,
+                                              windowInsetsControllerCompat = windowInsetsControllerCompat,
+                                              acaoNavegacao = { navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)})
+                                ApresentacaoBaner(this,emreproducao,bigPlyer,transicaoMiniPlyer)
                                DialogoPermicaoLeituraDasMusicas(dialogoDeLeitura =dialigoLeitura,
                                                     viewmodel = viewmodel,
+                                                    scope = scopMain,
                                                     acaoPermicaoNotificacaoSDKInferiorATiramisu = {permissaoLeitura.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)},
                                                     acaoPermicaoNotificacaoSDKTiramisuESuperiores =  {permissaoLeitura.launch(android.Manifest.permission.READ_MEDIA_AUDIO)})
 
-                                DialogoNotificacoes(dialigoNotificacao = dialigoNotificacao,
+                               DialogoNotificacoes(dialigoNotificacao = dialigoNotificacao,
                                                    acaoPermicaoNotificacao = {permicaoNotificacao.launch(android.Manifest.permission.POST_NOTIFICATIONS)},
-                                                   viewmodel = viewmodel)
+                                                   viewmodel = viewmodel, scope = scopMain)
 
                             }
                         }}
@@ -369,35 +322,120 @@ class MainActivity : ComponentActivity() {
 
 
     @Composable
-    fun DialogoPermicaoLeituraDasMusicas(dialogoDeLeitura: State<Boolean>,
-                                         viewmodel: MainViewModel,
-                                         acaoPermicaoNotificacaoSDKInferiorATiramisu:()->Unit,
-                                         acaoPermicaoNotificacaoSDKTiramisuESuperiores:()->Unit){
-        if (dialogoDeLeitura.value) {
-            AlertDialog(onDismissRequest = { scop.launch {} },
-                title = { Text(text="Permicao para ler Dados do Dispositivo") },
-                text = { Text(text = "A permicao e nessesaria para poder ler as musicas presentes no dispositivo ") },
-                confirmButton = {
-                    TextButton(onClick = {scop.launch {if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU) acaoPermicaoNotificacaoSDKInferiorATiramisu()
-                                                      else acaoPermicaoNotificacaoSDKTiramisuESuperiores()}},
-                              content = { Text(text = "Ok") })},
-                dismissButton = {TextButton(onClick = {scop.launch { viewmodel.mudancaSolicitarPermicaoLaeitua(false) }},
-                                            content = { Text(text = "Nao permitir") })})
+    fun remenberRequisicaoNotificacao(viewmodel: MainViewModel)= rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+        if(it&&!viewmodel._permicaoNotificacao.value){
+            val i = Intent(this@MainActivity, ServicMedia::class.java)
+            startForegroundService(i)
+            val i1 = Intent(this@MainActivity, ServicMedia::class.java)
+            bindService(i1,serviceConection,BIND_IMPORTANT)
         }
+        viewmodel.mudancaSolicitarPermicaoNotificao(it)
     }
+    @Composable
+    fun remenberRequisicaoLeitura(viewmodel: MainViewModel)= rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {it->
+        Log.i("permissao", "permicao de leitura ${it.toString()}")
+        viewmodel.mudancaSolicitarPermicaoLaeitua(it)}
 
     @Composable
-    fun DialogoNotificacoes(dialigoNotificacao: State<Boolean>,acaoPermicaoNotificacao:()->Unit,viewmodel: MainViewModel){
-        if (dialigoNotificacao.value) {
-            AlertDialog(onDismissRequest = { scop.launch {} },
-                        title = { Text("permmicao de notificacao") },
-                        text = { Text(text = "A permicao e nessesaria para poder emitir o player de notificacao que permite controlar a musica em segundo plano") },
-                        confirmButton = {TextButton(onClick = {acaoPermicaoNotificacao()},
-                                                    content = { Text("ok") })},
-                        dismissButton = {TextButton(onClick = {viewmodel.mudancaSolicitarPermicaoNotificao(false)},
-                                                    content = { Text(text = "Nao permitir") }) })
+    fun TopBarMAin(bigPlyer: State<Boolean>){
+        AnimatedVisibility(visible = !bigPlyer.value){BarraSuperio(titulo = "Songs") } }
+    @Composable
+    fun BottonBarMain(windowsizeclass: WindowSizeClass,bigPlyer:State<Boolean>,navController: NavController){
+        if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
+            AnimatedVisibility(visible = !bigPlyer.value) { BararInferior(acaoNavegacao = {navController.navigate(route = it){launchSingleTop=true}})}
+        else if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
+            if(windowsizeclass.windowHeightSizeClass!=WindowHeightSizeClass.COMPACT)
+                AnimatedVisibility(visible = !bigPlyer.value) {BararInferior(acaoNavegacao = {navController.navigate(it){launchSingleTop=true} }) }}
+
+
+    @Composable
+    fun MiniPlyerMain(boxScope: BoxScope,
+                      emreproducao:State<Boolean>,
+                      bigPlyer:State<Boolean>,
+                      transicaoMiniPlyer: MutableTransitionState<Boolean>,
+                      viewmodel: MainViewModel,
+                      vieModelPlyers:VmodelPlayer,
+                      windowSizeClass:WindowSizeClass,scopMain:CoroutineScope,
+                      windowInsetsControllerCompat: WindowInsetsControllerCompat,acaoNavegacao:()->Unit={}){
+        with(boxScope){
+        AnimatedVisibility(visible =emreproducao.value,
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(10.dp),) {
+        if(!bigPlyer.value)
+        {
+            DisposableEffect(Unit) {
+                scopMain.launch {
+                    transicaoMiniPlyer.targetState=true
+                }
+                onDispose {
+                    transicaoMiniPlyer.targetState=false
+                }
+            }
+            Miniplayer(modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .clickable {
+                    scopMain.launch {
+
+                        val comclusao = scopMain.async {
+
+                            viewmodel.mudarBigPlyer()
+                            transicaoMiniPlyer.targetState = false
+                            windowInsetsControllerCompat.hide(
+                                WindowInsetsCompat.Type.systemBars()
+                            )
+                            //delay(200)
+                        }
+                        comclusao.await()
+                        //navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)
+                        acaoNavegacao()
+
+                    }
+
+                },
+                vm = vieModelPlyers,
+                windoSizeClass = windowSizeClass)
         }
+
+
+    }}
     }
+
+   @Composable
+   fun COnteudoDrawer(viewmodel: MainViewModel,
+                      windowsizeclass: WindowSizeClass,
+                      navController: NavController,
+                      corBackGround:State<Color> ){
+          val cor =viewmodel._corDotextonoAppBar.collectAsState()
+           if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
+           PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
+               acaoNavegacao = {navController.navigate(it){launchSingleTop=true} },
+               cor = cor.value,
+               corBackgrand = corBackGround.value)
+    else   if(windowsizeclass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
+           if(windowsizeclass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
+               PermanenteNavigationDrawer(modifier = Modifier.background(corBackGround.value),
+                   acaoNavegacao = {navController.navigate(it){ launchSingleTop=true } },
+                   cor = cor.value,
+                   corBackgrand = corBackGround.value)}}
+
+
+
+    @Composable
+    fun ApresentacaoBaner(boxScope: BoxScope,emreproducao:State<Boolean>,
+                          bigPlyer:State<Boolean>,
+                          transicaoMiniPlyer: MutableTransitionState<Boolean>){
+       with(boxScope) {
+            AnimatedVisibility(visible = (!emreproducao.value&&!bigPlyer.value),
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(10.dp)) {
+        if(!transicaoMiniPlyer.targetState)
+            Row(Modifier.align(Alignment.BottomCenter)) {Banner()}}}
+    }
+
+
+
 
     fun modoImersivo(context: Context):WindowInsetsControllerCompat{
         val windowInsentsControler= WindowInsetsControllerCompat(window,window.decorView)

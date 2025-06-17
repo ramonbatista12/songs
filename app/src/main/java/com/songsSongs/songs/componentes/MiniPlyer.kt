@@ -50,6 +50,7 @@ import com.songsSongs.songs.componentes.paineis.ComponetesCompartilhados
 import com.songsSongs.songs.ui.theme.DarkPink
 import com.songsSongs.songs.viewModels.ImagemPlyer
 import com.songsSongs.songs.viewModels.VmodelPlayer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -189,11 +190,11 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
+fun MiniplayerParaTransicao(modifier: Modifier = Modifier, scope : CoroutineScope,
                             text:String="Miniplayer",
                             sharedTransitionScope: SharedTransitionScope,
                             animatedVisibilityScope: AnimatedVisibilityScope,
-                            vm: VmodelPlayer,corDotexto:Color,acaoMudarBackgraud:suspend (bitmap:android.graphics.Bitmap?)->Unit,
+                            vm: VmodelPlayer, corDotexto:Color, acaoMudarBackgraud:suspend (bitmap:android.graphics.Bitmap?)->Unit,
                             backgraud:Color=MaterialTheme.colorScheme.background ){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
@@ -202,7 +203,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
     val reproduzindo=vm._emreproducao.collectAsState()
     val imagem=vm._imagemPlyer.collectAsState()
     val context= LocalContext.current
-    val scope= rememberCoroutineScope()
+
     val texttColorSchemas =MaterialTheme.colorScheme.onBackground
     LaunchedEffect(metadata.value) {
         vm.caregarImagePlyer({uri,id->

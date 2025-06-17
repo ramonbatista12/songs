@@ -12,24 +12,17 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
@@ -41,17 +34,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -70,40 +57,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.input.pointer.motionEventSpy
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.palette.graphics.Palette
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.R
+import com.songsSongs.songs.componentes.ApresenttacaoDasPlyListsPlyerCompat
 import com.songsSongs.songs.componentes.AuxiliarMudancaDeBackGrands
 import com.songsSongs.songs.componentes.Banner
+import com.songsSongs.songs.componentes.BotoesDeControle
+import com.songsSongs.songs.componentes.ImagemPlyer
+import com.songsSongs.songs.componentes.IndicadorDeTempo
 import com.songsSongs.songs.componentes.ItemDaLista
 
 import com.songsSongs.songs.componentes.MedicoesPlyer
-import com.songsSongs.songs.componentes.MiniplayerParaTransicao
 import com.songsSongs.songs.componentes.MovimentoRetorno
+import com.songsSongs.songs.componentes.SLidePlyer
+import com.songsSongs.songs.componentes.TextoDeApresentacaoDaMusica
 import com.songsSongs.songs.componentes.getMetaData
 import com.songsSongs.songs.repositorio.RepositorioService
 import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
-import com.songsSongs.songs.ui.theme.DarkPink
 import com.songsSongs.songs.ui.theme.SongsTheme
-import com.songsSongs.songs.viewModels.ImagemPlyer
-import com.songsSongs.songs.viewModels.ModoDerepeticao
 import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -128,25 +112,26 @@ fun BigPlayer(modifier: Modifier = Modifier,
               acaoOcultarBaras:()->Unit={},
               acaoMostraBaras:()->Unit={}){
     val context= LocalView.current
-  val scop = rememberCoroutineScope()
+   val scop = rememberCoroutineScope()
    val acaodevoutar= remember{ mutableStateOf(false)}
    val decompostomposto= rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        acaodevoutar.value=false
+        if(decompostomposto.value){
+            acaoAvisoBigplyer()
+            decompostomposto.value=false
+        }
+    }
 
-   LaunchedEffect(Unit) {
-       //acaoOcultarBaras()
-       acaodevoutar.value=false
-       if(decompostomposto.value){
-        acaoAvisoBigplyer()
-       decompostomposto.value=false
-       }
-   }
     DisposableEffect(Unit) {
 
         onDispose {
             if(!acaodevoutar.value) {
-               // acaoMostraBaras()
-                acaoAvisoBigplyer()
+
                 decompostomposto.value=true
+                acaoMostraBaras()
+                acaoAvisoBigplyer()
+
 
             }
 
@@ -158,7 +143,7 @@ fun BigPlayer(modifier: Modifier = Modifier,
 
 SelecaoDosPlyer(modifier,
                 windowSizeClass,
-                paddingValues,
+                scope = scop,
                 vm,
                 vmlista,
                 acaoAvisoBigplyer,
@@ -166,13 +151,13 @@ SelecaoDosPlyer(modifier,
                     acaodevoutar.value=true
                     scop.launch {
                         acaoMostraBaras()
-                        delay(100)
+                       // delay(100)
                         acaMudarBackgraudScafolld(Color.Unspecified)
-                        delay(100)
-                        acaoAvisoBigplyer()
-                        delay(100)
-                        acaoDeVoutar()
+                        //delay(100)
 
+                        //delay(100)
+                        acaoDeVoutar()
+                        acaoAvisoBigplyer()
 
                     }
                   //  acaodevoutarPreditivo.value=trueacaoDeVoutar()
@@ -193,7 +178,7 @@ SelecaoDosPlyer(modifier,
 @Composable
 fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     windowSizeClass: WindowSizeClass,
-                    paddingValues: PaddingValues,
+                    scope: CoroutineScope,
                     vm: VmodelPlayer,vmlista: ViewModelListas,
                     acaoAvisoBigplyer:()->Unit,
                     acaoDeVoutar: () -> Unit={},
@@ -205,7 +190,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
     val int =MaterialTheme.colorScheme.background.value.toInt()
     val coresBackgrad=remember { mutableStateOf<List<Color>?>(null) }
     if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-        PlayerCompat(modifier=modifier,
+        PlayerCompat(modifier=modifier, scope = scope,
                      vm = vm,
                      vmlista = vmlista,
                      acaoDeVoutar=acaoDeVoutar,
@@ -214,7 +199,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
 
     else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
         if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)
-            PlayerCompat(modifier,
+            PlayerCompat(modifier, scope = scope,
                          vm = vm,
                          vmlista = vmlista,
                          acaoDeVoutar=acaoDeVoutar,
@@ -230,7 +215,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
 @Composable
 fun Plyer(modifier: Modifier=Modifier,
           sharedTransitionScope: SharedTransitionScope,
-          animatedVisibilityScope: AnimatedVisibilityScope,
+          animatedVisibilityScope: AnimatedVisibilityScope,scope: CoroutineScope,
           vm:VmodelPlayer,
           acaoMudarBackgraud:suspend (bitmap:Bitmap?)->Unit={},
           cor:Color=MaterialTheme.colorScheme.onBackground,
@@ -247,7 +232,6 @@ fun Plyer(modifier: Modifier=Modifier,
     val tempoTotalString=vm._duracaoString.collectAsState()
     val imagem =vm._imagemPlyer.collectAsState()
     val context= LocalContext.current
-    val scop=rememberCoroutineScope()
     val caregando =vm._caregando.collectAsState()
     val medicoes=remember { MedicoesPlyer() }
 
@@ -262,17 +246,11 @@ fun Plyer(modifier: Modifier=Modifier,
                 null
             }
 
-        },uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())
-
-
-
-
-    }
+        },uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())}
     DisposableEffect(Unit){
         onDispose {
             acaoDesaidaDoplyer()
-
-            scop.cancel()
+           scope.cancel()
         }
     }
 val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -280,144 +258,22 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
     with(sharedTransitionScope){
         Column(modifier = modifier.background(color =Color.Transparent).padding(start = 3.dp, end = 3.dp),
                horizontalAlignment = Alignment.CenterHorizontally) {
-           when(val r=imagem.value){
-               is ImagemPlyer.Vazia->Icon(painter = painterResource(id =r.icone),
-                                          contentDescription = null,
-                                          tint = DarkPink,
-                                          modifier = Modifier//.size(iconSize.dp)
-                                                             .fillMaxWidth(iconsize)
-                                                             .aspectRatio(1f)
-                                                             .clip(RoundedCornerShape(15.dp))
-                                                             .border(width = 1.5.dp, color = cor, shape = RoundedCornerShape(15.dp))
-                                                             .sharedElement(
-                                                                          rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
-                                                                                                     animatedVisibilityScope),)
-               is ImagemPlyer.Imagem->{
-                   val _bitmap=r.imagem.asImageBitmap()
-                   Image(bitmap=_bitmap,
-                         contentDescription = null,
-                         modifier = Modifier//.size(250.dp).fillMaxHeight(0.4f) 0.7
-                                           .fillMaxWidth(iconsize)
-                                           .aspectRatio(1f)
-                                           .clip(RoundedCornerShape(15.dp))
-                                           .sharedElement( rememberSharedContentState(key = ComponetesCompartilhados.ImagemEIcones.label),
-                                                           animatedVisibilityScope),
-                         contentScale = ContentScale.FillBounds)}
-           }
-
-
-
-            Spacer(Modifier.padding(10.dp))
-            Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-
-                Text(text =if(mediaItem.value==null) "Nome da Musica" else mediaItem.value!!.mediaMetadata.title.toString(),
-                     modifier = Modifier.basicMarquee(iterations = 10, initialDelayMillis = 1000, repeatDelayMillis = 1000).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDaMusica.label),animatedVisibilityScope),
-                     color = cor,
-                      maxLines = 1,
-                     fontFamily = FontFamily.Monospace)
-                Spacer(Modifier.padding( 3.dp))
-                Text(text = if (mediaItem.value==null) "Nome do Artista" else mediaItem.value!!.mediaMetadata.artist.toString(), color = cor,
-                     modifier = Modifier.basicMarquee(iterations = 10, initialDelayMillis = 1000, repeatDelayMillis = 1000).sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NomeDoArtista.label),animatedVisibilityScope))
+        ImagemPlyer(imagem,iconsize,this@with,animatedVisibilityScope,cor)
+        Spacer(Modifier.padding(10.dp))
+        Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+               TextoDeApresentacaoDaMusica(this@Column,this@with,animatedVisibilityScope,cor,mediaItem)
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
-
-                   Box(modifier=Modifier.fillMaxWidth().fillMaxHeight(0.10f)) {
-
-                         Text(text = tempoTotalString.value,
-                             color = cor, fontSize = 8.sp, modifier = Modifier.align(Alignment.BottomStart) )
-                        // Text("/", fontSize = 8.sp, color = cor )
-                       androidx.compose.animation.AnimatedVisibility(visible = !caregando.value,modifier = Modifier.align(Alignment.BottomEnd)){
-                           Text(text =duracaoString.value, fontSize = 8.sp, color = cor, modifier = Modifier.align(Alignment.BottomEnd)  )
-                       }
-                        androidx.compose.animation.AnimatedVisibility(visible = caregando.value,modifier = Modifier.align(Alignment.BottomEnd)) {
-                            CircularProgressIndicator(modifier = Modifier.size(10.dp).align(Alignment.BottomEnd),color = cor)
-                        }
-                        }
-
-                    val interacao=remember { MutableInteractionSource() }
-                    Slider(value = duracao.value, onValueChange = {
-                        scop.launch {
-                            val valor=(it*tempoTotal.value)/100f
-                            vm.seekTo(valor.toLong())
-                        }
-                    },
-                         colors = SliderDefaults.colors(activeTrackColor = cor),
-                        thumb = {SliderDefaults.Thumb(modifier = Modifier.size(20.dp),interactionSource = interacao, colors = SliderDefaults.colors(thumbColor = cor))
-                        },
-                        track = {SliderDefaults.Track(it,modifier=Modifier.height(5.dp),colors = SliderDefaults.colors(activeTrackColor = cor))},
-                         valueRange = 0f..100f,
-                         modifier = Modifier.fillMaxHeight(0.20f))
-                    Spacer(Modifier.padding(10.dp))
-
-                    Row (modifier = Modifier.fillMaxWidth().fillMaxHeight(0.40f),horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween){
-                    IconButton({scop.launch { vm.preview() }}) {
-                        Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = cor)
-                    }
-                    IconButton({
-                        scop.launch {
-                           vm.setModoAleatorio(!modoAleatorio.value)}
-                    }) {
-                        if(!modoAleatorio.value)
-                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_24), contentDescription = null,tint = cor)
-                        else
-                        Icon(painter = painterResource(id = R.drawable.baseline_shuffle_on_24), contentDescription = null,tint = cor)
-                        }
-
-                    IconButton({
-                        scop.launch {
-                            if(reproduzindo.value)
-                                vm.pause()
-                            else vm.play()
-                        }
-
-                    }) {
-                        if (reproduzindo.value)
-                        Icon(painter = painterResource(id = R.drawable.baseline_pause_24),
-                            contentDescription = null,
-                            tint = cor,
-                            modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
-                        else
-                            Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                contentDescription = null,
-                                tint = cor,
-                                modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.PlayeBtn.label),animatedVisibilityScope))
-                        }
-
-                        IconButton({
-                            scop.launch {
-                                when(modoRepeticao.value){
-                                    is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
-                                    is ModoDerepeticao.RepetirEssa->vm.setModoDeRepeticao(ModoDerepeticao.RepetirTodos)
-                                    is ModoDerepeticao.RepetirTodos->vm.setModoDeRepeticao(ModoDerepeticao.Desativado)
-                                }
-                            }
-
-
-                        }) {
-                            when(modoRepeticao.value){
-                                is ModoDerepeticao.Desativado->Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint =cor)
-                                is ModoDerepeticao.RepetirEssa->Icon(painter = painterResource(id = R.drawable.baseline_repeat_one_on_24), contentDescription = null,tint = cor)
-                                is ModoDerepeticao.RepetirTodos->Icon(painter = painterResource(id = R.drawable.baseline_repeat_on_24), contentDescription = null,tint = cor)
-                            }
-
-                        }
-                        IconButton({vm.next()}) {
-                            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
-                                contentDescription = null,
-                                tint = cor,modifier = Modifier.sharedElement(rememberSharedContentState(key = ComponetesCompartilhados.NextPlyer.label),animatedVisibilityScope))
-
-                        }
-
-                    }
-                }
+                IndicadorDeTempo(this@Column,tempoTotalString,duracaoString,caregando,cor)
+                SLidePlyer(duracao,tempoTotal,vm,scope,cor)
+                Spacer(Modifier.padding(10.dp))
+                BotoesDeControle(vm,scope,this@with,animatedVisibilityScope,modoAleatorio,reproduzindo,modoRepeticao,cor)}
             }
 
 
         }
     }
 }
-
-
 @RequiresApi(Build.VERSION_CODES.Q)
 fun getMetaData(c: Context, uri: Uri, id: Long):Bitmap?{
     try {
@@ -437,7 +293,7 @@ fun getMetaData(c: Context, uri: Uri, id: Long):Bitmap?{
 @Composable
 fun ComtroladorPlyer(modifier: Modifier=Modifier,
                      sharedTransitionScope: SharedTransitionScope,
-                     animatedVisibilityScope:AnimatedVisibilityScope,
+                     animatedVisibilityScope:AnimatedVisibilityScope,scope: CoroutineScope,
                      onclick:()->Unit={},
                      vm:VmodelPlayer,
                      cor:MutableState<Color>,
@@ -462,7 +318,7 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier,
           }
               Plyer(Modifier.align( Alignment.TopCenter).background(Color.Transparent).padding(top=10.dp),
                     animatedVisibilityScope = animatedVisibilityScope,sharedTransitionScope = sharedTransitionScope,
-                    vm=vm, acaoMudarBackgraud = acaoMudarBackgraud,cor = cor.value, acaoDesaidaDoplyer = acoDesaidaDoPlyer)
+                    vm=vm, acaoMudarBackgraud = acaoMudarBackgraud,cor = cor.value, acaoDesaidaDoplyer = acoDesaidaDoPlyer,scope = scope)
 
 
               IconButton({
@@ -494,6 +350,7 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier,
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PlayerCompat(modifier: Modifier=Modifier,
+                 scope: CoroutineScope,
                  vm:VmodelPlayer,
                  vmlista:ViewModelListas,
                  acaoMudarLista:(p:Palette)->Unit={},
@@ -528,63 +385,21 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                                                                                     backgraudColor=backgraudColor,
                                                                                                     cor=cor,corTexto=corTexto,
                                                                                                     textColorSquemas=textColorSquemas, acao = acaMudarBackgraudScafolld)
-                                    },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColor)},acaoDeVoutar)
+                                    },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColor)}, acaoDeVoutar = acaoDeVoutar,scope = scope)
 
                             } else {
+                                 ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope = this@SharedTransitionLayout,
+                                                                     animatedVisibilityScope = this@AnimatedContent,
+                                                                     scope = scope,
+                                                                     backgraudColor=backgraudColor,
+                                                                     corDoTexto = corTexto,
+                                                                     cor=cor,textColorSquemas=textColorSquemas,
+                                                                     vm = vm,
+                                                                     vmlista = vmlista,
+                                                                     listaAvberta = listaAvberta)
+//
 
-                                val estadoPlylist=vmlista._estadoPlylsist.collectAsState()
-                                val lista =vmlista.plylist().collectAsState(emptyList()) //
 
-                                Column(Modifier.sharedBounds(rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),this@AnimatedContent, resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds)
-                                    .background(backgraudColor)) {
-                                  Row (modifier=Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
-                                      MiniplayerParaTransicao(
-                                        sharedTransitionScope = this@SharedTransitionLayout,
-                                        animatedVisibilityScope = this@AnimatedContent,
-                                        vm = vm,
-                                        corDotexto = corTexto.value,
-                                        backgraud = cor.value,
-                                        acaoMudarBackgraud = {
-                                            AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(it,
-                                                                                                  backgraudColor=cor,
-                                                                                                  corTexto = corTexto,
-                                                                                                  textColorSquemas = textColorSquemas,
-                                                                                                  backgraudColorSquemas = backgraudColor)
-                                          }
-                                    )
-                                }
-                                    Spacer(Modifier.padding(4.dp))
-                                    Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
-                                        Banner() }
-                                    Row(Modifier.fillMaxWidth(),horizontalArrangement =Arrangement.Center){
-                                        IconButton(onClick = {
-                                        listaAvberta.value=!listaAvberta.value
-                                    },modifier = Modifier.size(60.dp)) {
-                                        Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = DarkPink,modifier=Modifier.size(50.dp))
-                                    } }
-                                    val  metadata=vm._mediaItemAtual.collectAsState()
-                                    val indice=vm._indice.collectAsState()
-                                    val listState= rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
-
-                                    LazyColumn(state =  listState,modifier=Modifier.background(color = backgraudColor).fillMaxWidth().fillMaxHeight()) {
-
-                                        itemsIndexed(items = lista.value) {indice,item->
-                                           if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
-                                               Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                                                   Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, )
-                                                   ItemDaLista(Modifier.clickable {
-                                                       vm.seekToItem(indice)
-
-                                                   },item = item)
-                                               }
-                                           else
-                                            ItemDaLista(Modifier.clickable {
-                                                vm.seekToItem(indice)
-
-                                            },item = item)
-                                        }
-                                    }
-                                }
                             }
                             DisposableEffect(Unit) {
                                 onDispose {
@@ -604,6 +419,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,
         }
     }
 }
+
 
 
 sealed class ComponetesCompartilhados(val label:String){
@@ -687,6 +503,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                                                                                                            backgraudColorSquemas = backgraudColor)},acaoDeVoutar=acaoDeVoutar,
         corDotexto = corTexto.value)
            Spacer(Modifier.padding(10.dp))
+            val listState = rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
             Column(
                 Modifier.clip(RoundedCornerShape(15.dp)).background(cor.value),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -695,8 +512,6 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                 Spacer(Modifier.padding(3.dp))
                 Banner()
                 Box {
-                    val listState = rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
-
                     LazyColumn(state = listState,
                        modifier =  Modifier
                             .align(Alignment.TopCenter)
@@ -718,10 +533,10 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                         }
 
                     }
-
-
                 }
             }
+
+
         }
 
         }
@@ -750,7 +565,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val  caregando =vm._caregando.collectAsState(false)
     val imagem=vm._imagemPlyer.collectAsState()
     val medicoes =remember { MedicoesPlyer() }
-
+    val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
     LaunchedEffect(metadata.value) {
         vm.caregarImagePlyer({uri, id ->
             try {
@@ -782,154 +597,17 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
         }
 
         Column(Modifier.align(Alignment.TopCenter).fillMaxHeight()) {
-            val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
 
-                //medicoes.tamanhoDoIcone(windowSizeClass)
-            when(val r =imagem.value){
-                is ImagemPlyer.Vazia->Icon(
-                    painter = painterResource(r.icone),
-                    contentDescription = null,
-
-                    modifier = Modifier//.size(iconeSize)
-                        .fillMaxWidth(iconeSize)
-                        .aspectRatio(1f)
-                        .clip(
-                            RoundedCornerShape(15.dp)
-                        )
-                        .border(
-                            width = 1.5.dp,
-                            color = corDotexto,
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        .align(Alignment.CenterHorizontally), tint = DarkPink
-                )
-                is ImagemPlyer.Imagem->{ val _bitmap=r.imagem.asImageBitmap()
-                    Image(bitmap = _bitmap,
-                        contentDescription = null ,
-                        modifier = Modifier.fillMaxWidth(iconeSize)
-                            .aspectRatio(1f)
-                            .clip(
-                                RoundedCornerShape(15.dp)
-                            )
-
-                            .align(Alignment.CenterHorizontally), contentScale = ContentScale.FillBounds)}
-            }
-
-           Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
+            ImagemPlyer(imagem,iconeSize,corDotexto,this@Column)
+            Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
             Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(),horizontalAlignment = Alignment.CenterHorizontally) {
-
-                Text(text = if(metadata.value==null)"Nome da Musica" else metadata.value!!.mediaMetadata.title.toString(),
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = medicoes.funTSizeTitulo(windowSizeClass),
-                    maxLines =medicoes.maxLineTextos(windowSizeClass),
-                    color = corDotexto,
-                    textAlign = TextAlign.Justify)
-                Spacer(Modifier.padding(0.4.dp))
-                if(windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT)
-                Text(text =if (metadata.value==null) "Nome do Artista" else metadata.value!!.mediaMetadata.artist.toString(),
-                    maxLines=medicoes.maxLineTextos(windowSizeClass),
-                    fontSize = medicoes.funTSizeSubtitulo(),
-                    color = corDotexto,
-                    textAlign = TextAlign.Justify)
                 Spacer(Modifier.padding(3.dp))
                 Column(modifier=Modifier.fillMaxHeight()) {
-
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(text =duracaoString.value, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopStart), color = corDotexto )
-                        //Text("/", fontSize = 8.sp )
-                        androidx.compose.animation.AnimatedVisibility(visible =!caregando.value,Modifier.align(Alignment.TopEnd)) {
-                            Text(text = tempoTotalString.value, fontSize = 8.sp, modifier = Modifier.align(Alignment.TopEnd), color = corDotexto )
-                        }
-                        androidx.compose.animation.AnimatedVisibility(visible = caregando.value,Modifier.align(Alignment.TopEnd)) {
-                            CircularProgressIndicator(Modifier.size(10.dp).align(Alignment.TopEnd), color = corDotexto)
-                        }
-
-
-                    }
-                    val interactionSource = remember { MutableInteractionSource() }
+                    TextoDeApresentacaoDaMusica(this@Column,medicoes=medicoes,cor=corDotexto,metadata= metadata,windowSizeClass)
                     Spacer(Modifier.padding(5.dp))
-
-                    Slider(
-                        value = duracao.value,
-                        onValueChange = {
-                            scope.launch {
-                                val posicao =(it*tempoTotal.value)/100f
-                                vm.seekTo(posicao.toLong())
-                            }
-                        },
-                        valueRange = 0f..100f,
-                        thumb = {SliderDefaults.Thumb(interactionSource=interactionSource, modifier = Modifier.size(medicoes.tumblesize(windowSizeClass)), colors = SliderDefaults.colors(thumbColor = corDotexto))},
-                        track = {SliderDefaults.Track(it,
-                                                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.2f),
-                                                colors =SliderDefaults.colors(activeTrackColor =  corDotexto))},
-                        
-
-                        modifier = Modifier.height(if(windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 5.dp else 10.dp)
-                    )
+                    SLidePlyer(duracao,tempoTotal,vm,scope,corDotexto)
                     Spacer(Modifier.padding(3.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.20f),
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
-                    ) {
-                        IconButton({scope.launch { vm.preview() }}) {
-                            Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = corDotexto)
-                        }
-                        IconButton({
-                            scope.launch {
-                                vm.setModoAleatorio(!modoAleatorio.value)}
-                        }) {
-                            if(!modoAleatorio.value)
-                                Icon(painter = painterResource(id = R.drawable.baseline_shuffle_24), contentDescription = null,tint = corDotexto)
-                            else
-                                Icon(painter = painterResource(id = R.drawable.baseline_shuffle_on_24), contentDescription = null,tint = corDotexto)
-                        }
-
-                        IconButton({
-                            scope.launch {
-                                if(reproduzindo.value)
-                                    vm.pause()
-                                else vm.play()
-                            }
-
-                        }) {
-                            if (reproduzindo.value)
-                                Icon(painter = painterResource(id = R.drawable.baseline_pause_24),
-                                    contentDescription = null,
-                                    tint = corDotexto,
-                                    modifier = Modifier)
-                            else
-                                Icon(painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                    contentDescription = null,
-                                    tint = corDotexto,
-                                    modifier = Modifier)
-                        }
-
-                        IconButton({
-                            scope.launch {
-                                when(modoRepeticao.value){
-                                    is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
-                                    is ModoDerepeticao.RepetirEssa->vm.setModoDeRepeticao(ModoDerepeticao.RepetirTodos)
-                                    is ModoDerepeticao.RepetirTodos->vm.setModoDeRepeticao(ModoDerepeticao.Desativado)
-                                }
-                            }
-
-
-                        }) {
-                            when(modoRepeticao.value){
-                                is ModoDerepeticao.Desativado->Icon(painter = painterResource(id = R.drawable.baseline_repeat_24), contentDescription = null,tint = corDotexto)
-                                is ModoDerepeticao.RepetirEssa->Icon(painter = painterResource(id = R.drawable.baseline_repeat_one_on_24), contentDescription = null,tint = corDotexto)
-                                is ModoDerepeticao.RepetirTodos->Icon(painter = painterResource(id = R.drawable.baseline_repeat_on_24), contentDescription = null,tint = corDotexto)
-                            }
-
-                        }
-                        IconButton({vm.next()}) {
-                            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
-                                contentDescription = null,
-                                tint = corDotexto,modifier = Modifier)
-
-                        }
-
-                    }
+                    BotoesDeControle(scop = scope, vm = vm, columnScope = this@Column, modoAleatorio = modoAleatorio, reproduzindo = reproduzindo, modoRepeticao = modoRepeticao, cor = corDotexto)
                 }
             }
         }

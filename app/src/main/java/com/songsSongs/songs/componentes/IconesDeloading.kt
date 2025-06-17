@@ -80,7 +80,7 @@ fun LoadingListaMusicas(modifier: Modifier = Modifier){
                 Box(modifier.width(190.dp).height(10.dp).drawBehind {
                     drawRoundRect(brush = brushAnimado,cornerRadius = CornerRadius(10f,10f))
                 })
-                Spacer(Modifier.padding(8.dp))w
+                Spacer(Modifier.padding(8.dp))
                 Box(modifier.width(100.dp).height(10.dp).drawBehind {
                     drawRoundRect( brush = brushAnimado, cornerRadius = CornerRadius(10f,10f))
                 })

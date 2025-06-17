@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +34,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,7 +47,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.songsSongs.songs.componentes.ItemsListaPlaylists
 import com.songsSongs.songs.navegacao.DestinosDENavegacao
+import com.songsSongs.songs.viewModels.MainViewModel
 import com.songsSongs.songs.viewModels.ViewModelListas
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun DialogoOpcoesItemsDaLista(modifier: Modifier =Modifier,
@@ -256,6 +261,42 @@ ModalBottomSheet (onDismissRequest = acaoCamcelar,sheetState = sheetState)  {
  }
 
 
+}
+
+
+@Composable
+fun DialogoPermicaoLeituraDasMusicas(dialogoDeLeitura: State<Boolean>,
+                                     viewmodel: MainViewModel,
+                                     acaoPermicaoNotificacaoSDKInferiorATiramisu:()->Unit,
+                                     acaoPermicaoNotificacaoSDKTiramisuESuperiores:()->Unit,
+                                     scope: CoroutineScope){
+    if (dialogoDeLeitura.value) {
+        AlertDialog(onDismissRequest = { scope.launch {} },
+            title = { Text(text="Permicao para ler Dados do Dispositivo") },
+            text = { Text(text = "A permicao e nessesaria para poder ler as musicas presentes no dispositivo ") },
+            confirmButton = {
+                TextButton(onClick = {scope.launch {if(Build.VERSION.SDK_INT  <Build.VERSION_CODES.TIRAMISU) acaoPermicaoNotificacaoSDKInferiorATiramisu()
+                else acaoPermicaoNotificacaoSDKTiramisuESuperiores()}},
+                    content = { Text(text = "Ok") })},
+            dismissButton = {TextButton(onClick = {scope.launch { viewmodel.mudancaSolicitarPermicaoLaeitua(false) }},
+                content = { Text(text = "Nao permitir") })})
+    }
+}
+
+@Composable
+fun DialogoNotificacoes(dialigoNotificacao: State<Boolean>,
+                        acaoPermicaoNotificacao:()->Unit,
+                        scope: CoroutineScope,
+                        viewmodel: MainViewModel){
+    if (dialigoNotificacao.value) {
+        AlertDialog(onDismissRequest = { scope.launch {} },
+            title = { Text("permmicao de notificacao") },
+            text = { Text(text = "A permicao e nessesaria para poder emitir o player de notificacao que permite controlar a musica em segundo plano") },
+            confirmButton = {TextButton(onClick = {acaoPermicaoNotificacao()},
+                content = { Text("ok") })},
+            dismissButton = {TextButton(onClick = {viewmodel.mudancaSolicitarPermicaoNotificao(false)},
+                content = { Text(text = "Nao permitir") }) })
+    }
 }
 
 
