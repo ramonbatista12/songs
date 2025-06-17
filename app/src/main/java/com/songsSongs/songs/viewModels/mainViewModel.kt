@@ -29,7 +29,7 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
     val corDotextonoAppBar= MutableStateFlow(Color.Unspecified)
     val _corDotextonoAppBar=corDotextonoAppBar.asStateFlow()
     init {
-        scope.launch(Dispatchers.IO) {
+        scope.launch {
             estateService.collect{
                 when(it){
                     is ResultadosConecaoServiceMedia.Conectado->{

@@ -41,6 +41,7 @@ import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.songsSongs.songs.R
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -258,6 +259,7 @@ fun Banner(modifier: Modifier=Modifier){
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         scope.launch {
+            delay(2000)
             adview.value= AdView(context).apply {
                 this.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
                 this.adUnitId=IdAdmob.BannerId.idTest

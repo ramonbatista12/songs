@@ -68,6 +68,7 @@ import com.songsSongs.songs.repositorio.ListaPlaylist
 import com.songsSongs.songs.ui.theme.DarkPink
 import com.songsSongs.songs.ui.theme.SongsTheme
 import com.songsSongs.songs.viewModels.ViewModelListas
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -81,9 +82,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.onBackground,
                 item:MediaItem?,
-                acaoNavegarOpcoes:(item:MediaItem?)->Unit={}){
+                acaoNavegarOpcoes:(item:MediaItem?)->Unit={},
+                scop: CoroutineScope = rememberCoroutineScope()){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
-    val scop=rememberCoroutineScope()
+
     val context= LocalContext.current
     LaunchedEffect(Unit){
         scop.launch(Dispatchers.IO) {

@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +50,8 @@ import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.songsSongs.songs.viewModels.FabricaViewModelLista
 import com.songsSongs.songs.viewModels.ListaMusicas
 import com.songsSongs.songs.viewModels.ViewModelListas
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /*
@@ -63,7 +66,8 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                    transicaoMiniPlyer:MutableTransitionState<Boolean>,
                    viewModelListas: ViewModelListas,
                    acaoCarregarPlyer:(List<MediaItem>, indice:Int)->Unit,
-                   acaoNavegarOpcoes:(MediaItem?)->Unit){
+                   acaoNavegarOpcoes:(MediaItem?)->Unit,
+                   socop: CoroutineScope = rememberCoroutineScope()){
     val lista=viewModelListas.listas.collectAsState(ListaMusicas.caregando)
 
     val texto = remember { mutableStateOf("Nome da musica no mine plyer") }
@@ -85,11 +89,11 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                           acaoCarregarPlyer(r.lista,indice)
                           viewModelListas.mudarPlylist(PlyListStados.Todas,)
 
-                       }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
+                       }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes, scop = socop)
 
 
                    }else{
-                       ItemDaLista(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarOpcoes = acaoNavegarOpcoes)
+                       ItemDaLista(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarOpcoes = acaoNavegarOpcoes, scop = socop)
                    }
 
                }

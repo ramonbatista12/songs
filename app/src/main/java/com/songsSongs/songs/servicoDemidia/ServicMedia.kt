@@ -54,13 +54,13 @@ class ServicMedia: MediaSessionService() {
     var helperPalyer: HelperPalyerEstados? = null
     var helperPalyerComandes: HelperPalyerComandes? = null
     var helperNotificacao: HelperNotification? = null
-    val serviceIniciado= MutableStateFlow(false)
-    var _serviceIniciado=serviceIniciado.asStateFlow()
     val plyListStados= MutableStateFlow<PlyListStados>(PlyListStados.Todas)
     private lateinit var notification: Notification
     private var exeuctor:ListeningExecutorService? = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
+    private var wakeLock:PowerManager.WakeLock?=null
     val binder=ServicBinder()
-     var equalizador: Equalizador?=null
+    var equalizador: Equalizador?=null
+
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         Log.i("service","onGetSession")
         return this.mediaSession
@@ -80,15 +80,22 @@ class ServicMedia: MediaSessionService() {
         Log.i("service","onCreate")
         scope.launch {
         criarNotificacao()
-
         startForeground(1,notification,ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-        val player = ExoPlayer.Builder(this@ServicMedia).setAudioAttributes(AudioAttributes.DEFAULT,true)
+        val player = iniciarExoplyer()
+        iniciarEqualisacao(player)
+        mediaSession = iniciarMeidiaSessioan(player)
+        iniciarAlsiliares()
+        obterWakeLoker()    }
+    }
 
-            .build()
+
+    private suspend fun iniciarExoplyer ():ExoPlayer{
+      val player=  ExoPlayer.Builder(this@ServicMedia)
+       .setAudioAttributes(AudioAttributes.DEFAULT,true)
+       .build()
         player.repeatMode = Player.REPEAT_MODE_ALL
         player.addAnalyticsListener(EventLogger())
         player.setHandleAudioBecomingNoisy(true)
-
         player.addListener(object :Player.Listener {
 
             override fun onPlayerError(error: PlaybackException) {
@@ -100,68 +107,61 @@ class ServicMedia: MediaSessionService() {
                 Toast.makeText(this@ServicMedia,"Erro ao reprodusir  a faixa $nome",Toast.LENGTH_SHORT).show()
             }
         })
-
-
-
-
-
-
-       mediaSession = MediaSession.Builder(this@ServicMedia, player)
-                                  .setBitmapLoader(object: BitmapLoader{
-                                      override fun supportsMimeType(mimeType: String): Boolean {
-                                         return true
-                                      }
-
-                                      override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> {
-
-                                          val future=exeuctor?.submit(Callable{
-                                              BitmapFactory.decodeByteArray(data,0,data.size)
-                                          })
-                                          return future!!
-
-                                      }
-
-                                      override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> {
-                                         val future:ListenableFuture<Bitmap> = exeuctor!!.submit ( Callable{
-                                            val arrayStrings = uri.toString().split("/")
-                                            val id = arrayStrings[arrayStrings.size-1].split(".")[0]
-                                            val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,100,100)
-                                            bitmap ?: this@ServicMedia.getDrawable(R.drawable.inomeado)?.toBitmap(100,100,null)
-                                         })
-                                        return future
-                                      }
-                                  })
-                                  .build()
-
-
-       //onUpdateNotification(mediaSession!!,true)
-       helperPalyer = HelperPalyerEstados(mediaSession!!)
-       helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
-       helperNotificacao=HelperNotification(notification=notification,
-           helperPalyerEstados = helperPalyer!!,
-                                            helperPalyerComandes = helperPalyerComandes!!,
-                                            seviceContext = this@ServicMedia,
-                                            secaoDeMedia = mediaSession!!)
-       val powerManager=getSystemService(POWER_SERVICE) as PowerManager
-       val wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"TAG")
-            val id =player.audioSessionId
-            Log.i("service","audioSessionId $id")
-       equalizador= Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId,this@ServicMedia)
-       player.setAuxEffectInfo(AuxEffectInfo(equalizador!!.equalizer.id,1f))
-      equalizador!!.ativar()
-
-
-       Log.i("Equalizacao","id do equalizador ${equalizador!!.getIdDoEfeirto()}\n dados do plyer id do plyer ${player.audioSessionId}\n ${mediaSession!!.player.audioAttributes.audioAttributesV21.audioAttributes}\n${ mediaSession!!.player.trackSelectionParameters.maxAudioChannelCount }")
-
-       wakeLock.acquire()
-            serviceIniciado.emit(true)
-
-        }
-
-
-
-
+        return player
     }
+
+    @OptIn(UnstableApi::class)
+    private suspend fun iniciarMeidiaSessioan(player: ExoPlayer)=MediaSession.Builder(this@ServicMedia, player)
+        .setBitmapLoader(object: BitmapLoader{
+            override fun supportsMimeType(mimeType: String): Boolean {
+                return true
+            }
+
+            override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> {
+
+                val future=exeuctor?.submit(Callable{
+                    BitmapFactory.decodeByteArray(data,0,data.size)
+                })
+                return future!!
+
+            }
+
+            override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> {
+                val future:ListenableFuture<Bitmap> = exeuctor!!.submit ( Callable{
+                    val arrayStrings = uri.toString().split("/")
+                    val id = arrayStrings[arrayStrings.size-1].split(".")[0]
+                    val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,100,100)
+                    bitmap ?: this@ServicMedia.getDrawable(R.drawable.inomeado)?.toBitmap(100,100,null)
+                })
+                return future
+            }
+        })
+        .build()
+
+    private suspend fun iniciarAlsiliares(){
+        helperPalyer = HelperPalyerEstados(mediaSession!!)
+        helperPalyerComandes = HelperPalyerComandes(mediaSession!!)
+        helperNotificacao=HelperNotification(notification=notification,
+            helperPalyerEstados = helperPalyer!!,
+            helperPalyerComandes = helperPalyerComandes!!,
+            seviceContext = this@ServicMedia,
+            secaoDeMedia = mediaSession!!)
+    }
+
+    private suspend fun obterWakeLoker(){
+        val powerManager=getSystemService(POWER_SERVICE) as PowerManager
+        wakeLock=powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"servico:lock")
+        wakeLock?.acquire()
+    }
+
+    @OptIn(UnstableApi::class)
+    private suspend fun iniciarEqualisacao(player: ExoPlayer){
+        equalizador= Equalizador(PrioridadesDaEqualizacao.Alta,player.audioSessionId,this@ServicMedia)
+        player.setAuxEffectInfo(AuxEffectInfo(equalizador!!.equalizer.id,1f))
+        equalizador!!.ativar()
+    }
+
+
 
     override fun onBind(intent: Intent?): IBinder? {
         super.onBind(intent)
@@ -229,12 +229,14 @@ private fun criarNotificacao(){
           exeuctor?.shutdown()
      exeuctor=null
         job.cancel()
+     if (wakeLock!=null) {
+         wakeLock?.release()
+     }
+     wakeLock=null
 
         super.onDestroy()
     }
-    interface Mybinder{
-        fun getService(): ServicMedia
-    }
+
 
     }
 

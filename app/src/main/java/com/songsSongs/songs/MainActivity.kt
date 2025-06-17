@@ -246,7 +246,7 @@ class MainActivity : ComponentActivity() {
                 val dialigoLeitura = viewmodel.dialoLeitura.collectAsState(false)
                 val dialigoNotificacao =viewmodel.dialoNotificacao.collectAsState(false)
                 Surface(modifier = Modifier) {
-                    LaunchedEffect(Unit) {scopMain.launch {
+                    LaunchedEffect(Unit) {scopMain.launch(Dispatchers.Default) {
                                           checarPermicaoAudio(viewmodel)
                                           checarPermicaoNotificacao(viewmodel)}}
 
@@ -278,7 +278,7 @@ class MainActivity : ComponentActivity() {
                                                    vieModelPlyers.carregarLista(l,id)
                                                    vieModelPlyers.play()}},
                                           acaoAvisoBigplyer = {
-                                              scopMain.launch {
+                                              scopMain.launch(Dispatchers.Default) {
                                                   delay(1000)
                                                   viewmodel.mudarCorBackGround(Color.Unspecified)
                                                   viewmodel.mudarBigPlyer()}

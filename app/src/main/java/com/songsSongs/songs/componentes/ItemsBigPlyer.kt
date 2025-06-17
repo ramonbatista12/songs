@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -404,6 +405,36 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
     }
 }
 
+@Composable
+fun ListaPlyLIsts(vm: VmodelPlayer,
+                  vmlista: ViewModelListas,
+                  backgraudColor: Color,
+                  corDotexto: Color){
+    val  metadata=vm._mediaItemAtual.collectAsState()
+    val indice=vm._indice.collectAsState()
+    val listState= rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
+    val estadoPlylist=vmlista._estadoPlylsist.collectAsState()
+    val lista =vmlista.plylist().collectAsState(emptyList())
+
+    LazyColumn(state =  listState,modifier=Modifier.background(color = backgraudColor).fillMaxWidth().fillMaxHeight()) {
+
+        itemsIndexed(items = lista.value) {indice,item->
+            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
+                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
+                    Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, )
+                    ItemDaLista(Modifier.clickable {
+                        vm.seekToItem(indice)
+
+                    },item = item, cor = corDotexto)
+                }
+            else
+                ItemDaLista(Modifier.clickable {
+                    vm.seekToItem(indice)
+
+                },item = item)
+        }
+    }
+}
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -465,4 +496,19 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
 
         }
     }
+}
+
+@Composable
+fun ApresentacaoPlyListPlyerEstendido(rowScope: RowScope,vmodelPlayer: VmodelPlayer,vmlista: ViewModelListas,backgraudColor:Color,corDotexto: Color){
+    with(rowScope){
+    Column(
+        Modifier.clip(RoundedCornerShape(15.dp)).background(backgraudColor),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Playlist", fontFamily = FontFamily.Monospace, color = corDotexto)
+        Spacer(Modifier.padding(3.dp))
+        Banner()
+        ListaPlyLIsts(vmodelPlayer, vmlista, backgraudColor,corDotexto)
+
+    }}
 }

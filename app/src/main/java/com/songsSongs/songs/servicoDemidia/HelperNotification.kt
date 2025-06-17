@@ -37,29 +37,22 @@ class HelperNotification(val notification: Notification,
     val job= Job()
     val scope= CoroutineScope(Dispatchers.Main+job)
     val metaData= MutableStateFlow<MediaItem?>(null)
-    val fabricaDeNotificacoes= FabricaDeNotificacoes(notification,seviceContext,secaoDeMedia)
+    val gerenciadorDeNotificacoes= GerenciadorDeNotificacoes(notification,seviceContext,secaoDeMedia)
 
     init {
         Log.i("service","helper notificacao")
-
-
-
-
-
-
-
-    scope.launch(Dispatchers.Default) {
+        scope.launch(Dispatchers.Default) {
         scope.launch(Dispatchers.Default) {
         Log.i("service","helper notificacao scope")
         helperPalyerEstados._metadataAtual.collect{
             metaData.value=it
             if(it!=null)
-            fabricaDeNotificacoes.atualizarNotificacao(true,metaData.value)
+            gerenciadorDeNotificacoes.atualizarNotificacao(true,metaData.value)
         }}
       scope.launch(Dispatchers.Default) {
           helperPalyerEstados._estaReproduzindo.collect{
               Log.i("service","helper notificacao scope esta reproduzindo $it")
-               fabricaDeNotificacoes.atualizarNotificacao(it,metaData.value)
+               gerenciadorDeNotificacoes.atualizarNotificacao(it,metaData.value)
 
 
           }
@@ -74,14 +67,7 @@ class HelperNotification(val notification: Notification,
     }
     override fun finalizar() {
         job.cancel()
-        metaData.value=null
-
-
-        
-
-    }
-
-}
+        metaData.value=null}}
 
 /*
 * o receiver e  e um broadcast receiver que eu o registro programaticamente
@@ -97,7 +83,7 @@ class HelperNotification(val notification: Notification,
 *
 * */
 @RequiresApi(Build.VERSION_CODES.O)
-class FabricaDeNotificacoes(var notification: Notification, val contextoDoServico: Context,val secaoDemedia: MediaSession){
+class GerenciadorDeNotificacoes(var notification: Notification, val contextoDoServico: Context, val secaoDemedia: MediaSession){
 
     @OptIn(UnstableApi::class)
     @RequiresApi(Build.VERSION_CODES.P)

@@ -13,7 +13,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
@@ -30,8 +29,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,13 +66,14 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.R
+import com.songsSongs.songs.componentes.ApresentacaoPlyListPlyerEstendido
 import com.songsSongs.songs.componentes.ApresenttacaoDasPlyListsPlyerCompat
 import com.songsSongs.songs.componentes.AuxiliarMudancaDeBackGrands
 import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BotoesDeControle
 import com.songsSongs.songs.componentes.ImagemPlyer
 import com.songsSongs.songs.componentes.IndicadorDeTempo
-import com.songsSongs.songs.componentes.ItemDaLista
+import com.songsSongs.songs.componentes.ListaPlyLIsts
 
 import com.songsSongs.songs.componentes.MedicoesPlyer
 import com.songsSongs.songs.componentes.MovimentoRetorno
@@ -89,7 +87,6 @@ import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -160,14 +157,12 @@ SelecaoDosPlyer(modifier,
                         acaoAvisoBigplyer()
 
                     }
-                  //  acaodevoutarPreditivo.value=trueacaoDeVoutar()
+
 
                     },
                 acaMudarBackgraudScafolld=acaMudarBackgraudScafolld,
                 acaoMudarCorScafollEBArraPermanente=acaoMudarCorScafollEBArraPermanente,
-                acaoMudarScala={x,y,ofx,ofy->
-
-                })
+                )
 
 
 
@@ -184,7 +179,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     acaoDeVoutar: () -> Unit={},
                     acaMudarBackgraudScafolld: (Color) -> Unit={},
                     acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
-                    acaoMudarScala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit={x,y,ofx,ofy->}){
+                    ){
     val cor=MaterialTheme.colorScheme.background
     val corbackgrand= remember { mutableStateOf(cor) }
     val int =MaterialTheme.colorScheme.background.value.toInt()
@@ -195,7 +190,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                      vmlista = vmlista,
                      acaoDeVoutar=acaoDeVoutar,
                      acaMudarBackgraudScafolld = acaMudarBackgraudScafolld,
-                     acaoMudarEscala = acaoMudarScala )
+                      )
 
     else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
         if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)
@@ -203,9 +198,9 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                          vm = vm,
                          vmlista = vmlista,
                          acaoDeVoutar=acaoDeVoutar,
-                         acaMudarBackgraudScafolld = acaMudarBackgraudScafolld, acaoMudarEscala = acaoMudarScala)
-        else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoMudarScala,acaoDeVoutar)
-    else  PlyerEspandido(modifier,windowSizeClass,vm=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoMudarScala,acaoDeVoutar)
+                         acaMudarBackgraudScafolld = acaMudarBackgraudScafolld,)
+        else  PlyerEspandido(modifier,windowSizeClass,vmodelPlayer=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoDeVoutar)
+    else  PlyerEspandido(modifier,windowSizeClass,vmodelPlayer=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoDeVoutar)
 }
 
 
@@ -356,16 +351,16 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                  acaoMudarLista:(p:Palette)->Unit={},
                  acaoDeVoutar:()->Unit={},
                  acaMudarBackgraudScafolld: (Color) -> Unit={},
-                 acaoMudarEscala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit={x,y,ofx,ofy->}) {
+                 ) {
     val listaAvberta = remember { mutableStateOf(false) }
-    val backgraudColor =MaterialTheme.colorScheme.background
+    val backgraudColorDefault =MaterialTheme.colorScheme.background
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
-    val cor = remember { mutableStateOf(Color(backgraudColor.value.toInt())) }
+    val Backgraud = remember { mutableStateOf(Color(backgraudColorDefault.value.toInt())) }
     val corTexto=remember { mutableStateOf(Color.Black) }
-    val animacaoFuncao=remember { MovimentoRetorno() }
 
 
-   Box(modifier = modifier.fillMaxSize().background(cor.value)) {
+
+   Box(modifier = modifier.fillMaxSize().background(Backgraud.value)) {
 
         SharedTransitionLayout {
             AnimatedContent(targetState = listaAvberta.value) { targetState: Boolean ->
@@ -382,18 +377,18 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                            ,onclick = {listaAvberta.value=!listaAvberta.value},
                                             vm=vm,cor=corTexto ,acaoMudarBackgraud = {
                                                AuxiliarMudancaDeBackGrands().mudarBackgrandScaffold(it,
-                                                                                                    backgraudColor=backgraudColor,
-                                                                                                    cor=cor,corTexto=corTexto,
+                                                                                                    backgraudColor=backgraudColorDefault,
+                                                                                                    cor=Backgraud,corTexto=corTexto,
                                                                                                     textColorSquemas=textColorSquemas, acao = acaMudarBackgraudScafolld)
-                                    },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColor)}, acaoDeVoutar = acaoDeVoutar,scope = scope)
+                                    },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColorDefault)}, acaoDeVoutar = acaoDeVoutar,scope = scope)
 
                             } else {
                                  ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope = this@SharedTransitionLayout,
                                                                      animatedVisibilityScope = this@AnimatedContent,
                                                                      scope = scope,
-                                                                     backgraudColor=backgraudColor,
+                                                                     backgraudColor=backgraudColorDefault,
                                                                      corDoTexto = corTexto,
-                                                                     cor=cor,textColorSquemas=textColorSquemas,
+                                                                     cor=Backgraud,textColorSquemas=textColorSquemas,
                                                                      vm = vm,
                                                                      vmlista = vmlista,
                                                                      listaAvberta = listaAvberta)
@@ -403,7 +398,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                             }
                             DisposableEffect(Unit) {
                                 onDispose {
-                                    acaMudarBackgraudScafolld(cor.value)
+                                    acaMudarBackgraudScafolld(Backgraud.value)
                                 }
                                 }
 
@@ -447,94 +442,43 @@ sealed class LayoutsCompartilhados(val label:String){
     @Composable
 fun PlyerEspandido(modifier: Modifier=Modifier,
                    windowSizeClass: WindowSizeClass,
-                   vm:VmodelPlayer,vmlista:ViewModelListas,
-                   cor:MutableState<Color>,
+                   vmodelPlayer:VmodelPlayer, vmlista:ViewModelListas,
+                   bacgrandClor:MutableState<Color>,
                    acaoMudarCorScafollEBArraPermanente: (backgrand: Color, corBarra: Color) -> Unit={b,c->},
-                   acaoMudarEscala:(x:Float,y:Float,ofsetx:Float,offsety:Float)->Unit={x,y,ofx,ofy->},
+
                    acaoDeVoutar: () -> Unit={}) {
-       val metadata=vm._mediaItemAtual.collectAsState()
+       val metadata=vmodelPlayer._mediaItemAtual.collectAsState()
        val plyListAtual=vmlista.plylist().collectAsState(emptyList())
-       val backgraudColor=MaterialTheme.colorScheme.background
+       val backgraudColorDefault=MaterialTheme.colorScheme.background
        val textColorSquemas=MaterialTheme.colorScheme.onBackground
-       val auxiliar= remember { MovimentoRetorno() }
        val corTexto=remember { mutableStateOf(textColorSquemas) }
-       val indice =vm._indice.collectAsState()
+       val indice =vmodelPlayer._indice.collectAsState()
         DisposableEffect(Unit) {
             onDispose {
-                acaoMudarCorScafollEBArraPermanente(backgraudColor,textColorSquemas)
+                acaoMudarCorScafollEBArraPermanente(backgraudColorDefault,textColorSquemas)
             }
         }
-       /* PredictiveBackHandler { progress: Flow<BackEventCompat> ->
-            progress.collect { backEvent ->
-                try {
-                   auxiliar.animacao(backEvent.progress,
-                            acaoDeVoutar,
-                           acaoMudarCor = {acaoMudarCorScafollEBArraPermanente(backgraudColor,textColorSquemas)},
-                           acaoReverterCorbackgrand = {acaoMudarCorScafollEBArraPermanente(cor.value,corTexto.value)},
-                           acaoMudarEscala = acaoMudarEscala
-                   )
-                    // acaMudarBackgraudScafolld(backgraudColor)
-                } catch (e: CancellationException) {
-                    Log.d("progress animacao ","${backEvent.progress} ,camcelado ${e.message}")
-                    acaoMudarCorScafollEBArraPermanente(cor.value,corTexto.value)
-                    acaoMudarEscala(0f,0f,0f,0f)
-                }
 
-
-            }
-        }*/
 
 
         Row(
-            modifier.background(cor.value)
+            modifier.background(bacgrandClor.value)
                 .fillMaxSize()
                 .padding(bottom = 10.dp), verticalAlignment = Alignment.Top) {
 
 
-           PlyerComtrolerPlyerExtendidi(modifier=Modifier.background(cor.value),vm = vm,
+           PlyerComtrolerPlyerExtendidi(modifier=Modifier.background(bacgrandClor.value),vm = vmodelPlayer,
                                         windowSizeClass = windowSizeClass,
                                         metadata = metadata,
                                         acaoMudarBackgraud = {
                                           AuxiliarMudancaDeBackGrands().mudaBackgraundScafolldPermanentBar(it,
                                                                                                            acaoMudarCorScafollEBArraPermanente,
-                                                                                                           corBackGraund = cor,
+                                                                                                           corBackGraund = bacgrandClor,
                                                                                                            corTexto=corTexto,
                                                                                                            textColorSquemas = textColorSquemas,
-                                                                                                           backgraudColorSquemas = backgraudColor)},acaoDeVoutar=acaoDeVoutar,
-        corDotexto = corTexto.value)
+                                                                                                           backgraudColorSquemas = backgraudColorDefault)},acaoDeVoutar=acaoDeVoutar,corDotexto = corTexto.value)
            Spacer(Modifier.padding(10.dp))
-            val listState = rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
-            Column(
-                Modifier.clip(RoundedCornerShape(15.dp)).background(cor.value),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Playlist", fontFamily = FontFamily.Monospace, color = corTexto.value)
-                Spacer(Modifier.padding(3.dp))
-                Banner()
-                Box {
-                    LazyColumn(state = listState,
-                       modifier =  Modifier
-                            .align(Alignment.TopCenter)
-
-                            ) {
-
-                        itemsIndexed(items = plyListAtual.value) {indice,item->
-                            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
-                                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                                    Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = corTexto.value)
-                                    ItemDaLista(modifier = Modifier.clickable{
-                                        vm.seekToItem(indice)
-                                    },item = item, cor = corTexto.value)
-                                }
-                            else
-                            ItemDaLista(modifier = Modifier.clickable{
-                                vm.seekToItem(indice)
-                            },item = item, cor = corTexto.value)
-                        }
-
-                    }
-                }
-            }
+           ApresentacaoPlyListPlyerEstendido(this@Row,vmodelPlayer,vmlista,bacgrandClor.value, corTexto.value)
 
 
         }
@@ -557,12 +501,9 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val context= LocalContext.current
     val duracao=vm._duracao.collectAsState()
     val tempoTotal=vm._tempoTotal.collectAsState()
-    val duracaoString=vm._duracaoString.collectAsState()
-    val tempoTotalString=vm._tempoTotalString.collectAsState()
     val modoAleatorio=vm._modoAleatorio.collectAsState()
     val  modoRepeticao=vm._modoRepeticao.collectAsState()
     val  reproduzindo=vm._emreproducao.collectAsState()
-    val  caregando =vm._caregando.collectAsState(false)
     val imagem=vm._imagemPlyer.collectAsState()
     val medicoes =remember { MedicoesPlyer() }
     val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
@@ -670,3 +611,26 @@ fun PreviaPlyer2(){
 
     }
 }
+/*Box {
+    LazyColumn(state = listState,
+        modifier =  Modifier
+            .align(Alignment.TopCenter)
+
+    ) {
+
+        itemsIndexed(items = plyListAtual.value) {indice,item->
+            if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
+                Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
+                    Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = corTexto.value)
+                    ItemDaLista(modifier = Modifier.clickable{
+                        vm.seekToItem(indice)
+                    },item = item, cor = corTexto.value)
+                }
+            else
+                ItemDaLista(modifier = Modifier.clickable{
+                    vm.seekToItem(indice)
+                },item = item, cor = corTexto.value)
+        }
+
+    }
+}*/

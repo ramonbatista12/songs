@@ -25,8 +25,8 @@ class ViewModelPlyList(val estado: MutableStateFlow<ResultadosConecaoServiceMedi
     private val estadoPlylist=MutableStateFlow<PlyListStados>(PlyListStados.Todas)
     var job:Job?=null
     init {
-        scop.launch {
-        scop.launch {
+        scop.launch(Dispatchers.Default) {
+
         estado.collect{
 
         when(it){
@@ -36,7 +36,8 @@ class ViewModelPlyList(val estado: MutableStateFlow<ResultadosConecaoServiceMedi
                         estadoPlylist.value=it
                     }
                 }
-                scop.launch(Dispatchers.IO) {
+                //
+                scop.launch(Dispatchers.Default) {
                     estadoPlylist.collect {
                     when(it){
                         is PlyListStados.Album->{
@@ -89,8 +90,10 @@ class ViewModelPlyList(val estado: MutableStateFlow<ResultadosConecaoServiceMedi
                 }
             }
             else->{if(job!=null) job?.cancel()}
-        } }}
         }
+        }
+        }
+
     }
 
     override fun onCleared() {
