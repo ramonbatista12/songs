@@ -169,10 +169,7 @@ class ServicMedia: MediaSessionService() {
 
     inner  class ServicBinder:Binder(){
          fun getService(): ServicMedia {
-            return this@ServicMedia
-        }
-
-    }
+            return this@ServicMedia }}
 
 
 
@@ -187,16 +184,11 @@ private fun criarNotificacao(){
                                                                      .setSmallIcon(R.drawable.baseline_music_note_24_darkpink).build()
 }
     fun muudarPlyList(plyListStado: PlyListStados){
-        scope.launch {
+        scope.launch { plyListStados.emit(plyListStado)}}
 
-           plyListStados.emit(plyListStado)
-
-        }
-    }
  private fun camcelarNotificacao(){
      val notificationManager=getSystemService(NotificationManager::class.java) as NotificationManager
-        notificationManager.cancel(ObjetoDadosDeNotificao.idNotificao)
- }
+        notificationManager.cancel(ObjetoDadosDeNotificao.idNotificao)}
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
@@ -235,9 +227,6 @@ private fun criarNotificacao(){
      wakeLock=null
 
         super.onDestroy()
-    }
-
-
-    }
+    }}
 
 

@@ -280,8 +280,8 @@ class MainActivity : ComponentActivity() {
                                           acaoAvisoBigplyer = {
                                               scopMain.launch(Dispatchers.Default) {
                                                   delay(1000)
-                                                  viewmodel.mudarCorBackGround(Color.Unspecified)
-                                                  viewmodel.mudarBigPlyer()}
+                                                  if(!it) viewmodel.mudarCorBackGround(Color.Unspecified)
+                                                  viewmodel.mudarBigPlyer(it)}
                                               },
                                           acaoMudaBackgraundScafolld = {viewmodel.mudarCorBackGround(it)},
                                           acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
@@ -379,7 +379,7 @@ class MainActivity : ComponentActivity() {
 
                         val comclusao = scopMain.async {
 
-                            viewmodel.mudarBigPlyer()
+                            viewmodel.mudarBigPlyer(true)
                             transicaoMiniPlyer.targetState = false
                             windowInsetsControllerCompat.hide(
                                 WindowInsetsCompat.Type.systemBars()

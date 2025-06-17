@@ -41,6 +41,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.Log
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import com.songsSongs.songs.R
@@ -65,6 +67,7 @@ import com.songsSongs.songs.viewModels.ModoDerepeticao
 import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -138,11 +141,12 @@ fun IndicadorDeTempo(columnScope: ColumnScope, tempoTotalString: State<String>, 
 fun SLidePlyer(duracao: State<Float>,
                tempoTotal: State<Long>,
                vm: VmodelPlayer,
-               scop: CoroutineScope, cor: Color
+                cor: Color
 ){
+    val scope = rememberCoroutineScope()
     val interacao= remember { MutableInteractionSource() }
     Slider(value = duracao.value, onValueChange = {
-        scop.launch {
+        scope.launch {
             val valor=(it*tempoTotal.value)/100f
             vm.seekTo(valor.toLong())
         }
@@ -159,20 +163,20 @@ fun SLidePlyer(duracao: State<Float>,
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun BotoesDeControle(vm: VmodelPlayer,
-                     scop: CoroutineScope,
                      sharedTransitionScope: SharedTransitionScope,
                      animatedVisibilityScope: AnimatedVisibilityScope,
                      modoAleatorio: State<Boolean>,
                      reproduzindo: State<Boolean>,
                      modoRepeticao: State<ModoDerepeticao>, cor: Color
 ){
+    val scop= rememberCoroutineScope()
     with(sharedTransitionScope) {
         Row (modifier = Modifier.fillMaxWidth().fillMaxHeight(0.40f),horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween){
             IconButton({scop.launch { vm.preview() }}) {
                 Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = cor)
             }
             IconButton({
-                scop.launch {
+                scop.launch(Dispatchers.Main) {
                     vm.setModoAleatorio(!modoAleatorio.value)}
             }) {
                 if(!modoAleatorio.value)
@@ -182,7 +186,7 @@ fun BotoesDeControle(vm: VmodelPlayer,
             }
 
             IconButton({
-                scop.launch {
+                scop.launch(Dispatchers.Main) {
                     if(reproduzindo.value)
                         vm.pause()
                     else vm.play()
@@ -202,7 +206,8 @@ fun BotoesDeControle(vm: VmodelPlayer,
             }
 
             IconButton({
-                scop.launch {
+                Log.e("setmod","entrou no botao de repeticao")
+                scop.launch(Dispatchers.Main) {
                     when(modoRepeticao.value){
                         is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
                         is ModoDerepeticao.RepetirEssa->vm.setModoDeRepeticao(ModoDerepeticao.RepetirTodos)
@@ -245,7 +250,7 @@ fun BotoesDeControle(vm: VmodelPlayer,
                 Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24), contentDescription = null,tint = cor)
             }
             IconButton({
-                scop.launch {
+                scop.launch(Dispatchers.Main) {
                     vm.setModoAleatorio(!modoAleatorio.value)}
             }) {
                 if(!modoAleatorio.value)
@@ -255,7 +260,7 @@ fun BotoesDeControle(vm: VmodelPlayer,
             }
 
             IconButton({
-                scop.launch {
+                scop.launch(Dispatchers.Main) {
                     if(reproduzindo.value)
                         vm.pause()
                     else vm.play()
@@ -275,7 +280,7 @@ fun BotoesDeControle(vm: VmodelPlayer,
             }
 
             IconButton({
-                scop.launch {
+                scop.launch(Dispatchers.Main) {
                     when(modoRepeticao.value){
                         is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
                         is ModoDerepeticao.RepetirEssa->vm.setModoDeRepeticao(ModoDerepeticao.RepetirTodos)
@@ -421,7 +426,7 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
         itemsIndexed(items = lista.value) {indice,item->
             if(metadata.value!=null&& item.mediaId==metadata.value!!.mediaId)
                 Row (Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                    Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, )
+                    Icon(painter = painterResource(R.drawable.baseline_play_arrow_24,), contentDescription = null, tint = corDotexto )
                     ItemDaLista(Modifier.clickable {
                         vm.seekToItem(indice)
 
@@ -431,7 +436,7 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
                 ItemDaLista(Modifier.clickable {
                     vm.seekToItem(indice)
 
-                },item = item)
+                },item = item,cor = corDotexto)
         }
     }
 }

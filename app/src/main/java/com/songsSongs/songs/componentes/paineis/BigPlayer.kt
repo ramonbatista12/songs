@@ -102,40 +102,29 @@ fun BigPlayer(modifier: Modifier = Modifier,
               windowSizeClass: WindowSizeClass,
               paddingValues: PaddingValues,
               vm: VmodelPlayer,vmlista: ViewModelListas,
-              acaoAvisoBigplyer:()->Unit,
+              acaoAvisoBigplyer:(Boolean)->Unit,
               acaoDeVoutar: () -> Unit,
               acaMudarBackgraudScafolld:(Color)->Unit={},
               acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
               acaoOcultarBaras:()->Unit={},
               acaoMostraBaras:()->Unit={}){
+
     val context= LocalView.current
    val scop = rememberCoroutineScope()
-   val acaodevoutar= remember{ mutableStateOf(false)}
+   val acaodevoutarFoiacionada= rememberSaveable{ mutableStateOf(false)}
    val decompostomposto= rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        acaodevoutar.value=false
-        if(decompostomposto.value){
-            acaoAvisoBigplyer()
-            decompostomposto.value=false
-        }
+        acaoAvisoBigplyer(true)
+        acaoOcultarBaras()
+
+
     }
 
     DisposableEffect(Unit) {
 
         onDispose {
-            if(!acaodevoutar.value) {
-
-                decompostomposto.value=true
-                acaoMostraBaras()
-                acaoAvisoBigplyer()
-
-
-            }
-
-
-
-
-        }
+            acaoMostraBaras()
+            acaoAvisoBigplyer(false)}
     }
 
 SelecaoDosPlyer(modifier,
@@ -145,7 +134,7 @@ SelecaoDosPlyer(modifier,
                 vmlista,
                 acaoAvisoBigplyer,
                 acaoDeVoutar={
-                    acaodevoutar.value=true
+                    acaodevoutarFoiacionada.value=true
                     scop.launch {
                         acaoMostraBaras()
                        // delay(100)
@@ -154,7 +143,7 @@ SelecaoDosPlyer(modifier,
 
                         //delay(100)
                         acaoDeVoutar()
-                        acaoAvisoBigplyer()
+                        acaoAvisoBigplyer(false)
 
                     }
 
@@ -175,7 +164,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     windowSizeClass: WindowSizeClass,
                     scope: CoroutineScope,
                     vm: VmodelPlayer,vmlista: ViewModelListas,
-                    acaoAvisoBigplyer:()->Unit,
+                    acaoAvisoBigplyer:(Boolean)->Unit,
                     acaoDeVoutar: () -> Unit={},
                     acaMudarBackgraudScafolld: (Color) -> Unit={},
                     acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
@@ -185,7 +174,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
     val int =MaterialTheme.colorScheme.background.value.toInt()
     val coresBackgrad=remember { mutableStateOf<List<Color>?>(null) }
     if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT)
-        PlayerCompat(modifier=modifier, scope = scope,
+        PlayerCompat(modifier=modifier, scopes = scope,
                      vm = vm,
                      vmlista = vmlista,
                      acaoDeVoutar=acaoDeVoutar,
@@ -194,7 +183,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
 
     else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
         if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.MEDIUM ||windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.EXPANDED)
-            PlayerCompat(modifier, scope = scope,
+            PlayerCompat(modifier, scopes = scope,
                          vm = vm,
                          vmlista = vmlista,
                          acaoDeVoutar=acaoDeVoutar,
@@ -260,9 +249,9 @@ val iconsize=medicoes.larguraImagemPlyerCompoat(windowSizeClass)
                 Spacer(Modifier.padding(10.dp))
                 Column(modifier = Modifier.width(400.dp)) {
                 IndicadorDeTempo(this@Column,tempoTotalString,duracaoString,caregando,cor)
-                SLidePlyer(duracao,tempoTotal,vm,scope,cor)
+                SLidePlyer(duracao,tempoTotal,vm,cor)
                 Spacer(Modifier.padding(10.dp))
-                BotoesDeControle(vm,scope,this@with,animatedVisibilityScope,modoAleatorio,reproduzindo,modoRepeticao,cor)}
+                BotoesDeControle(vm,this@with,animatedVisibilityScope,modoAleatorio,reproduzindo,modoRepeticao,cor)}
             }
 
 
@@ -345,7 +334,7 @@ fun ComtroladorPlyer(modifier: Modifier=Modifier,
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PlayerCompat(modifier: Modifier=Modifier,
-                 scope: CoroutineScope,
+                 scopes: CoroutineScope,
                  vm:VmodelPlayer,
                  vmlista:ViewModelListas,
                  acaoMudarLista:(p:Palette)->Unit={},
@@ -357,7 +346,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,
     val textColorSquemas=MaterialTheme.colorScheme.onBackground
     val Backgraud = remember { mutableStateOf(Color(backgraudColorDefault.value.toInt())) }
     val corTexto=remember { mutableStateOf(Color.Black) }
-
+    val escope = rememberCoroutineScope()
 
 
    Box(modifier = modifier.fillMaxSize().background(Backgraud.value)) {
@@ -380,12 +369,12 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                                                                                     backgraudColor=backgraudColorDefault,
                                                                                                     cor=Backgraud,corTexto=corTexto,
                                                                                                     textColorSquemas=textColorSquemas, acao = acaMudarBackgraudScafolld)
-                                    },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColorDefault)}, acaoDeVoutar = acaoDeVoutar,scope = scope)
+                                    },acoDesaidaDoPlyer = {acaMudarBackgraudScafolld(backgraudColorDefault)}, acaoDeVoutar = acaoDeVoutar,scope = escope)
 
                             } else {
                                  ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope = this@SharedTransitionLayout,
                                                                      animatedVisibilityScope = this@AnimatedContent,
-                                                                     scope = scope,
+                                                                     scope = escope,
                                                                      backgraudColor=backgraudColorDefault,
                                                                      corDoTexto = corTexto,
                                                                      cor=Backgraud,textColorSquemas=textColorSquemas,
@@ -546,7 +535,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 Column(modifier=Modifier.fillMaxHeight()) {
                     TextoDeApresentacaoDaMusica(this@Column,medicoes=medicoes,cor=corDotexto,metadata= metadata,windowSizeClass)
                     Spacer(Modifier.padding(5.dp))
-                    SLidePlyer(duracao,tempoTotal,vm,scope,corDotexto)
+                    SLidePlyer(duracao,tempoTotal,vm,corDotexto)
                     Spacer(Modifier.padding(3.dp))
                     BotoesDeControle(scop = scope, vm = vm, columnScope = this@Column, modoAleatorio = modoAleatorio, reproduzindo = reproduzindo, modoRepeticao = modoRepeticao, cor = corDotexto)
                 }

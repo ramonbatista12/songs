@@ -45,9 +45,9 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
             }
         }
 
-    fun mudarBigPlyer(){
-        if(bigPlyer.value)bigPlyer.value=false
-        else bigPlyer.value=true
+    fun mudarBigPlyer(boolean: Boolean){
+        bigPlyer.value=boolean
+
     }
 
 
@@ -82,11 +82,10 @@ class MainViewModel(var estateService:MutableStateFlow<ResultadosConecaoServiceM
 
    fun mudarCorBackGround(value:Color){
 
-             corBackGround.value=value
-
-
-
-   }
+             corBackGround.value=value}
+    fun mudarCorBackGround(value:Color,boolean: Boolean){
+        if(boolean) corBackGround.value=value
+        }
 
     fun mudarCorBackGroundEtexto(backGround:Color,textonoAppBar:Color){
 
