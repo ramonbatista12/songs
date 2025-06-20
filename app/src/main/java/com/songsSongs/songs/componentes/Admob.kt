@@ -257,27 +257,26 @@ fun Banner(modifier: Modifier=Modifier){
     val adview = remember {mutableStateOf<AdView?>(null)  }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    LaunchedEffect(Unit) {
-        scope.launch {
-            delay(2000)
-            adview.value= AdView(context).apply {
-                this.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
-                this.adUnitId=IdAdmob.BannerId.idTest
-                loadAd(AdRequest.Builder().build())
-            }
-        }
-        }
+ LaunchedEffect(Unit) {
+     scope.launch {
+     delay(2000)
+     adview.value= AdView(context).apply {
+         this.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
+         this.adUnitId=IdAdmob.BannerId.idTest
+         loadAd(AdRequest.Builder().build())
+     }
+ } }
 
     DisposableEffect(Unit) {
+
         onDispose {
-            if (adview.value!=null){
-                adview.value!!.destroy()}
+            if (adview.value!=null) adview.value!!.destroy()
             adview.value=null
         }
     }
 
     if(adview.value!=null)
-  AndroidView(modifier=Modifier.clip(RoundedCornerShape(15.dp)).border(1.dp,MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(15.dp)),
+  AndroidView(modifier=Modifier.clip(RoundedCornerShape(15.dp)),
      factory = {
      adview.value!!
  })

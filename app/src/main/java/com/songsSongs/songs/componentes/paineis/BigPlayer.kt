@@ -13,6 +13,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
@@ -93,6 +94,20 @@ import kotlinx.coroutines.launch
 /*
 * BigPlyer representa o player em si aonde se pode ver os dados da musica em reproducao no momento
 * e responsavel por medir e determinar como deve ser esibido em cado tamanho de tela
+*
+* acaoNavegarOpcoes = {
+
+                          val metadata=it?.mediaMetadata
+           navController.navigate(   DestinosDENavegacao.DestinosDeDialogo
+                                                         .OpcoesItemsDaLista(titulo = metadata?.title.toString(),
+                                                                             artista = metadata?.artist.toString(),
+                                                                             uri =metadata?.artworkUri.toString(),
+                                                                             album = metadata?.albumArtist.toString(),
+                                                                             id=it?.mediaId.toString(),
+                                                                             duracao = metadata?.durationMs.toString() ))
+
+       }
+*
 * */
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -107,7 +122,8 @@ fun BigPlayer(modifier: Modifier = Modifier,
               acaMudarBackgraudScafolld:(Color)->Unit={},
               acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
               acaoOcultarBaras:()->Unit={},
-              acaoMostraBaras:()->Unit={}){
+              acaoMostraBaras:()->Unit={},
+              acaoNavegarOpcoesItemsDaListaAberta:(MediaItem?)->Unit={},){
 
     val context= LocalView.current
    val scop = rememberCoroutineScope()
@@ -151,6 +167,7 @@ SelecaoDosPlyer(modifier,
                     },
                 acaMudarBackgraudScafolld=acaMudarBackgraudScafolld,
                 acaoMudarCorScafollEBArraPermanente=acaoMudarCorScafollEBArraPermanente,
+                acaoNavegarOpcoesItemsDaListaAberta = acaoNavegarOpcoesItemsDaListaAberta
                 )
 
 
@@ -168,6 +185,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                     acaoDeVoutar: () -> Unit={},
                     acaMudarBackgraudScafolld: (Color) -> Unit={},
                     acaoMudarCorScafollEBArraPermanente:(backgrand:Color,corBarra:Color)->Unit={b,c->},
+                    acaoNavegarOpcoesItemsDaListaAberta:(MediaItem?)->Unit,
                     ){
     val cor=MaterialTheme.colorScheme.background
     val corbackgrand= remember { mutableStateOf(cor) }
@@ -179,6 +197,7 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                      vmlista = vmlista,
                      acaoDeVoutar=acaoDeVoutar,
                      acaMudarBackgraudScafolld = acaMudarBackgraudScafolld,
+                     acaoNavegarOpcoesItemsDaListaAberta = acaoNavegarOpcoesItemsDaListaAberta,
                       )
 
     else if(windowSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM)
@@ -187,9 +206,10 @@ fun SelecaoDosPlyer(modifier: Modifier = Modifier,
                          vm = vm,
                          vmlista = vmlista,
                          acaoDeVoutar=acaoDeVoutar,
-                         acaMudarBackgraudScafolld = acaMudarBackgraudScafolld,)
-        else  PlyerEspandido(modifier,windowSizeClass,vmodelPlayer=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoDeVoutar)
-    else  PlyerEspandido(modifier,windowSizeClass,vmodelPlayer=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoDeVoutar)
+                         acaMudarBackgraudScafolld = acaMudarBackgraudScafolld,
+                         acaoNavegarOpcoesItemsDaListaAberta = acaoNavegarOpcoesItemsDaListaAberta)
+        else  PlyerEspandido(modifier,windowSizeClass,vmodelPlayer=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoDeVoutar,acaoNavegarOpcoesItemsDaListaAberta)
+    else  PlyerEspandido(modifier,windowSizeClass,vmodelPlayer=vm,vmlista,corbackgrand,acaoMudarCorScafollEBArraPermanente,acaoDeVoutar,acaoNavegarOpcoesItemsDaListaAberta)
 }
 
 
@@ -340,6 +360,7 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                  acaoMudarLista:(p:Palette)->Unit={},
                  acaoDeVoutar:()->Unit={},
                  acaMudarBackgraudScafolld: (Color) -> Unit={},
+                 acaoNavegarOpcoesItemsDaListaAberta: (MediaItem?) -> Unit
                  ) {
     val listaAvberta = remember { mutableStateOf(false) }
     val backgraudColorDefault =MaterialTheme.colorScheme.background
@@ -380,7 +401,8 @@ fun PlayerCompat(modifier: Modifier=Modifier,
                                                                      cor=Backgraud,textColorSquemas=textColorSquemas,
                                                                      vm = vm,
                                                                      vmlista = vmlista,
-                                                                     listaAvberta = listaAvberta)
+                                                                     listaAvberta = listaAvberta,
+                                                                     acaoNavegarOpcoesItemsDaListaAberta)
 //
 
 
@@ -434,8 +456,8 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                    vmodelPlayer:VmodelPlayer, vmlista:ViewModelListas,
                    bacgrandClor:MutableState<Color>,
                    acaoMudarCorScafollEBArraPermanente: (backgrand: Color, corBarra: Color) -> Unit={b,c->},
-
-                   acaoDeVoutar: () -> Unit={}) {
+                   acaoDeVoutar: () -> Unit={},
+                   acaoNavegarOpcoesItemsDaListaAberta: (MediaItem?) -> Unit) {
        val metadata=vmodelPlayer._mediaItemAtual.collectAsState()
        val plyListAtual=vmlista.plylist().collectAsState(emptyList())
        val backgraudColorDefault=MaterialTheme.colorScheme.background
@@ -467,7 +489,7 @@ fun PlyerEspandido(modifier: Modifier=Modifier,
                                                                                                            textColorSquemas = textColorSquemas,
                                                                                                            backgraudColorSquemas = backgraudColorDefault)},acaoDeVoutar=acaoDeVoutar,corDotexto = corTexto.value)
            Spacer(Modifier.padding(10.dp))
-           ApresentacaoPlyListPlyerEstendido(this@Row,vmodelPlayer,vmlista,bacgrandClor.value, corTexto.value)
+           ApresentacaoPlyListPlyerEstendido(this@Row,vmodelPlayer,vmlista,bacgrandClor.value, corTexto.value,acaoNavegarOpcoesItemsDaListaAberta)
 
 
         }
@@ -496,6 +518,9 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val imagem=vm._imagemPlyer.collectAsState()
     val medicoes =remember { MedicoesPlyer() }
     val iconeSize = medicoes.larguraImagemPlyerEspandido(windowSizeClass)
+    val tempoTotalString=vm._tempoTotalString.collectAsState()
+    val duracaoString=vm._duracaoString.collectAsState()
+    val caregando=vm._caregando.collectAsState()
     LaunchedEffect(metadata.value) {
         vm.caregarImagePlyer({uri, id ->
             try {
@@ -526,7 +551,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
             Icon(painter = painterResource(R.drawable.outline_west_24), contentDescription = null, tint = corDotexto, modifier = Modifier)
         }
 
-        Column(Modifier.align(Alignment.TopCenter).fillMaxHeight()) {
+        Column(Modifier.align(Alignment.TopCenter).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
 
             ImagemPlyer(imagem,iconeSize,corDotexto,this@Column)
             Spacer(Modifier.padding( all =medicoes.spasamentoImagemTituloPlyerEstendido(windowSizeClass)))
@@ -535,6 +560,7 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
                 Column(modifier=Modifier.fillMaxHeight()) {
                     TextoDeApresentacaoDaMusica(this@Column,medicoes=medicoes,cor=corDotexto,metadata= metadata,windowSizeClass)
                     Spacer(Modifier.padding(5.dp))
+                    if(windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT) IndicadorDeTempo(this@Column,tempoTotalString = tempoTotalString,duracaoString = duracaoString,caregando = caregando,cor = corDotexto)
                     SLidePlyer(duracao,tempoTotal,vm,corDotexto)
                     Spacer(Modifier.padding(3.dp))
                     BotoesDeControle(scop = scope, vm = vm, columnScope = this@Column, modoAleatorio = modoAleatorio, reproduzindo = reproduzindo, modoRepeticao = modoRepeticao, cor = corDotexto)

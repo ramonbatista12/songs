@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
 
 
             val binder = service as ServicMedia.ServicBinder
-            conecao.value = ResultadosConecaoServiceMedia.Conectado(binder.getService(),this@MainActivity)
+            conecao.value = ResultadosConecaoServiceMedia.Conectado(binder.getService())
 
             Log.i("sevice", "onServiceConnected ${conecao.value}")
 
@@ -477,6 +477,11 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStart() {
         super.onStart()}
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+    }
 
 
 

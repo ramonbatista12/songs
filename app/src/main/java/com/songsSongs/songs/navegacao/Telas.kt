@@ -190,7 +190,19 @@ composable<DestinosDENavegacao.DestinosDeTela.Player>{
       acaMudarBackgraudScafolld = {acaoMudaBackgraundScafolld(it)},
       acaoMudarCorScafollEBArraPermanente = acaoMudarcorBackgrandEBarraPermanent,
       acaoOcultarBaras = acaOcultarBaras,
-      acaoMostraBaras = acaOnMostraBaras)
+      acaoMostraBaras = acaOnMostraBaras,
+      acaoNavegarOpcoesItemsDaListaAberta =  {
+
+          val metadata=it?.mediaMetadata
+          navController.navigate(   DestinosDENavegacao.DestinosDeDialogo
+              .OpcoesItemsDaLista(titulo = metadata?.title.toString(),
+                  artista = metadata?.artist.toString(),
+                  uri =metadata?.artworkUri.toString(),
+                  album = metadata?.albumArtist.toString(),
+                  id=it?.mediaId.toString(),
+                  duracao = metadata?.durationMs.toString() ))
+
+      })
 
 }
 

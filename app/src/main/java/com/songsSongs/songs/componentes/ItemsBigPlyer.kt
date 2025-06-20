@@ -383,7 +383,8 @@ fun ImagemPlyer(imagem: State<ImagemPlyer>,
 @Composable
 fun ListaPlyLIsts(vm: VmodelPlayer,
                   vmlista: ViewModelListas,
-                  backgraudColor: Color){
+                  backgraudColor: Color,
+                  acaoNavegarOpcoesItemsDaListaAberta: (MediaItem?) -> Unit){
     val  metadata=vm._mediaItemAtual.collectAsState()
     val indice=vm._indice.collectAsState()
     val listState= rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
@@ -399,13 +400,13 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
                     ItemDaLista(Modifier.clickable {
                         vm.seekToItem(indice)
 
-                    },item = item)
+                    },item = item, acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
                 }
             else
                 ItemDaLista(Modifier.clickable {
                     vm.seekToItem(indice)
 
-                },item = item)
+                },item = item,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
         }
     }
 }
@@ -414,7 +415,8 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
 fun ListaPlyLIsts(vm: VmodelPlayer,
                   vmlista: ViewModelListas,
                   backgraudColor: Color,
-                  corDotexto: Color){
+                  corDotexto: Color,
+                  acaoNavegarOpcoesItemsDaListaAberta: (MediaItem?) -> Unit){
     val  metadata=vm._mediaItemAtual.collectAsState()
     val indice=vm._indice.collectAsState()
     val listState= rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
@@ -430,13 +432,13 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
                     ItemDaLista(Modifier.clickable {
                         vm.seekToItem(indice)
 
-                    },item = item, cor = corDotexto)
+                    },item = item, cor = corDotexto,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
                 }
             else
                 ItemDaLista(Modifier.clickable {
                     vm.seekToItem(indice)
 
-                },item = item,cor = corDotexto)
+                },item = item,cor = corDotexto,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
         }
     }
 }
@@ -451,7 +453,8 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
                                         textColorSquemas:Color,
                                         vm: VmodelPlayer,
                                         vmlista: ViewModelListas,
-                                        listaAvberta: MutableState<Boolean>
+                                        listaAvberta: MutableState<Boolean>,
+                                        acaoNavegarOpcoesItemsDaListaAberta:(MediaItem?)->Unit,
 ){
     with(sharedTransitionScope) {
         Column(
@@ -468,7 +471,7 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
                     animatedVisibilityScope = animatedVisibilityScope,
                     vm = vm,
                     corDotexto = corDoTexto.value,
-                    backgraud = cor.value, scope = scope,
+                    backgraud = cor.value,
                     acaoMudarBackgraud = {
                         AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(
                             it,
@@ -497,14 +500,19 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
                     )
                 }
             }
-            ListaPlyLIsts(vm, vmlista, backgraudColor)
+            ListaPlyLIsts(vm, vmlista, backgraudColor,acaoNavegarOpcoesItemsDaListaAberta)
 
         }
     }
 }
 
 @Composable
-fun ApresentacaoPlyListPlyerEstendido(rowScope: RowScope,vmodelPlayer: VmodelPlayer,vmlista: ViewModelListas,backgraudColor:Color,corDotexto: Color){
+fun ApresentacaoPlyListPlyerEstendido(rowScope: RowScope,
+                                      vmodelPlayer: VmodelPlayer,
+                                      vmlista: ViewModelListas,
+                                      backgraudColor:Color,
+                                      corDotexto: Color,
+                                      acaoNavegarOpcoesItemsDaListaAberta: (MediaItem?) -> Unit){
     with(rowScope){
     Column(
         Modifier.clip(RoundedCornerShape(15.dp)).background(backgraudColor),
@@ -513,7 +521,7 @@ fun ApresentacaoPlyListPlyerEstendido(rowScope: RowScope,vmodelPlayer: VmodelPla
         Text("Playlist", fontFamily = FontFamily.Monospace, color = corDotexto)
         Spacer(Modifier.padding(3.dp))
         Banner()
-        ListaPlyLIsts(vmodelPlayer, vmlista, backgraudColor,corDotexto)
+        ListaPlyLIsts(vmodelPlayer, vmlista, backgraudColor,corDotexto,acaoNavegarOpcoesItemsDaListaAberta)
 
     }}
 }

@@ -125,7 +125,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
         }
 
      IconButton(onClick = {acaoNavegarOpcoes(item)}) {
-         Icon(Icons.Default.MoreVert, contentDescription = null)
+         Icon(Icons.Default.MoreVert, contentDescription = null, tint = cor)
      }
 
     }
@@ -235,9 +235,7 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
             Text(item.artista,maxLines = 1,fontSize = 14.sp)
 
         }
-        IconButton(onClick = {}) {
-            Icon(Icons.Default.MoreVert, contentDescription = null)
-        }
+
     }
     DisposableEffect(Unit) {
         onDispose {

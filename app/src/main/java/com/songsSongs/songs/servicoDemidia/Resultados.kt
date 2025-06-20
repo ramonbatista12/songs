@@ -3,7 +3,7 @@ package com.songsSongs.songs.servicoDemidia
 import android.content.Context
 
 sealed class ResultadosConecaoServiceMedia{
-    class Conectado (val setvice:ServicMedia,private val c: Context): ResultadosConecaoServiceMedia()
+    class Conectado (val setvice:ServicMedia): ResultadosConecaoServiceMedia()
     object Desconectado: ResultadosConecaoServiceMedia()
     class Erro(val mensage:String): ResultadosConecaoServiceMedia()
 

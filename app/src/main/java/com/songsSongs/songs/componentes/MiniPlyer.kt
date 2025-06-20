@@ -190,7 +190,7 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MiniplayerParaTransicao(modifier: Modifier = Modifier, scope : CoroutineScope,
+fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                             text:String="Miniplayer",
                             sharedTransitionScope: SharedTransitionScope,
                             animatedVisibilityScope: AnimatedVisibilityScope,
@@ -198,7 +198,7 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier, scope : CoroutineScop
                             backgraud:Color=MaterialTheme.colorScheme.background ){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
-
+    val scope : CoroutineScope= rememberCoroutineScope()
     val  metadata= vm._mediaItemAtual.collectAsState()
     val reproduzindo=vm._emreproducao.collectAsState()
     val imagem=vm._imagemPlyer.collectAsState()
