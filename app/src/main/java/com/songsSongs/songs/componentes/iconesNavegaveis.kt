@@ -33,3 +33,5 @@ sealed class Icones(val rota:DestinosDENavegacao,val icone:Int){
 
 
 
+
+

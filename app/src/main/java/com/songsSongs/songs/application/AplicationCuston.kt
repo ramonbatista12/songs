@@ -29,6 +29,9 @@ class AplicationCuston(): Application(){
         context =applicationContext}
    override fun onTerminate() {
        super.onTerminate()
+      conteiner.repositorio.finixi()
    }
+
+
 
 }

@@ -400,13 +400,13 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
                     ItemDaLista(Modifier.clickable {
                         vm.seekToItem(indice)
 
-                    },item = item, acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
+                    },item = item,  vm = vmlista, acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
                 }
             else
                 ItemDaLista(Modifier.clickable {
                     vm.seekToItem(indice)
 
-                },item = item,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
+                },item = item, vm = vmlista,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
         }
     }
 }
@@ -432,13 +432,13 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
                     ItemDaLista(Modifier.clickable {
                         vm.seekToItem(indice)
 
-                    },item = item, cor = corDotexto,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
+                    },item = item, cor = corDotexto, vm = vmlista,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
                 }
             else
                 ItemDaLista(Modifier.clickable {
                     vm.seekToItem(indice)
 
-                },item = item,cor = corDotexto,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
+                },item = item,cor = corDotexto, vm = vmlista,acaoNavegarOpcoes = acaoNavegarOpcoesItemsDaListaAberta)
         }
     }
 }

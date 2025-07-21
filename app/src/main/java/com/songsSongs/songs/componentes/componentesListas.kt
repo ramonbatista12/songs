@@ -80,8 +80,10 @@ import kotlinx.coroutines.launch
 * */
 
 @Composable
-fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.onBackground,
+fun ItemDaLista(modifier: Modifier=Modifier,
+                cor:Color=MaterialTheme.colorScheme.onBackground,
                 item:MediaItem?,
+                vm: ViewModelListas ,
                 acaoNavegarOpcoes:(item:MediaItem?)->Unit={},
                 scop: CoroutineScope = rememberCoroutineScope()){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
@@ -91,7 +93,8 @@ fun ItemDaLista(modifier: Modifier=Modifier,cor:Color=MaterialTheme.colorScheme.
         scop.launch(Dispatchers.IO) {
             Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item?.mediaMetadata?.title } ${item?.mediaId}")
             try {
-              val bitmap=getMetaData(item!!.mediaMetadata.artworkUri!!,item.mediaId!!.toLong(),context = context)
+              val bitmap=vm.getImageBitMap(item!!.mediaMetadata.artworkUri!!)
+                  //getMetaData(,item.mediaId!!.toLong(),context = context)
                 imagem.value=bitmap
             }catch (e:Exception){
                 imagem.value=null
@@ -480,7 +483,7 @@ fun PreviewItemDaLista() {
        LazyVerticalGrid(columns = GridCells.Fixed(/*if(grad.value) 3 else*/ 1),horizontalArrangement = Arrangement.Center, modifier = Modifier.align(
            Alignment.Center)) {
        items(5){
-                      ItemDaLista(item = null)
+                      //ItemDaLista(item = null)
                             }
 
 

@@ -43,7 +43,7 @@ import com.songsSongs.songs.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+/*
 @Composable
 fun Anuncio(modifier: Modifier=Modifier.height(100.dp),corDoTexto:Color=MaterialTheme.colorScheme.onBackground){
     val context = LocalContext.current
@@ -136,7 +136,7 @@ fun Anuncio(modifier: Modifier=Modifier.height(100.dp),corDoTexto:Color=Material
 
 
 }
-
+*/
 class AuxiliarCriarcomponente(val context: Context,val corDoTexto: Color){
     val body = TextView(context)
     val titulo = TextView(context)

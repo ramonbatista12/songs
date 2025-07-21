@@ -13,11 +13,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
+class ManipularMediaStore(private var context: Context?):InterfasseMediaStore  {
     @OptIn(UnstableApi::class)
     override fun getMusics(): Flow<List<MediaItem>> = flow<List<MediaItem>>{
 
-        val contentResolver=context.contentResolver
+        val contentResolver=context!!.contentResolver
 
         val projeca= arrayOf<String>(
             MediaStore.Audio.Media.TITLE,
@@ -89,7 +89,7 @@ class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
         val ordenacao= "${MediaStore.Audio.Media.ALBUM} ASC"
         while (true){
             val listaDeAlbums= mutableListOf<Album>()
-            val cursor=context.contentResolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+            val cursor=context!!.contentResolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                 projecao,
                 null,
                 null,
@@ -123,7 +123,7 @@ class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
         val ordenacao="${MediaStore.Audio.Artists.ARTIST} ASC"
         while (true){
             val listaDeArtistas= mutableListOf<Artista>()
-            val  cursor=context.contentResolver.query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,projecao,null,null,ordenacao).use {
+            val  cursor=context!!.contentResolver.query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,projecao,null,null,ordenacao).use {
                 val id=it!!.getColumnIndexOrThrow(projecao[0])
                 val artista=it.getColumnIndexOrThrow(projecao[1])
 
@@ -147,7 +147,7 @@ class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
     }
 
     override fun getMusicasPorArtista(id: Long): Flow<List<MediaItem>> =flow<List<MediaItem>>{
-        val contentResolver=context.contentResolver
+        val contentResolver=context!!.contentResolver
         val projecao=  arrayOf<String>(
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
@@ -200,7 +200,7 @@ class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
 
     override fun getMusicasPorAlbum(id: Long): Flow<List<MediaItem>> = flow<List<MediaItem>>{
 
-        val contentResolver=context.contentResolver
+        val contentResolver=context!!.contentResolver
         val projecao=  arrayOf<String>(
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
@@ -250,4 +250,5 @@ class ManipularMediaStore(val context: Context):InterfasseMediaStore  {
             }
         }
     }
+    fun finixe(){this.context=null}
 }

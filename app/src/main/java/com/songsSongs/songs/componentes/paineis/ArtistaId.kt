@@ -53,9 +53,9 @@ fun ArtistaId(modifier: Modifier = Modifier,
                                 viewModelListas.mudarPlylist(PlyListStados.Artista(id))
 
                             }),
-                                item = item, acaoNavegarOpcoes = acaoNavegarOpcoes)
+                                item = item, vm = viewModelListas ,acaoNavegarOpcoes = acaoNavegarOpcoes)
                         }else{
-                            ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), item = item)
+                            ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), vm = viewModelListas ,item = item)
                         }
                     }
 

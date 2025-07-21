@@ -1,8 +1,12 @@
 package com.songsSongs.songs.componentes.paineis
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -25,6 +29,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,33 +63,57 @@ fun PlyList(modifier: Modifier =Modifier,
     val medicoes=remember { com.songsSongs.songs.componentes.MedicoesItemsDeList() }
     val gradcels=medicoes.gradCell(windowSizeClass)
     val selecionado = remember { mutableStateOf<Icones>(Icones.PlayList) }
+    val visivel = Array<MutableState<Boolean>>(3,init={
+        if(it==0) remember { mutableStateOf(true) }
+        else remember { mutableStateOf(false)} } )
+
     Box(modifier = modifier){
+
         BotoesDeSelelcaoOpcoesDePlyList(modifier=Modifier.align(Alignment.TopStart),
                                         seleconado=selecionado,
                                         windowSizeClass=windowSizeClass)
        when (selecionado.value) {
-           Icones.PlayList-> ListaPlyList(m=Modifier.align(androidx.compose.ui.Alignment.Center),
-                                          boxScope = this,
+
+           Icones.PlayList-> {
+               LaunchedEffect(Unit) {visivel[0].value=true
+                                     visivel[1].value=false
+                                     visivel[2].value=false}
+               AnimatedVisibility(visible = visivel[0].value, enter = slideInHorizontally(), exit = slideOutHorizontally(),modifier=Modifier.align(androidx.compose.ui.Alignment.Center)) {
+               ListaPlyList(m=Modifier.align(androidx.compose.ui.Alignment.Center),
+                                          boxScope = this@Box,
                                           vm = vm,
                                           gradcels=gradcels,
                                           windowSizeClass=windowSizeClass,
                                           transicaoMiniPlyer=transicaoMiniPlyer,
                                           acaONavegacao=acaONavegacao,
                                           acaoNavegarDialoCriarPlaylist=acaoNavegarDialoCriarPlaylist,
-                                          acaoNavegarOpcoes=acaoNavegarOpcoes)
+                                          acaoNavegarOpcoes=acaoNavegarOpcoes)} }
 
-           Icones.Album-> ListaDeAlbums(modifier=Modifier.align(androidx.compose.ui.Alignment.Center),
+           Icones.Album-> {
+               LaunchedEffect(Unit) {visivel[0].value=false
+                                     visivel[1].value=true
+                                     visivel[2].value=false}
+               AnimatedVisibility(visible = visivel[1].value, enter = slideInHorizontally(), exit = slideOutHorizontally(),modifier=Modifier.align(androidx.compose.ui.Alignment.Center)) {
+               ListaDeAlbums(modifier=Modifier.align(androidx.compose.ui.Alignment.Center),
                                         windowSizeClass=windowSizeClass,
                                         transicaoMiniPlyer = transicaoMiniPlyer,
-                                        vm=vm,acaoNavegarPorId = acaoNavegarIdAlbum )
+                                        vm=vm,acaoNavegarPorId = acaoNavegarIdAlbum )}}
 
-           Icones.Artista-> ListaDeArtistas(modifier=Modifier.align(androidx.compose.ui.Alignment.Center),
+           Icones.Artista-> {
+               LaunchedEffect(Unit) {visivel[0].value=false
+                                     visivel[1].value=false
+                                     visivel[2].value=true}
+               AnimatedVisibility(visible = visivel[2].value, enter = slideInHorizontally(), exit = slideOutHorizontally(),modifier=Modifier.align(androidx.compose.ui.Alignment.Center)) {
+               ListaDeArtistas(modifier=Modifier.align(androidx.compose.ui.Alignment.Center),
                                             windowSizeClass=windowSizeClass,
                                             transicaoMiniPlyer=transicaoMiniPlyer,
                                             vmodel = vm,
-                                            acaoNavegarPorId = acaoNavegarIdArtista)
+                                            acaoNavegarPorId = acaoNavegarIdArtista)} }
 
-           else->{}
+           else->{
+               LaunchedEffect(Unit) {Log.d("erro ","erro ao selecionar a playlist")}
+
+           }
 
 
     }

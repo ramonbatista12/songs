@@ -1,5 +1,6 @@
 package com.songsSongs.songs.viewModels
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -16,6 +17,7 @@ import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -230,6 +232,10 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
         }
         scope.cancel()
         super.onCleared()
+    }
+
+    suspend fun getImageBitMap(uri: Uri): Bitmap?{
+        return scope.async { repositorio.getBitmap(uri) }.await()
     }
 
 }

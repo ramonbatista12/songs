@@ -15,8 +15,8 @@ android {
         applicationId = "com.songsSongs.songs"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.2.2"
+        versionCode = 7
+        versionName = "1.2.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -95,6 +95,7 @@ android {
     //dataStore
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     //teste
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

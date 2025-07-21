@@ -40,7 +40,7 @@ import androidx.media3.common.MediaItem
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.application.AplicationCuston
-import com.songsSongs.songs.componentes.Anuncio
+
 import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BarraSuperio
 import com.songsSongs.songs.componentes.ItemDaLista
@@ -89,11 +89,11 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
                           acaoCarregarPlyer(r.lista,indice)
                           viewModelListas.mudarPlylist(PlyListStados.Todas,)
 
-                       }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes, scop = socop)
+                       }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes, vm = viewModelListas ,scop = socop)
 
 
                    }else{
-                       ItemDaLista(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarOpcoes = acaoNavegarOpcoes, scop = socop)
+                       ItemDaLista(modifier=Modifier.clickable(onClick = {acaoCarregarPlyer(r.lista,indice)}), item = item, acaoNavegarOpcoes = acaoNavegarOpcoes, vm = viewModelListas ,scop = socop)
                    }
 
                }

@@ -52,9 +52,9 @@ fun PlayListId(modifier: Modifier = Modifier,
                         acaoCarregarPlyer(lista.value,indice)
                         vm.mudarPlylist(PlyListStados.Playlist(id))
 
-                    }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
+                    }), item = item, vm = vm,acaoNavegarOpcoes = acaoNavegarOpcoes)
                 }else{
-                    ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), item = item)
+                    ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), vm = vm ,item = item)
                 }
             }
 

@@ -12,10 +12,10 @@ suspend fun checarCorotina():Boolean{
   // if(!Dispatchers.IO.equals(currentCoroutineContext()[CoroutineDispatcher]))// throw(RuntimeException("corrotina fora do contexto IO"))
     return true
 }
-class PlyLists(private val context: Context):InterfacePlylist {
+class PlyLists(private var context: Context?):InterfacePlylist {
 
    private val roomDatabase by lazy{
-       Room.databaseBuilder(context,RoomBd::class.java,"bd").build()
+       Room.databaseBuilder(context!!,RoomBd::class.java,"bd").build()
    }
    private val dao by lazy {
        roomDatabase.dao()
@@ -75,5 +75,7 @@ class PlyLists(private val context: Context):InterfacePlylist {
 
     override  fun mediaItemsDaPlylist(id: Long): Flow<List<ItemsDeMedia>> =dao.fluxoDeItemsDeMedia(id)
     override suspend fun tumbmails(id: Long): List<ImagemTumbmail> =dao.tumbmails(id)
-
+    fun finixe(){
+        this.context=null
+    }
 }

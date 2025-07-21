@@ -5,32 +5,32 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.util.Size
-import androidx.annotation.OptIn
+
 import androidx.annotation.RequiresApi
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class RepositorioService(val context: Context):InterfacePlylist,InterfasseMediaStore {
+class RepositorioService(var context: Context?):InterfacePlylist,InterfasseMediaStore {
 
-private val plylist=PlyLists(context)
-private val mediaStore=ManipularMediaStore(context)
+private var plylist=PlyLists(context)
+private var mediaStore=ManipularMediaStore(context)
+private var imageLoader:ImagerLoad?=ImagerLoad(context)
    // comunicacao com a clsse responsavel pro gerenciar a media store
     @RequiresApi(Build.VERSION_CODES.Q)
-    @OptIn(UnstableApi::class)
+
     override fun getMusics()= mediaStore.getMusics()
     override fun getAlbums()=  mediaStore.getAlbums()
     override fun getArtistas()= mediaStore.getArtistas()
     override fun getMusicasPorArtista(id:Long)= mediaStore.getMusicasPorArtista(id)
-    @OptIn(UnstableApi::class)
     override fun getMusicasPorAlbum(id:Long)= mediaStore.getMusicasPorAlbum(id)
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getMetaData(uri: Uri, id: Long):Bitmap?{
    try {
-       val resolver = this.context.contentResolver
-       val tumbmail=resolver.loadThumbnail(uri,Size(100,100),null)
+       val resolver = this.context?.contentResolver
+       val tumbmail=resolver?.loadThumbnail(uri,Size(100,100),null)
        return tumbmail
    }catch (e:Exception){
        return null
@@ -51,8 +51,14 @@ private val mediaStore=ManipularMediaStore(context)
     override fun listaPlaylist(): Flow<List<ListaPlaylist>> =plylist.listaPlaylist()
     override  fun mediaItemsDaPlylist(idPlylist: Long): Flow<List<ItemsDeMedia>> = plylist.mediaItemsDaPlylist(idPlylist)
 
+   //obter imagems
+    suspend fun getBitmap(uri: Uri): Bitmap? = imageLoader?.getBitmap(uri)
 
-   // fun getPlylist(estado:PlyListStados): Flow<List<MediaItem>>
+   fun finixi(){
+       plylist.finixe()
+       mediaStore.finixe()
+       imageLoader?.finixi()
+   }
 
 
 }

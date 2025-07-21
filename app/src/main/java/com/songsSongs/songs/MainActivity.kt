@@ -82,6 +82,7 @@ import com.songsSongs.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -132,16 +133,18 @@ class MainActivity : ComponentActivity() {
 
     }
     lateinit var observadorDocicloDeVida: HelperLifeciclerObserver
+   lateinit var windowInsetsControllerCompat: WindowInsetsControllerCompat
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
      enableEdgeToEdge()
         observadorDocicloDeVida = HelperLifeciclerObserver(acaoDeConectar = {
-               scop.launch(Dispatchers.IO) {
+             /*  scop.launch(Dispatchers.IO) {
               MobileAds.initialize(this@MainActivity)
 
-            }
+            }*/
+
                 scop.launch(Dispatchers.Main){
                 when(conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{}
@@ -174,7 +177,6 @@ class MainActivity : ComponentActivity() {
 
                              },
                                                            acaoDeDesconectar ={
-
                 when(val r =conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{
                     try {
@@ -187,7 +189,8 @@ class MainActivity : ComponentActivity() {
 
                 }
                 else->{}
-            }},
+            }
+                                                                              },
                                                            acaoChecagemConecao ={
                 when(conecao.value){
                     is ResultadosConecaoServiceMedia.Conectado->{}
@@ -218,7 +221,7 @@ class MainActivity : ComponentActivity() {
                 }
             })
         this.lifecycle.addObserver(observadorDocicloDeVida)
-        val windowInsetsControllerCompat=modoImersivo(this)
+        windowInsetsControllerCompat=modoImersivo(this)
 
 
 
@@ -286,11 +289,11 @@ class MainActivity : ComponentActivity() {
                                           acaoMudaBackgraundScafolld = {viewmodel.mudarCorBackGround(it)},
                                           acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
                                           estadoService = conecao,
-                                          acaOcultarBaras = {windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())},
+                                          acaOcultarBaras = {scopMain.launch { windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())}},
                                           acaOnMostraBaras = {
                                               scopMain.launch {
                                                   delay(500)
-                                              windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
+                                             windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
                                               }
                                           })
 
@@ -298,7 +301,8 @@ class MainActivity : ComponentActivity() {
                                               emreproducao=emreproducao,
                                               bigPlyer=bigPlyer,
                                               transicaoMiniPlyer=transicaoMiniPlyer,
-                                              scopMain=scopMain, viewmodel = viewmodel, vieModelPlyers = vieModelPlyers,
+                                              scopMain=scopMain, viewmodel = viewmodel,
+                                              vieModelPlyers = vieModelPlyers,
                                               windowSizeClass = windowsizeclass,
                                               windowInsetsControllerCompat = windowInsetsControllerCompat,
                                               acaoNavegacao = { navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)})
@@ -356,7 +360,8 @@ class MainActivity : ComponentActivity() {
                       viewmodel: MainViewModel,
                       vieModelPlyers:VmodelPlayer,
                       windowSizeClass:WindowSizeClass,scopMain:CoroutineScope,
-                      windowInsetsControllerCompat: WindowInsetsControllerCompat,acaoNavegacao:()->Unit={}){
+                     windowInsetsControllerCompat: WindowInsetsControllerCompat,
+                      acaoNavegacao:()->Unit={}){
         with(boxScope){
         AnimatedVisibility(visible =emreproducao.value,
         modifier = Modifier
@@ -431,7 +436,7 @@ class MainActivity : ComponentActivity() {
             .align(Alignment.BottomCenter)
             .padding(10.dp)) {
         if(!transicaoMiniPlyer.targetState)
-            Row(Modifier.align(Alignment.BottomCenter)) {Banner()}}}
+            Row(Modifier.align(Alignment.BottomCenter),verticalAlignment = Alignment.CenterVertically) {Banner()}}}
     }
 
 
@@ -480,7 +485,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
+        // Certifique-se de que a ServiceConnection seja desvinculada
+        try {
+            scop.cancel()
+            // Verifique se o serviço foi realmente vinculado antes de tentar desvincular
+            // Uma flag booleana pode ser útil para isso, ou você pode confiar no try-catch
+            unbindService(serviceConection)
+        } catch (e: IllegalArgumentException) {
+            // O serviço não estava registrado, pode acontecer se ele já tiver sido desvinculado ou nunca foi vinculado
+            Log.e("MainActivity", "Service not registered: ${e.message}")
+        }
+        // Também desregistre o observer do ciclo de vida
+        this.lifecycle.removeObserver(observadorDocicloDeVida)
     }
 
 

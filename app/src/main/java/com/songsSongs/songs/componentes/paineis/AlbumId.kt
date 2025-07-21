@@ -53,9 +53,9 @@ fun AlbumId(modifier: Modifier = Modifier,
                                 acaoCarregarPlyer(lista.value,indice)
                                 viewModelListas.mudarPlylist(PlyListStados.Album(id))
 
-                            }), item = item,acaoNavegarOpcoes = acaoNavegarOpcoes)
+                            }), item = item,vm=viewModelListas,acaoNavegarOpcoes = acaoNavegarOpcoes)
                         }else{
-                            ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}), item = item)
+                            ItemDaLista(modifier= Modifier.clickable(onClick = {acaoCarregarPlyer(lista.value,indice)}) ,vm = viewModelListas, item = item)
                         }
                     }
 
