@@ -61,6 +61,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.android.gms.ads.MobileAds
+import com.songsSongs.songs.application.AplicationCuston
 import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
@@ -75,9 +76,11 @@ import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.songsSongs.songs.servicoDemidia.ServicMedia
 import com.songsSongs.songs.ui.theme.SongsTheme
 import com.songsSongs.songs.viewModels.FabricaMainViewmodel
+import com.songsSongs.songs.viewModels.FabricaViewModelLista
 import com.songsSongs.songs.viewModels.FabricaViewmodelPlyer
 import com.songsSongs.songs.viewModels.HelperLifeciclerObserver
 import com.songsSongs.songs.viewModels.MainViewModel
+import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -243,6 +246,7 @@ class MainActivity : ComponentActivity() {
                 val scopMain = rememberCoroutineScope()
                 val transicaoMiniPlyer = remember { MutableTransitionState(false) }
                 val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao))
+                val viewModelListas:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.repositorio, estado = conecao))
                 val emreproducao =vieModelPlyers._emreproducao.collectAsState()
                 val bigPlyer =viewmodel._bigPlyer.collectAsState()
                 val corBackGround =viewmodel._corBackGround.collectAsState()
@@ -275,7 +279,7 @@ class MainActivity : ComponentActivity() {
                                            modifier = Modifier.align(Alignment.TopCenter),
                                            paddingValues = it,
                                            transicaoMiniPlyer = transicaoMiniPlyer,
-                                           vm = vieModelPlyers,
+                                           vm = vieModelPlyers, vmLista = viewModelListas,
                                            acaoCaregarPlyer = {l,id->
                                                scop.launch {
                                                    vieModelPlyers.carregarLista(l,id)
@@ -304,6 +308,7 @@ class MainActivity : ComponentActivity() {
                                               scopMain=scopMain, viewmodel = viewmodel,
                                               vieModelPlyers = vieModelPlyers,
                                               windowSizeClass = windowsizeclass,
+                                              vmLista = viewModelListas,
                                               windowInsetsControllerCompat = windowInsetsControllerCompat,
                                               acaoNavegacao = { navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)})
                                 ApresentacaoBaner(this,emreproducao,bigPlyer,transicaoMiniPlyer)
@@ -359,6 +364,7 @@ class MainActivity : ComponentActivity() {
                       transicaoMiniPlyer: MutableTransitionState<Boolean>,
                       viewmodel: MainViewModel,
                       vieModelPlyers:VmodelPlayer,
+                      vmLista:ViewModelListas,
                       windowSizeClass:WindowSizeClass,scopMain:CoroutineScope,
                      windowInsetsControllerCompat: WindowInsetsControllerCompat,
                       acaoNavegacao:()->Unit={}){
@@ -398,7 +404,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                 },
-                vm = vieModelPlyers,
+                vm = vieModelPlyers, vmListas = vmLista,
                 windoSizeClass = windowSizeClass)
         }
 

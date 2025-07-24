@@ -31,6 +31,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.VideoOptions
@@ -136,7 +137,7 @@ fun Anuncio(modifier: Modifier=Modifier.height(100.dp),corDoTexto:Color=Material
 
 
 }
-*/
+
 class AuxiliarCriarcomponente(val context: Context,val corDoTexto: Color){
     val body = TextView(context)
     val titulo = TextView(context)
@@ -247,39 +248,32 @@ class AuxiliArCriarLayouts(context: Context){
 
     }
 }
-
+*/
 
 @Composable
 fun rememberAdLoader()= remember { mutableStateOf<NativeAd?>(null) }
-
+/*
+* nao sei o porque dessa bencao causar vasamento de memoria
+* os vasamentos de main activit vem daqui
+* nao so os vasamentos mas o uso esesivo de memoria tabem
+* */
 @Composable
 fun Banner(modifier: Modifier=Modifier){
-    val adview = remember {mutableStateOf<AdView?>(null)  }
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
- LaunchedEffect(Unit) {
-     scope.launch {
-     delay(2000)
-     adview.value= AdView(context).apply {
-         this.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
-         this.adUnitId=IdAdmob.BannerId.idTest
-         loadAd(AdRequest.Builder().build())
-     }
- } }
 
-    DisposableEffect(Unit) {
 
-        onDispose {
-            if (adview.value!=null) adview.value!!.destroy()
-            adview.value=null
-        }
-    }
 
-    if(adview.value!=null)
-  AndroidView(modifier=Modifier.clip(RoundedCornerShape(15.dp)),
-     factory = {
-     adview.value!!
- })
+
+
+     AndroidView(modifier=Modifier.clip(RoundedCornerShape(15.dp)),
+     factory = {context->
+
+         AdView(context).apply {
+             this.setAdSize(AdSize.BANNER)
+
+             adUnitId=IdAdmob.BannerId.idTest
+             loadAd(AdRequest.Builder().build())
+         }
+    })
 }
 
 sealed class IdAdmob(val id:String,val idTest:String="ca-app-pub-3940256099942544/6300978111"){

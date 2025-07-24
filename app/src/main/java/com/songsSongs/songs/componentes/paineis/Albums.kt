@@ -53,12 +53,12 @@ fun ListaDeAlbums(modifier: Modifier = Modifier
                   ItemsAlbums(modifier=Modifier.clickable {
                       Log.d("id album", "ListaDeAlbums: ${it.idDoalbum}")
                       acaoNavegarPorId(it.idDoalbum.toString())
-                  },it)
+                  },it, vm = vm)
               else
                   ItemsAlbums(modifier=Modifier.clickable {
                       Log.d("id album", "ListaDeAlbums: ${it.idDoalbum}")
                       acaoNavegarPorId(it.idDoalbum.toString())
-                  },it)
+                  },it,vm=vm)
 
           }
       }

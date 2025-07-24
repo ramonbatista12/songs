@@ -49,9 +49,11 @@ import com.songsSongs.songs.R
 import com.songsSongs.songs.componentes.paineis.ComponetesCompartilhados
 import com.songsSongs.songs.ui.theme.DarkPink
 import com.songsSongs.songs.viewModels.ImagemPlyer
+import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
@@ -64,7 +66,10 @@ import kotlinx.coroutines.launch
 @SuppressLint("SuspiciousIndentation")
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeClass: WindowSizeClass,vm: VmodelPlayer){
+fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",
+               windoSizeClass: WindowSizeClass,
+               vmListas: ViewModelListas,
+               vm: VmodelPlayer){
 
     val largura=if(windoSizeClass.windowWidthSizeClass== WindowWidthSizeClass.COMPACT) 0.6f
           else  if (windoSizeClass.windowWidthSizeClass== WindowWidthSizeClass.MEDIUM) 0.6f
@@ -83,32 +88,18 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",windoSizeC
     //val cores=remember { mutableStateOf<List<Color>?>(null) }
    // val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
-        vm.caregarImagePlyer({uri,id->
-            try {
-               val bitmap= getMetaData(context = context,uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong(), height = 400, whidt = 400)
-                AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap,
-                    backgraudColor=corDoBackgrand,
-                    corTexto  = corTexto,
-                    textColorSquemas = textColorSquemas,
-                    backgraudColorSquemas = backgraudColorSquemas)
-                bitmap
-
-            }catch (e:Exception){
-                Log.e("Load tumbmail",e.message.toString())
-                AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(null,
-                    backgraudColor=corDoBackgrand,
-                    corTexto  = corTexto,
-                    textColorSquemas = textColorSquemas,
-                    backgraudColorSquemas = backgraudColorSquemas)
-                null
-            }
-
-        },uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
-
-        scope.launch(Dispatchers.IO) {
+        scope.launch {
+            val bitmap =scope.async(Dispatchers.IO) { vmListas.getImageBitMap(metadata.value!!.mediaMetadata!!.artworkUri!!) }.await()
+            AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap,
+                backgraudColor=corDoBackgrand,
+                corTexto  = corTexto,
+                textColorSquemas = textColorSquemas,
+                backgraudColorSquemas = backgraudColorSquemas)
+            vm.caregarImagePlyer(bitmap)
+        }
 
 
-            }
+
 
     }
 
@@ -194,8 +185,11 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
                             text:String="Miniplayer",
                             sharedTransitionScope: SharedTransitionScope,
                             animatedVisibilityScope: AnimatedVisibilityScope,
-                            vm: VmodelPlayer, corDotexto:Color, acaoMudarBackgraud:suspend (bitmap:android.graphics.Bitmap?)->Unit,
-                            backgraud:Color=MaterialTheme.colorScheme.background ){
+                            vm: VmodelPlayer,vmListas: ViewModelListas,
+                            corDotexto:Color,
+                            acaoMudarBackgraud:suspend (bitmap:android.graphics.Bitmap?)->Unit,
+                            backgraud:Color=MaterialTheme.colorScheme.background,
+                            ){
     val texto = "Miniplayer Nome da Musica"
     val texto2 = "Nome do Artista"
     val scope : CoroutineScope= rememberCoroutineScope()
@@ -206,15 +200,12 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
 
     val texttColorSchemas =MaterialTheme.colorScheme.onBackground
     LaunchedEffect(metadata.value) {
-        vm.caregarImagePlyer({uri,id->
-            try {
-               val  bitmap= getMetaData(context = context, uri = uri, id = id, height = 400, whidt = 400)
-                acaoMudarBackgraud(bitmap)
-                bitmap
-            }catch (e:Exception){
-                null
-            }
-        },uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
+       scope.launch {
+           val bitmap =scope.async(Dispatchers.IO) { vmListas.getImageBitMap(metadata.value!!.mediaMetadata!!.artworkUri!!)  }.await()
+           vm.caregarImagePlyer(bitmap)
+           acaoMudarBackgraud(bitmap)
+
+       }
 
 
 

@@ -42,6 +42,17 @@ class CacheImage(val c: Context) {
             override fun sizeOf(key: Uri, value: Bitmap): Int {
                 return (value.byteCount /1024).toInt()
             }
+
+            override fun entryRemoved(
+                evicted: Boolean,
+                key: Uri,
+                oldValue: Bitmap,
+                newValue: Bitmap?
+            ) {
+                oldValue.recycle()
+                super.entryRemoved(evicted, key, oldValue, newValue)
+            }
+
         }}
         suspend fun getBitmap(uri: Uri): BitmapResponce {
             Log.d(tag,"items no lrucache ${lruCache?.size()}")

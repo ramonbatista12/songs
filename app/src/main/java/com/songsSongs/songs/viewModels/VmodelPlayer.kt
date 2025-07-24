@@ -392,6 +392,20 @@ init {
        }
 
    }
+    fun caregarImagePlyer(bitmap: Bitmap?){
+
+        scope.launch {
+            if(bitmap!=null)
+                imagemPlyer.emit(ImagemPlyer.Imagem(bitmap))
+            else
+                imagemPlyer.emit(ImagemPlyer.Vazia())
+        }
+
+
+
+        }
+
+
 
 
 }

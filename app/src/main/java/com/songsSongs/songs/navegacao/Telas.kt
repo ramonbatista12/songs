@@ -69,7 +69,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Navgrafic(navController: NavHostController,
               windowSizeClass: WindowSizeClass,
-              modifier: Modifier,
+              modifier: Modifier,vmLista:ViewModelListas,
               paddingValues: PaddingValues,
               transicaoMiniPlyer:MutableTransitionState<Boolean>,
               vm: VmodelPlayer,
@@ -79,7 +79,7 @@ fun Navgrafic(navController: NavHostController,
                acaOcultarBaras:()->Unit={},
               acaOnMostraBaras:()->Unit={},
               estadoService:MutableStateFlow<ResultadosConecaoServiceMedia>){
-    val vmLista:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.conteiner.repositorio,estadoService))
+
     val scope=rememberCoroutineScope()
     val context= LocalActivity.current
     val altura= LocalConfiguration.current.screenHeightDp
@@ -186,7 +186,8 @@ composable<DestinosDENavegacao.DestinosDeTela.Player>{
       paddingValues = paddingValues,
       vm = vm,
       acaoAvisoBigplyer = acaoAvisoBigplyer,
-      vmlista = viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService)), acaoDeVoutar = {navController.popBackStack()},
+      vmlista =vmLista /*viewModel(factory = FabricaViewModelLista().fabricar(AplicationCuston.repositorio,estadoService))*/,
+      acaoDeVoutar = {navController.popBackStack()},
       acaMudarBackgraudScafolld = {acaoMudaBackgraundScafolld(it)},
       acaoMudarCorScafollEBArraPermanente = acaoMudarcorBackgrandEBarraPermanent,
       acaoOcultarBaras = acaOcultarBaras,

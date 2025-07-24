@@ -184,7 +184,11 @@ private fun criarNotificacao(){
                                                                      .setSmallIcon(R.drawable.baseline_music_note_24_darkpink).build()
 }
     fun muudarPlyList(plyListStado: PlyListStados){
-        scope.launch { plyListStados.emit(plyListStado)}}
+        Log.e("service","mudarPlylist emitindo estadodo $plyListStado")
+        scope.launch {
+            Log.e("service","mudarPlylist emitindo estadodo $plyListStado corotina")
+            plyListStados.value= plyListStado
+        }}
 
  private fun camcelarNotificacao(){
      val notificationManager=getSystemService(NotificationManager::class.java) as NotificationManager

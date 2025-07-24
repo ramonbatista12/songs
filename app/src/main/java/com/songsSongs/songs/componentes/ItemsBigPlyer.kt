@@ -37,6 +37,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -390,7 +391,9 @@ fun ListaPlyLIsts(vm: VmodelPlayer,
     val listState= rememberLazyListState(initialFirstVisibleItemIndex = indice.value)
     val estadoPlylist=vmlista._estadoPlylsist.collectAsState()
     val lista =vmlista.plylist().collectAsState(emptyList())
-
+    LaunchedEffect(estadoPlylist.value) {
+        Log.e("estado da playlist",estadoPlylist.value.toString())
+    }
     LazyColumn(state =  listState,modifier=Modifier.background(color = backgraudColor).fillMaxWidth().fillMaxHeight()) {
 
         itemsIndexed(items = lista.value) {indice,item->
@@ -470,6 +473,7 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
                     sharedTransitionScope =this@with,
                     animatedVisibilityScope = animatedVisibilityScope,
                     vm = vm,
+                    vmListas = vmlista,
                     corDotexto = corDoTexto.value,
                     backgraud = cor.value,
                     acaoMudarBackgraud = {
@@ -487,7 +491,8 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
-            ) { Banner() }
+            ) { Banner()
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 IconButton(onClick = {
                     listaAvberta.value = !listaAvberta.value

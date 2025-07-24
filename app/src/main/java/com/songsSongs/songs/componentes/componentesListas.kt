@@ -70,6 +70,7 @@ import com.songsSongs.songs.ui.theme.SongsTheme
 import com.songsSongs.songs.viewModels.ViewModelListas
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -88,7 +89,7 @@ fun ItemDaLista(modifier: Modifier=Modifier,
                 scop: CoroutineScope = rememberCoroutineScope()){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
 
-    val context= LocalContext.current
+
     LaunchedEffect(Unit){
         scop.launch(Dispatchers.IO) {
             Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item?.mediaMetadata?.title } ${item?.mediaId}")
@@ -202,18 +203,13 @@ fun ItemsListaColunas(modifier: Modifier=Modifier,item:MediaItem?=null,acaoNaveg
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
+fun ItemsAlbums(modifier: Modifier=Modifier,item: Album,vm: ViewModelListas){
     val imagem =remember { mutableStateOf<Bitmap?>(null) }
     val scop=rememberCoroutineScope()
-    val context= LocalContext.current
+
     LaunchedEffect(Unit){
         scop.launch(Dispatchers.IO) {
-            Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item.nome } ${item.idDoalbum}")
-            try {
-                imagem.value= getMetaData(uri = item.uri,id = item.idDoalbum.toLong(),context = context)
-            }catch (e:Exception){
-                imagem.value=null
-            }
+            imagem.value=scop.async {vm.getImageBitMap(item.uri)  }.await()
         }
 
     }
@@ -247,10 +243,10 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album){
         }
     }
 }
-
+/*
 @Composable
 fun ItemsAlbusColuna(modifier: Modifier=Modifier,item: Album){
-    val context= LocalContext.current
+
     val scop=rememberCoroutineScope()
     val bitmap= remember { mutableStateOf<Bitmap?>(null) }
     LaunchedEffect(Unit) {
@@ -290,7 +286,7 @@ fun ItemsAlbusColuna(modifier: Modifier=Modifier,item: Album){
 
         }
     }
-}
+}*/
 @Composable
 fun ItemsArtistas(modifier: Modifier=Modifier,item:Artista){
     Row(modifier = modifier.padding(10.dp),horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -328,6 +324,7 @@ fun ItemsArtistasColuna(modifier: Modifier=Modifier,item: Artista){
 
 
 
+
 @SuppressLint("SuspiciousIndentation")
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalLayoutApi::class)
@@ -336,112 +333,110 @@ fun ItemsListaPlaylists(modifier: Modifier=Modifier,
                         vm: ViewModelListas,
                         item:ListaPlaylist?,
                         acaoNavegarOpcoes:(id:Long?)->Unit={}){
-    val context= LocalContext.current
+
     val scop=rememberCoroutineScope()
     val PlylistVasia=remember { mutableStateOf(false) }
     val bitmaps= mutableListOf( remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) },
-                          remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando)  } ,
-                          remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) },
-                          remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) } )
-     val sizes= mutableListOf<Float>()
+        remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando)  } ,
+        remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) },
+        remember { mutableStateOf<EstadosDeCarregamento?>(EstadosDeCarregamento.Carregando) } )
+    val sizes= mutableListOf<Float>()
     LaunchedEffect(Unit) {
         scop.launch(Dispatchers.IO) {
             Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmails ${item?.nome } ${item?.id}")
-            val listaTumbs=vm.getTumbmail(item!!.id)
+            val listaTumbs= scop.async {  vm.getTumbmail(item!!.id)}.await()
             if(listaTumbs.isEmpty()) {
                 PlylistVasia.value=true
                 return@launch
             }
             var indice=0
-          listaTumbs.forEachIndexed { index, i ->
-              indice=index
-              scop.launch {
-              try {
-                  delay(1000)
-                  val bitmap=getMetaData(uri = i.uri.toUri(),id = i.idMedia.toLong(),context = context, whidt = 25, height = 25
-                  )
-                  bitmaps[index].value= if(bitmap==null) EstadosDeCarregamento.okVasio else EstadosDeCarregamento.ok(bitmap)
-              }catch (e:Exception){
-                  Log.d("corotinas load metadatas plylist","erro ao carregar tumbmail ${e.message}")
-                  bitmaps[index].value = EstadosDeCarregamento.okVasio
-              }
-              }
-          }
+            listaTumbs.forEachIndexed { index, i ->
+                indice=index
+                scop.launch {
+
+                        delay(1000)
+                        val bitmap=vm.getImageBitMap(i.uri.toUri())
+                        bitmaps[index].value= if(bitmap==null) EstadosDeCarregamento.okVasio else EstadosDeCarregamento.ok(bitmap)
+
+                }
+            }
             if(indice<3)
                 for(i in indice..3)
-                  bitmaps[i].value=EstadosDeCarregamento.Erro
+                    bitmaps[i].value=EstadosDeCarregamento.Erro
 
 
         }
     }
+
     DisposableEffect(Unit) {
         onDispose {
             bitmaps.forEach {
-               it.value=null
+
+                it.value=null
             }
             scop.cancel()
 
         }
     }
     Row (modifier =modifier.padding(10.dp).wrapContentSize(),
-         horizontalArrangement = Arrangement.SpaceBetween,
-         verticalAlignment = Alignment.CenterVertically) {
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically) {
 
 
-        FlowRow (Modifier.size(80.dp)){
+        FlowRow (Modifier.size(80.dp).clip(RoundedCornerShape(10.dp))){
             if(PlylistVasia.value)
                 Icon(painter = painterResource(id = R.drawable.baseline_playlist_play_24), contentDescription = null,modifier = Modifier.clip(
-                RoundedCornerShape(15.dp)
-            ).size(80.dp), tint = DarkPink)
+                    RoundedCornerShape(15.dp)
+                ).size(80.dp), tint = DarkPink)
             else
-            bitmaps.forEach {
-                when (val r = it.value) {
-                   is EstadosDeCarregamento.Carregando -> {
-                        CircularProgressIndicator()
-                    }
-                    is EstadosDeCarregamento.ok -> {
+                bitmaps.forEach {
+                    when (val r = it.value) {
+                        is EstadosDeCarregamento.Carregando -> {
+                            CircularProgressIndicator()
+                        }
+                        is EstadosDeCarregamento.ok -> {
 
-                        val _bitmap = r.bitmap.asImageBitmap()
-                        Image(
-                            bitmap = _bitmap!!,
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp), contentScale = ContentScale.FillBounds
-                        )
+                            val _bitmap = r.bitmap.asImageBitmap()
+                            Image(
+                                bitmap = _bitmap!!,
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp), contentScale = ContentScale.FillBounds
+                            )
+                        }
+
+                        is EstadosDeCarregamento.okVasio -> {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
+                                contentDescription = null,
+                                tint = DarkPink,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+
+                        else->{
+
+                        }
                     }
 
-                   is EstadosDeCarregamento.okVasio -> {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_music_note_24_darkpink),
-                            contentDescription = null,
-                            tint = DarkPink,
-                            modifier = Modifier.size(40.dp)
-                        )
-                    }
 
-                    else->{
-
-                    }
                 }
-
-
-            }
         }
 
 
-            Spacer(Modifier.padding(10.dp))
-            Column(Modifier.fillMaxWidth(0.7f)){
-                Text(if(item==null)"plalyst" else item.nome, maxLines = 2,fontSize = 18.sp)
+        Spacer(Modifier.padding(10.dp))
+        Column(Modifier.fillMaxWidth(0.7f)){
+            Text(if(item==null)"plalyst" else item.nome, maxLines = 2,fontSize = 18.sp)
 
 
-            }
-            Spacer(Modifier.padding(10.dp))
-            IconButton(onClick = {acaoNavegarOpcoes(item?.id)}) {
-                Icon(Icons.Default.MoreVert, contentDescription = null)
-            }
+        }
+        Spacer(Modifier.padding(10.dp))
+        IconButton(onClick = {acaoNavegarOpcoes(item?.id)}) {
+            Icon(Icons.Default.MoreVert, contentDescription = null)
+        }
 
 
 
-}}
+    }}
 @Composable
 fun ItemsListaPlaylistsLista(modifier: Modifier=Modifier,item:ListaPlaylist?){
     Row (modifier =modifier.padding(10.dp)) {

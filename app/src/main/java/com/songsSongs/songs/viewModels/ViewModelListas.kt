@@ -62,8 +62,10 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
    private val _artistas=repositorio.getArtistas().flowOn(Dispatchers.IO)
    private val _plylist=repositorio.listaPlaylist()
    private val estadoPlylist=MutableStateFlow<PlyListStados>(PlyListStados.Todas)
+
    private val scope= viewModelScope
    private var job:Job?=null
+   private var jobColetaPlylist:Job?=null
    @RequiresApi(Build.VERSION_CODES.Q)
    val listas=_listas.stateIn(scope=scope,
                               started = SharingStarted.WhileSubscribed(5000),
@@ -87,30 +89,37 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
 
     init {
         scope.launch {
-            when(val r=estado.value){
-                is ResultadosConecaoServiceMedia.Conectado->{
-                    if(job!=null) job?.cancel()
-                    job=scope.launch {
-                        scope.launch {
-                            r.setvice.plyListStados.collect{
+           estado.collect{
+               when(it){
 
-                                estadoPlylist.value=it
-                            }
-                        }
-                        scope.launch {
-                            plylist().collect{
+                   is ResultadosConecaoServiceMedia.Conectado->{
+                       Log.e("estado da plylist","coeltando plylist service conectado chando a coleta")
+                       if(job!=null) job?.cancel()
+                       job=scope.launch {
+                           scope.launch {
+                               Log.e("estado da plylist","coeltando plylist")
+                               it.setvice.plyListStados.collect{
+                                   Log.e("estado da plylist","coeltando plylist valor $it")
+                                   estadoPlylist.value=it
+                               }
+                           }
+                           scope.launch {
+                               plylist().collect{
 
-                                playlistAtual.value=it
-                            }
-                        }
+                                   playlistAtual.value=it
+                               }
+                           }
 
-                    }
-                }
-                else->{
-                    if(job!=null) job?.cancel()
+                       }
+                   }
+                   else->{
+                       Log.e("estado da plylist","coeltando plylist desconectado")
+                       if(job!=null) job?.cancel()
 
-                }
-            }
+                   }
+               }
+           }
+
         }
 
     }
@@ -133,24 +142,27 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
     }
     @OptIn(ExperimentalCoroutinesApi::class)
      @RequiresApi(Build.VERSION_CODES.Q)
-     fun plylist(): Flow<List<MediaItem>> =estadoPlylist.flatMapLatest {
-         when(val r =it){
-             is PlyListStados.Todas->{repositorio.getMusics()}
-             is PlyListStados.Album->{flowAulbumId(r.albumId)}
-             is PlyListStados.Playlist->{flowPlaylistId(r.playlistId).flowOn(Dispatchers.IO)}
-             is PlyListStados.Artista->{flowArtistaId(r.artistaId)}
-             else ->{emptyFlow()}
-         }.flowOn(Dispatchers.IO)
-    }
+     fun plylist(): Flow<List<MediaItem>> =   when(val r=estadoPlylist.value){
+
+        is PlyListStados.Todas->{repositorio.getMusics()}
+        is PlyListStados.Album->{flowAulbumId(r.albumId)}
+        is PlyListStados.Playlist->{flowPlaylistId(r.playlistId).flowOn(Dispatchers.IO)}
+        is PlyListStados.Artista->{flowArtistaId(r.artistaId)}
+        else ->{emptyFlow()}
+    }.flowOn(Dispatchers.IO)
+
+
+
      fun mudarPlylist(plyListStado: PlyListStados){
        scope.launch {
+           Log.e("service","mudarPlylist")
            when(val e=estado.value){
 
                is ResultadosConecaoServiceMedia.Conectado->{
-
+                   Log.e("service","conectado mudarPlylist $plylist")
                    e.setvice.muudarPlyList(plyListStado)
                }
-               else->{}
+               else->{ Log.e("service","desconectado mudarPlylist")}
            }
        }
    }
