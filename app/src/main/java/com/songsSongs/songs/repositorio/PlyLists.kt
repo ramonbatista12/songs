@@ -75,7 +75,7 @@ class PlyLists(private var context: Context?):InterfacePlylist {
 
     override  fun mediaItemsDaPlylist(id: Long): Flow<List<ItemsDeMedia>> =dao.fluxoDeItemsDeMedia(id)
     override suspend fun tumbmails(id: Long): List<ImagemTumbmail> =dao.tumbmails(id)
-    fun finixe(){
+    fun finalizar(){
         this.context=null
     }
 }

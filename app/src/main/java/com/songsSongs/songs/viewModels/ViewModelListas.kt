@@ -249,6 +249,9 @@ class ViewModelListas(val repositorio: RepositorioService, val estado:MutableSta
     suspend fun getImageBitMap(uri: Uri): Bitmap?{
         return scope.async { repositorio.getBitmap(uri) }.await()
     }
+    suspend fun getImageBitMap(uri: Uri,whidt:Int,height:Int): Bitmap?{
+        return  scope.async { repositorio.getBitmap(uri,whidt, height) }.await()
+    }
 
 }
 

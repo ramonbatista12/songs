@@ -8,7 +8,6 @@ import android.util.Size
 
 import androidx.annotation.RequiresApi
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.Flow
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -53,11 +52,12 @@ private var imageLoader:ImagerLoad?=ImagerLoad(context)
 
    //obter imagems
     suspend fun getBitmap(uri: Uri): Bitmap? = imageLoader?.getBitmap(uri)
+    suspend fun getBitmap(uri: Uri,whidt:Int,height:Int): Bitmap? = imageLoader?.getBitmap(uri,whidt, height)
 
-   fun finixi(){
-       plylist.finixe()
-       mediaStore.finixe()
-       imageLoader?.finixi()
+   fun finalizar(){
+       plylist.finalizar()
+       mediaStore.finalizar()
+       imageLoader?.finalizar()
    }
 
 

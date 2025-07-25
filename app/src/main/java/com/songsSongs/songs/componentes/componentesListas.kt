@@ -87,38 +87,18 @@ fun ItemDaLista(modifier: Modifier=Modifier,
                 vm: ViewModelListas ,
                 acaoNavegarOpcoes:(item:MediaItem?)->Unit={},
                 scop: CoroutineScope = rememberCoroutineScope()){
-    val imagem =remember { mutableStateOf<Bitmap?>(null) }
 
-
-    LaunchedEffect(Unit){
-        scop.launch(Dispatchers.IO) {
-            Log.d("corotinas","entrou corotina ${Thread.currentThread().name} operacao load tumbmail ${item?.mediaMetadata?.title } ${item?.mediaId}")
-            try {
-              val bitmap=vm.getImageBitMap(item!!.mediaMetadata.artworkUri!!)
-                  //getMetaData(,item.mediaId!!.toLong(),context = context)
-                imagem.value=bitmap
-            }catch (e:Exception){
-                imagem.value=null
-            }
-
-        }
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            imagem.value=null
-             } }
     Row (horizontalArrangement = Arrangement.SpaceBetween ,
          verticalAlignment = Alignment.CenterVertically,
          modifier = modifier.padding(10.dp)){
-        if(imagem.value==null){
-        Icon(painter = painterResource(id = R.drawable.inomeado), contentDescription = null,modifier = Modifier.clip(
-            RoundedCornerShape(15.dp)
-        ).size(80.dp).border(width = 1.5.dp, shape = RoundedCornerShape(15.dp), color = cor), tint = DarkPink)}
-        else{
-            val bitmap=imagem!!.value!!.asImageBitmap()
-            Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
-            RoundedCornerShape(10.dp)).size(80.dp), contentScale = ContentScale.FillBounds)
-        }
+
+        AsyncImage(modifier=Modifier.size(80.dp),
+                   idDefautIcon = R.drawable.inomeado,
+                   acaoCarregamento = {
+                       if(item==null) null
+                       else vm.getImageBitMap(item.mediaMetadata.artworkUri!!, whidt = 150, height = 150)
+        })
+
 
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)) {
             Spacer(Modifier.padding(8.dp))
@@ -137,8 +117,8 @@ fun ItemDaLista(modifier: Modifier=Modifier,
 
 
 @RequiresApi(Build.VERSION_CODES.Q)
- fun getMetaData2(uri: Uri, id: Long,context: Context,whidt:Int=400,height:Int=400):Bitmap?{
-    Log.d("Metadata loaad tumb","id de media ${id} , uri ${uri}")
+ fun getMetaData2(uri: Uri,context: Context,whidt:Int=400,height:Int=400):Bitmap?{
+
     try {
         val resolver = context.contentResolver
         val tumbmail=resolver.loadThumbnail(uri, Size(whidt,height),null)
@@ -208,25 +188,17 @@ fun ItemsAlbums(modifier: Modifier=Modifier,item: Album,vm: ViewModelListas){
     val scop=rememberCoroutineScope()
 
     LaunchedEffect(Unit){
-        scop.launch(Dispatchers.IO) {
-            imagem.value=scop.async {vm.getImageBitMap(item.uri)  }.await()
-        }
+
 
     }
     Row(modifier = modifier.padding(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically) {
-        if (imagem.value==null)
-        Icon(painter = painterResource(id = R.drawable.baseline_album_24),
-             contentDescription = null,
-            modifier = Modifier.clip(
-            RoundedCornerShape(15.dp)
-        ).border(width = 1.5.dp, color = MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(15.dp)).size(80.dp), tint = DarkPink)
-        else{
-            val bitmap=imagem!!.value!!.asImageBitmap()
-            Image(bitmap = bitmap,contentDescription = null,modifier = Modifier.clip(
-                RoundedCornerShape(15.dp)
-            ).size(80.dp), contentScale = ContentScale.FillBounds)}
+        AsyncImage(modifier=Modifier.size(80.dp), idDefautIcon = R.drawable.baseline_album_24 ,acaoCarregamento = {
+            if(item.uri==null) null
+            else vm.getImageBitMap(item.uri, whidt = 150, height = 150)
+            })
+
         Column(horizontalAlignment = Alignment.Start,modifier = Modifier.padding(10.dp).fillMaxWidth(0.7f)){
             Spacer(Modifier.padding(8.dp))
             Text(item.nome, maxLines = 2,fontSize = 18.sp, fontFamily = FontFamily.Monospace)

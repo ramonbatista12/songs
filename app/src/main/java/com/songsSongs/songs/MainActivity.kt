@@ -442,7 +442,8 @@ class MainActivity : ComponentActivity() {
             .align(Alignment.BottomCenter)
             .padding(10.dp)) {
         if(!transicaoMiniPlyer.targetState)
-            Row(Modifier.align(Alignment.BottomCenter),verticalAlignment = Alignment.CenterVertically) {Banner()}}}
+            Row(Modifier.align(Alignment.BottomCenter).padding(10.dp),verticalAlignment = Alignment.Bottom) {
+                Banner()}}}
     }
 
 

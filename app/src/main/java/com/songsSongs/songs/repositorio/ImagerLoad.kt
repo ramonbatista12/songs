@@ -8,7 +8,6 @@ import android.util.Size
 import androidx.collection.LruCache
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.net.URI
 
 class ImagerLoad(private var c: Context?):InterfasseImagerLoader {
     private val cache:CacheImage? = CacheImage(c!!)
@@ -21,15 +20,24 @@ class ImagerLoad(private var c: Context?):InterfasseImagerLoader {
         }
 
     }
-    fun finixi(){
-        cache?.finix()
+     suspend fun getBitmap(uri: Uri,whidt:Int,height:Int): Bitmap?{
+        val resposta = cache?.getBitmap(uri)
+        when (resposta) {
+            is BitmapResponce.Error -> return null
+            is BitmapResponce.Success -> return resposta.bitmap
+            else -> return null
+        }
+
+    }
+    fun finalizar(){
+        cache?.finalizar()
     }
 
 
 }
 
 class CacheImage(val c: Context) {
-    private val tag = "CacheImage"
+    private val tag = "CacheImageLoader"
     private var lruCache: LruCache<Uri, Bitmap>? = null
     private val mutex = Mutex()
     private val loadImageDisck = LoadImageDisck(c)
@@ -79,10 +87,35 @@ class CacheImage(val c: Context) {
 
             return BitmapResponce.Error
         }
+    suspend fun getBitmap(uri: Uri,whidt: Int,height: Int): BitmapResponce {
+        Log.d(tag,"items no lrucache ${lruCache?.size()}")
+        mutex.withLock {
+            val responce = lruCache?.get(uri)
+            if (responce == null) {
+                val bitmap = loadImageDisck.loadImage(uri, c,whidt,height)
+                when(bitmap){
+                    is BitmapResponce.Error->{
+                        return BitmapResponce.Error
+                    }
+                    is BitmapResponce.Success->{
+                        lruCache?.put(uri, bitmap.bitmap)
+                        return BitmapResponce.Success(bitmap.bitmap)
+                    }
+                }
 
-        fun finix() {
+
+
+
+            }
+            return BitmapResponce.Success(bitmap = responce!!)
+        }
+
+        return BitmapResponce.Error
+    }
+
+        fun finalizar() {
             lruCache = null
-            loadImageDisck
+            loadImageDisck.finalizar()
         }
     }
 
@@ -101,7 +134,7 @@ class LoadImageDisck(private var c:Context?){
             }
 
         }
-    fun finix(){
+    fun finalizar(){
         c=null
     }
 

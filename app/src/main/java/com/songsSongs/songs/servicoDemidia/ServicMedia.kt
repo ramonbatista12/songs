@@ -113,24 +113,19 @@ class ServicMedia: MediaSessionService() {
     @OptIn(UnstableApi::class)
     private suspend fun iniciarMeidiaSessioan(player: ExoPlayer)=MediaSession.Builder(this@ServicMedia, player)
         .setBitmapLoader(object: BitmapLoader{
-            override fun supportsMimeType(mimeType: String): Boolean {
-                return true
-            }
+            override fun supportsMimeType(mimeType: String): Boolean = true
+
 
             override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> {
 
-                val future=exeuctor?.submit(Callable{
-                    BitmapFactory.decodeByteArray(data,0,data.size)
-                })
+                val future=exeuctor?.submit(Callable{BitmapFactory.decodeByteArray(data,0,data.size)})
                 return future!!
 
             }
 
             override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> {
                 val future:ListenableFuture<Bitmap> = exeuctor!!.submit ( Callable{
-                    val arrayStrings = uri.toString().split("/")
-                    val id = arrayStrings[arrayStrings.size-1].split(".")[0]
-                    val bitmap = getMetaData2(uri,id.toLong(),this@ServicMedia,100,100)
+                    val bitmap = getMetaData2(uri,this@ServicMedia,100,100)
                     bitmap ?: this@ServicMedia.getDrawable(R.drawable.inomeado)?.toBitmap(100,100,null)
                 })
                 return future

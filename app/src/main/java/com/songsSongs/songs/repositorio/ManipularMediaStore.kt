@@ -4,7 +4,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -250,5 +249,5 @@ class ManipularMediaStore(private var context: Context?):InterfasseMediaStore  {
             }
         }
     }
-    fun finixe(){this.context=null}
+    fun finalizar(){this.context=null}
 }
