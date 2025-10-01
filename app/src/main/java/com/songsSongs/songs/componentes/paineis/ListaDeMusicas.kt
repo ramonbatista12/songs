@@ -75,7 +75,7 @@ fun ListaDemusicas(modifier: Modifier = Modifier,
     Box(modifier = modifier.fillMaxSize()){
       val gradcels=medicoes.gradCell(windowSizeClass)
       LazyVerticalGrid(columns = GridCells.Fixed(gradcels),horizontalArrangement =Arrangement.SpaceBetween ,modifier = Modifier.align(
-            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 40.dp ).wrapContentSize()) {
+            Alignment.TopCenter).padding( bottom = if(transicaoMiniPlyer.targetState) 70.dp else 0.dp ).wrapContentSize()) {
 
 
 

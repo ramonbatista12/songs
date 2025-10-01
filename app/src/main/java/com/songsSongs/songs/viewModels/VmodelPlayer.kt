@@ -7,9 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import com.songsSongs.songs.repositorio.RepositorioService
 import com.songsSongs.songs.servicoDemidia.ComandosDemedia
 import com.songsSongs.songs.servicoDemidia.HelperPalyerEstados
 import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -19,7 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceMedia>):ViewModel(),
+class VmodelPlayer(val estadoService: MutableStateFlow<ResultadosConecaoServiceMedia>,val r:RepositorioService):ViewModel(),
     ComandosDemedia {
   private val duracao=MutableStateFlow(0f)
   private val duracaoString=MutableStateFlow("00:00:00")
@@ -378,33 +380,31 @@ init {
 
     }
 
-   fun caregarImagePlyer(funcaodecarregarImagem:suspend (Uri,Long)->Bitmap?,uri: Uri,id:Long){
-       scope.launch(Dispatchers.IO) {
-       val deferred=    scope.async {
-               funcaodecarregarImagem(uri,id)
-           }
+    suspend fun obterImagem(uri: Uri,id:Long):Deferred< Bitmap?>{
+      return scope.async (Dispatchers.IO) {
+           val bitimap = r.getMetaData(uri, id)
+          return@async bitimap
+         }}
+    suspend fun obterImagem(uri: Uri,id:Long,whith:Int=600,heigth:Int=600):Deferred< Bitmap?>{
+        return scope.async (Dispatchers.IO) {
+            val bitimap = r.getMetaData(uri,0)
+            return@async bitimap
+        }}
+    suspend fun acaoMudarImagemCOmpartilhada(bitmap: Bitmap?){
 
-      val bitmap = deferred.await()
-       if(bitmap!=null)
-       imagemPlyer.emit(ImagemPlyer.Imagem(bitmap))
-       else
-       imagemPlyer.emit(ImagemPlyer.Vazia())
-       }
-
-   }
-    fun caregarImagePlyer(bitmap: Bitmap?){
-
-        scope.launch {
-            if(bitmap!=null)
-                imagemPlyer.emit(ImagemPlyer.Imagem(bitmap))
-            else
+            if (bitmap==null){
                 imagemPlyer.emit(ImagemPlyer.Vazia())
-        }
+                return
+             }
 
+            imagemPlyer.emit(ImagemPlyer.Imagem(bitmap!!))
 
+    }
 
-        }
-
+    suspend fun caregarImagemCOmpartilhada(uri: Uri){
+        val bitmap=obterImagem(uri,0).await()
+        acaoMudarImagemCOmpartilhada(bitmap)
+    }
 
 
 
@@ -412,11 +412,11 @@ init {
 
 
 class FabricaViewmodelPlyer(){
-   fun fabricar( estadoService: MutableStateFlow<ResultadosConecaoServiceMedia>)=
+   fun fabricar( estadoService: MutableStateFlow<ResultadosConecaoServiceMedia>,r:RepositorioService)=
 
     object : ViewModelProvider.Factory{
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return VmodelPlayer(estadoService=estadoService) as T
+            return VmodelPlayer(estadoService=estadoService,r) as T
         }
     }
 }

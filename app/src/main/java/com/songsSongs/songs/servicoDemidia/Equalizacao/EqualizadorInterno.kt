@@ -94,23 +94,23 @@ class EqualizadorInterno(val equalizer:Equalizer,val contextoDoServico:Context )
     fun fluxoChavesDePresents()= presents.fluxoChavesDePresents()
     private suspend fun coletaFluxoDeGanho(){
         scope.launch {
-            for (i in 0..equalizer.numberOfBands-1){
-                scope.launch {
-                    val indice =i
                     while (true){
+                        for (i in 0..equalizer.numberOfBands-1){
+                            val indice =i
                         ganhos.value[indice].emit(equalizer.getBandLevel(indice.toShort()))
-                        delay(100)
+                        delay(100)}
                     }
                 }
 
-            }
 
-        }
+
+
     }
 
     override fun finalizar() {
         if (job!=null) job?.cancel()
         job=null
+        equalizer.release()
     }
 
     override fun usePreset(tipo: Short) {

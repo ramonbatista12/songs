@@ -207,7 +207,7 @@ fun BotoesDeControle(vm: VmodelPlayer,
             }
 
             IconButton({
-                Log.e("setmod","entrou no botao de repeticao")
+
                 scop.launch(Dispatchers.Main) {
                     when(modoRepeticao.value){
                         is ModoDerepeticao.Desativado->vm.setModoDeRepeticao(ModoDerepeticao.RepetirEssa)
@@ -460,6 +460,7 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
                                         acaoNavegarOpcoesItemsDaListaAberta:(MediaItem?)->Unit,
 ){
     with(sharedTransitionScope) {
+        LaunchedEffect(Unit) { Log.e("admob baner","vai ser cirado aqui") }
         Column(
             Modifier.sharedBounds(
                 rememberSharedContentState(key = LayoutsCompartilhados.LayoutPluer.label),
@@ -491,8 +492,7 @@ fun ApresenttacaoDasPlyListsPlyerCompat(sharedTransitionScope: SharedTransitionS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
-            ) { Banner()
-            }
+            ) { /*Banner()*/}
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 IconButton(onClick = {
                     listaAvberta.value = !listaAvberta.value

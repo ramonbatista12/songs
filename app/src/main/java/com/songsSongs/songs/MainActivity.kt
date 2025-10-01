@@ -60,11 +60,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.songsSongs.songs.application.AplicationCuston
 import com.songsSongs.songs.componentes.Banner
 import com.songsSongs.songs.componentes.BararInferior
 import com.songsSongs.songs.componentes.BarraSuperio
+import com.songsSongs.songs.componentes.IdAdmob
 import com.songsSongs.songs.componentes.Miniplayer
 import com.songsSongs.songs.componentes.PermanenteNavigationDrawer
 import com.songsSongs.songs.componentes.dialog.DialogoNotificacoes
@@ -96,7 +98,7 @@ class MainActivity : ComponentActivity() {
     var conecao =
         MutableStateFlow<ResultadosConecaoServiceMedia>(ResultadosConecaoServiceMedia.Desconectado)
     val scop = lifecycleScope
-
+    lateinit var adView:AdView
     val serviceConection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             Log.i("service", "onServiceConnected")
@@ -136,18 +138,17 @@ class MainActivity : ComponentActivity() {
 
     }
     lateinit var observadorDocicloDeVida: HelperLifeciclerObserver
-   lateinit var windowInsetsControllerCompat: WindowInsetsControllerCompat
+    lateinit var windowInsetsControllerCompat: WindowInsetsControllerCompat
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
      enableEdgeToEdge()
         observadorDocicloDeVida = HelperLifeciclerObserver(acaoDeConectar = {
-             /*  scop.launch(Dispatchers.IO) {
+             /* scop.launch(Dispatchers.IO) {
               MobileAds.initialize(this@MainActivity)
 
             }*/
-
                 scop.launch(Dispatchers.Main){
                 when(conecao.value){
                 is ResultadosConecaoServiceMedia.Conectado->{}
@@ -225,6 +226,10 @@ class MainActivity : ComponentActivity() {
             })
         this.lifecycle.addObserver(observadorDocicloDeVida)
         windowInsetsControllerCompat=modoImersivo(this)
+        adView=AdView(this).apply {
+            this.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
+            this.adUnitId = IdAdmob.BannerId.idTest
+        }
 
 
 
@@ -245,7 +250,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val scopMain = rememberCoroutineScope()
                 val transicaoMiniPlyer = remember { MutableTransitionState(false) }
-                val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao))
+                val vieModelPlyers:VmodelPlayer=  viewModel(factory = FabricaViewmodelPlyer().fabricar(conecao,AplicationCuston.repositorio))
                 val viewModelListas:ViewModelListas=viewModel(factory = FabricaViewModelLista().fabricar(r= AplicationCuston.repositorio, estado = conecao))
                 val emreproducao =vieModelPlyers._emreproducao.collectAsState()
                 val bigPlyer =viewmodel._bigPlyer.collectAsState()
@@ -285,7 +290,7 @@ class MainActivity : ComponentActivity() {
                                                    vieModelPlyers.carregarLista(l,id)
                                                    vieModelPlyers.play()}},
                                           acaoAvisoBigplyer = {
-                                              scopMain.launch(Dispatchers.Default) {
+                                              scopMain.launch(Dispatchers.Main){
                                                   delay(1000)
                                                   if(!it) viewmodel.mudarCorBackGround(Color.Unspecified)
                                                   viewmodel.mudarBigPlyer(it)}
@@ -293,9 +298,9 @@ class MainActivity : ComponentActivity() {
                                           acaoMudaBackgraundScafolld = {viewmodel.mudarCorBackGround(it)},
                                           acaoMudarcorBackgrandEBarraPermanent = {b,c-> viewmodel.mudarCorBackGroundEtexto(b,c)},
                                           estadoService = conecao,
-                                          acaOcultarBaras = {scopMain.launch { windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())}},
+                                          acaOcultarBaras = {scopMain.launch(Dispatchers.Main) { windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.systemBars())}},
                                           acaOnMostraBaras = {
-                                              scopMain.launch {
+                                              scopMain.launch(Dispatchers.Main)  {
                                                   delay(500)
                                              windowInsetsControllerCompat.show(WindowInsetsCompat.Type.systemBars())
                                               }
@@ -311,7 +316,7 @@ class MainActivity : ComponentActivity() {
                                               vmLista = viewModelListas,
                                               windowInsetsControllerCompat = windowInsetsControllerCompat,
                                               acaoNavegacao = { navController.navigate(DestinosDENavegacao.DestinosDeTela.Player)})
-                                ApresentacaoBaner(this,emreproducao,bigPlyer,transicaoMiniPlyer)
+                                // ApresentacaoBaner(this,emreproducao,bigPlyer,transicaoMiniPlyer)
                                DialogoPermicaoLeituraDasMusicas(dialogoDeLeitura =dialigoLeitura,
                                                     viewmodel = viewmodel,
                                                     scope = scopMain,
@@ -443,7 +448,7 @@ class MainActivity : ComponentActivity() {
             .padding(10.dp)) {
         if(!transicaoMiniPlyer.targetState)
             Row(Modifier.align(Alignment.BottomCenter).padding(10.dp),verticalAlignment = Alignment.Bottom) {
-                Banner()}}}
+                Banner(adView =  adView)}}}
     }
 
 

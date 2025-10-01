@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.OptIn
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.height
@@ -26,8 +27,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -257,25 +262,38 @@ fun rememberAdLoader()= remember { mutableStateOf<NativeAd?>(null) }
 * os vasamentos de main activit vem daqui
 * nao so os vasamentos mas o uso esesivo de memoria tabem
 * */
+@OptIn(UnstableApi::class)
 @Composable
-fun Banner(modifier: Modifier=Modifier){
+fun Banner(modifier: Modifier=Modifier,adView: AdView = rememberAdview(LocalContext.current)){
+      LaunchedEffect(adView) {
+          adView.loadAd(AdRequest.Builder() .build())
+          Log.d("admob banner "," evento LauchedEffect")
+      }
 
+    DisposableEffect(adView) {
+        onDispose {
+            Log.d("admob banner "," evento onDispose")
+            adView.pause()
+            adView.destroy()
+        }
+    }
 
+     AndroidView(factory = {Log.e("admob banner "," evento criando admob baner ")
+         adView}, modifier = modifier)
+    LifecycleStartEffect(adView) {
 
-
-
-     AndroidView(modifier=Modifier.clip(RoundedCornerShape(15.dp)),
-     factory = {context->
-
-         AdView(context).apply {
-             this.setAdSize(AdSize.BANNER)
-
-             adUnitId=IdAdmob.BannerId.idTest
-             loadAd(AdRequest.Builder().build())
-         }
-    })
+     adView.resume()
+     onStopOrDispose {
+     adView.pause()
+     }
+    }
 }
 
+@Composable
+fun rememberAdview(context: Context) = remember { AdView(context).apply {
+    this.setAdSize(AdSize.BANNER)
+    this.adUnitId =IdAdmob.BannerId.idTest
+} }
 sealed class IdAdmob(val id:String,val idTest:String="ca-app-pub-3940256099942544/6300978111"){
     object BannerId:IdAdmob( id="ca-app-pub-1950503385379483/4621080322")
 

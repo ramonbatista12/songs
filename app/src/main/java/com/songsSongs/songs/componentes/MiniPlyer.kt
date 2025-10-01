@@ -1,6 +1,7 @@
 package com.songsSongs.songs.componentes
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -89,13 +90,24 @@ fun Miniplayer(modifier: Modifier = Modifier,text:String="Miniplayer",
    // val int=MaterialTheme.colorScheme.background.value.toInt()
     LaunchedEffect(metadata.value) {
         scope.launch {
-            val bitmap =scope.async(Dispatchers.IO) { vmListas.getImageBitMap(metadata.value!!.mediaMetadata!!.artworkUri!!) }.await()
-            AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(bitmap,
-                backgraudColor=corDoBackgrand,
-                corTexto  = corTexto,
-                textColorSquemas = textColorSquemas,
-                backgraudColorSquemas = backgraudColorSquemas)
-            vm.caregarImagePlyer(bitmap)
+            val bitmap =vm.caregarImagemCOmpartilhada(metadata.value?.mediaMetadata?.artworkUri?: Uri.parse(""))
+           launch(Dispatchers.Default) {
+               val imagem = vm._imagemPlyer.value
+               when(imagem){
+                   is ImagemPlyer.Vazia->AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(null,
+                       backgraudColor=corDoBackgrand,
+                       corTexto  = corTexto,
+                       textColorSquemas = textColorSquemas,
+                       backgraudColorSquemas = backgraudColorSquemas)
+                   is ImagemPlyer.Imagem->AuxiliarMudancaDeBackGrands().mudarBackgrandMiniPlyer(imagem.imagem,
+                       backgraudColor=corDoBackgrand,
+                       corTexto  = corTexto,
+                       textColorSquemas = textColorSquemas,
+                       backgraudColorSquemas = backgraudColorSquemas)
+               }
+
+           }
+
         }
 
 
@@ -201,9 +213,13 @@ fun MiniplayerParaTransicao(modifier: Modifier = Modifier,
     val texttColorSchemas =MaterialTheme.colorScheme.onBackground
     LaunchedEffect(metadata.value) {
        scope.launch {
-           val bitmap =scope.async(Dispatchers.IO) { vmListas.getImageBitMap(metadata.value!!.mediaMetadata!!.artworkUri!!)  }.await()
-           vm.caregarImagePlyer(bitmap)
-           acaoMudarBackgraud(bitmap)
+           vm.caregarImagemCOmpartilhada(metadata.value?.mediaMetadata?.artworkUri?:Uri.parse(""))
+           val imagem =vm._imagemPlyer.value
+           when(imagem){
+               is ImagemPlyer.Vazia->acaoMudarBackgraud(null)
+               is ImagemPlyer.Imagem->acaoMudarBackgraud(imagem.imagem)
+           }
+
 
        }
 

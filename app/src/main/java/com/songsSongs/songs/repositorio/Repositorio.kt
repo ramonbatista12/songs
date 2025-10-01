@@ -29,7 +29,7 @@ private var imageLoader:ImagerLoad?=ImagerLoad(context)
     fun getMetaData(uri: Uri, id: Long):Bitmap?{
    try {
        val resolver = this.context?.contentResolver
-       val tumbmail=resolver?.loadThumbnail(uri,Size(100,100),null)
+       val tumbmail=resolver?.loadThumbnail(uri,Size(1000,1000),null)
        return tumbmail
    }catch (e:Exception){
        return null

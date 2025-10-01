@@ -67,6 +67,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.songsSongs.songs.R
+import com.songsSongs.songs.application.AplicationCuston
 import com.songsSongs.songs.componentes.ApresentacaoPlyListPlyerEstendido
 import com.songsSongs.songs.componentes.ApresenttacaoDasPlyListsPlyerCompat
 import com.songsSongs.songs.componentes.AuxiliarMudancaDeBackGrands
@@ -84,9 +85,11 @@ import com.songsSongs.songs.componentes.getMetaData
 import com.songsSongs.songs.repositorio.RepositorioService
 import com.songsSongs.songs.servicoDemidia.ResultadosConecaoServiceMedia
 import com.songsSongs.songs.ui.theme.SongsTheme
+import com.songsSongs.songs.viewModels.ImagemPlyer
 import com.songsSongs.songs.viewModels.ViewModelListas
 import com.songsSongs.songs.viewModels.VmodelPlayer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -240,17 +243,15 @@ fun Plyer(modifier: Modifier=Modifier,
     val medicoes=remember { MedicoesPlyer() }
 
     LaunchedEffect(mediaItem.value){
-
-        vm.caregarImagePlyer({ uri,id->
-            try {
-               val bitMap:Bitmap?= getMetaData(context = context, uri = uri, id = id, height = 400, whidt =  400)
-                acaoMudarBackgraud(bitMap)
-                bitMap
-            }catch (e:Exception){
-                null
+        vm.caregarImagemCOmpartilhada(mediaItem.value?.mediaMetadata?.artworkUri?:Uri.parse(""))
+        launch(Dispatchers.Default) {
+            val imagem =vm._imagemPlyer.value
+            when(imagem){
+                is ImagemPlyer.Imagem -> acaoMudarBackgraud(imagem.imagem)
+                is ImagemPlyer.Vazia ->acaoMudarBackgraud(null)
             }
-
-        },uri = mediaItem.value!!.mediaMetadata.artworkUri!!,id = mediaItem!!.value!!.mediaId.toLong())}
+        }
+    }
     DisposableEffect(Unit){
         onDispose {
             acaoDesaidaDoplyer()
@@ -521,24 +522,9 @@ fun PlyerComtrolerPlyerExtendidi(modifier: Modifier,
     val tempoTotalString=vm._tempoTotalString.collectAsState()
     val duracaoString=vm._duracaoString.collectAsState()
     val caregando=vm._caregando.collectAsState()
-    LaunchedEffect(metadata.value) {
-        vm.caregarImagePlyer({uri, id ->
-            try {
-                val  bitmap = getMetaData(context = context, uri = uri, id = id, whidt = 400, height = 400)
-                acaoMudarBackgraud(bitmap)
-                bitmap
-            }catch (e:Exception){
-                null}
-
-        },uri = metadata.value!!.mediaMetadata.artworkUri!!,id = metadata.value!!.mediaId.toLong())
-
-
-    }
+    LaunchedEffect(metadata.value) {vm.caregarImagemCOmpartilhada(metadata.value?.mediaMetadata?.artworkUri?:Uri.parse(""))}
     DisposableEffect(Unit) {
-        onDispose {
-
-            scope.cancel()
-        }
+        onDispose {scope.cancel()}
     }
     Box(
         modifier = modifier.fillMaxWidth(0.4f)
@@ -592,7 +578,7 @@ fun PlayerPreview(){
             val context= LocalContext.current
             Box(modifier = Modifier.padding(it).fillMaxSize(1.0f)){
                 BigPlayer(modifier = Modifier.align(Alignment.TopCenter),windowSizeClass = windowsizeclass,paddingValues = it,vm = VmodelPlayer(
-                    MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado) ),
+                    MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado),AplicationCuston.repositorio ),
                     acaoAvisoBigplyer = {},
                     vmlista = ViewModelListas(repositorio = RepositorioService(context), estado =  MutableStateFlow(ResultadosConecaoServiceMedia.Desconectado)),
                     acaoDeVoutar = { })

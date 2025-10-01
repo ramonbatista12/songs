@@ -35,7 +35,7 @@ fun ListaDeArtistas(modifier: Modifier = Modifier,
                            .padding(top =  if(windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 55.dp
                                            else 65.dp)){
 
-        LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 45.dp),
+        LazyVerticalGrid(modifier = Modifier.align(Alignment.TopCenter).padding(bottom = if(transicaoMiniPlyer.targetState) 80.dp else 0.dp),
             columns = GridCells.Fixed(medicoes.gradCell(windowSizeClass)),
             horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
             itemsIndexed(items = listaDeArtistas.value){indice,item->

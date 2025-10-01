@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 import org.jetbrains.annotations.Async
 
@@ -88,12 +89,14 @@ fun AsyncImage(modifier: Modifier = Modifier,acaoCarregamento:suspend ()->Bitmap
 fun AsyncImage(modifier: Modifier = Modifier,idDefautIcon:Int,acaoCarregamento:suspend ()->Bitmap?){
     val coroutineScope= rememberCoroutineScope()
     val resultado= remember { mutableStateOf<ResultadoLoadImage?>(ResultadoLoadImage.Carregando) }
-    DisposableEffect (Unit) {
+    DisposableEffect (acaoCarregamento) {
         coroutineScope.launch(Dispatchers.IO) {
            // delay(100)
             val bitmap= coroutineScope.async { acaoCarregamento() }.await()
+            withContext(Dispatchers.Main){
             if(bitmap==null) resultado.value=ResultadoLoadImage.Erro
             else resultado.value=ResultadoLoadImage.Ok(bitmap!!)
+            }
         }
         onDispose {
             resultado.value =null
